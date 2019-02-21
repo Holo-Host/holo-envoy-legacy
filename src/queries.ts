@@ -4,6 +4,10 @@ type ResponseLookupHoloApp = {
   uiLocator: string,
 }
 
+type Instance = {
+  id: string
+}
+
 export const lookupHoloApp = ({}): ResponseLookupHoloApp => {
   return {
     dnaLocators: ['http://localhost:3333/dna.json'],
@@ -11,13 +15,15 @@ export const lookupHoloApp = ({}): ResponseLookupHoloApp => {
   }
 }
 
-export const lookupInstance = async (client, {dna, agent}) => {
+export const lookupInstance = async (client, {dna, agent}): Promise<Instance | null> => {
   const instances = await client.call('info/instances')
   console.log('all instances: ', instances)
   return instances.find(inst => inst.dna === dna && inst.agent === agent) || null
 }
 
-
-export const callConductor = (client, {id, zome, func, params}) => {
-  return client.call(`${id}/${zome}/${func}`, params)
+/**
+ * Makes a direct call to the conductor based on instance ID
+ */
+export const callConductor = (client, {id, function: func, params}) => {
+  return client.call(`${id}/${func}`, params)
 }

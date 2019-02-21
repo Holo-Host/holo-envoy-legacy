@@ -1,20 +1,21 @@
 {
   "name": "holo-intrceptr",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "ts-node --transpile-only src/index.ts",
     "clean": "rm -fr lib",
-    "build": "npm run clean && scripts/build.sh",
-    "watch": "scripts/watch.sh"
+    "init": "ts-node -T init-conductor.ts",
+    "conductor": "holochain -c ~/.holochain/holo/conductor-config.toml"
   },
   "dependencies": {
     "rpc-websockets": "^4.3.5"
   },
   "devDependencies": {
-    "parcel": "^1.11.0",
+    "@types/node": "^11.9.4",
     "tape": "^4.10.0",
+    "ts-node": "^8.0.2",
     "typescript": "^3.3.3"
   }
 }

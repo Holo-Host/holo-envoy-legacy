@@ -8,6 +8,16 @@ import {Client, Server} from 'rpc-websockets'
 
 import * as Q from './queries'
 
+type CallRequest = {
+  agent: string,
+  happ: HappID,
+  dna: string,
+  function: string,
+  params: any
+}
+
+type HappID = string
+
 export default (port) => {
 
   // a Client to the interface served by the Conductor
@@ -20,13 +30,14 @@ export default (port) => {
       host: 'localhost'
     })
 
-    server.register('holo/call', async ({agent, happ, dna, zome, func, params}) => {
+    server.register('holo/call', async ({agent, happ, dna, function: func, params}: CallRequest) => {
       let instance = await Q.lookupInstance(client, {dna, agent})
       console.log('instance found: ', instance)
       if (instance) {
         const result = await Q.callConductor(client, {
           id: instance.id,
-          zome, func, params,
+          function: func, 
+          params,
         })
         console.log('result: ', result)
         return result
