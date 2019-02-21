@@ -1,12 +1,20 @@
 {
-  "name": "holo-server",
+  "name": "holo-intrceptr",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "scripts": {
+    "start": "node src/index.js",
+    "clean": "rm -fr lib",
+    "build": "npm run clean && scripts/build.sh",
+    "watch": "scripts/watch.sh"
+  },
   "dependencies": {
-    "express": "^4.16.4",
-    "express-ws": "^4.0.0",
-    "jsonrpc-websocket-client": "^0.4.1",
-    "websocket": "^1.0.28"
+    "rpc-websockets": "^4.3.5"
+  },
+  "devDependencies": {
+    "parcel": "^1.11.0",
+    "tape": "^4.10.0",
+    "typescript": "^3.3.3"
   }
 }
