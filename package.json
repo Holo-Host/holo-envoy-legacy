@@ -10,7 +10,9 @@
     "conductor": "holochain -c ~/.holochain/holo/conductor-config.toml"
   },
   "dependencies": {
-    "rpc-websockets": "^4.3.5"
+    "axios": "^0.18.0",
+    "rpc-websockets": "^4.3.5",
+    "tar-fs": "^2.0.0"
   },
   "devDependencies": {
     "@types/node": "^11.9.4",

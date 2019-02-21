@@ -23,10 +23,10 @@ export const spawnConductor = () => {
 const initialTomlConfig = () => {
 
   // TODO: generate key here and use generated key path
-  
+  // this is temporary hard-coded config for now
   const agent = {
-    keyFile: "intrceptr-host.key",
-    publicAddress: "m7YOnambv2x-AO7KrhHxhIcNmt5V_pXar0cuDdgDyzPk5_ebkUfgjBUcybYjvnmg1gOqr6RVJZDzwLhRKCjCHsGXxfkS"
+    keyFile: "shims/intrceptr-host.key",
+    publicAddress: "Un9mR1n7xrqkPgvDuvVYuq9vk-G3bIr3wV566U_7ac14BgBh3RbwefHyqkJPCn2iAaWiINQExbUa9BnkdKcVS3isJbVV"
   }
 
   // TODO: add DNAs for
