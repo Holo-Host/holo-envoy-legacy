@@ -12,3 +12,5 @@ const startWebsockets = () => {
   startServer(port)
   console.log(`server running on port ${port}`)
 }
+
+startWebsockets()

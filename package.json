@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node --transpile-only src/index.ts",
+    "start": "ts-node src/index.ts",
     "clean": "rm -fr lib",
     "init": "ts-node -T init-conductor.ts",
     "conductor": "holochain -c ~/.holochain/holo/conductor-config.toml"

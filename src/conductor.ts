@@ -24,10 +24,8 @@ const initialTomlConfig = () => {
 
   // TODO: generate key here and use generated key path
   // this is temporary hard-coded config for now
-  const agent = {
-    keyFile: "shims/intrceptr-host.key",
-    publicAddress: "Un9mR1n7xrqkPgvDuvVYuq9vk-G3bIr3wV566U_7ac14BgBh3RbwefHyqkJPCn2iAaWiINQExbUa9BnkdKcVS3isJbVV"
-  }
+  const {keyFile, publicAddress} = JSON.parse(fs.readFileSync('shims/intrceptr-host-key.json', 'utf8'))
+
 
   // TODO: add DNAs for
   // - signed service logs
@@ -39,10 +37,10 @@ dnas = []
 bridges = []
 
 [[agents]]
-id = "host"
-key_file = "${agent.keyFile}"
+id = "host-agent"
+key_file = "${keyFile}"
 name = "Intrceptr Host"
-public_address = "${agent.publicAddress}"
+public_address = "${publicAddress}"
 
 [[interfaces]]
 admin = true

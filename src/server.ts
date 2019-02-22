@@ -6,7 +6,7 @@
 
 import {Client, Server} from 'rpc-websockets'
 
-import * as Q from './queries'
+import {zomeCall, installHapp} from './flows'
 
 
 export default (port) => {
@@ -21,12 +21,10 @@ export default (port) => {
       host: 'localhost'
     })
 
-    server.register('holo/call', Q.holoCall)
-
-    server.register('holo/apps/install', async ({happId}) => {
-      await Q.lookupHoloApp({happId})
-    })
+    server.register('holo/call',           zomeCall(client))
+    server.register('holo/apps/install',   installHapp(client))
     
+    installHapp(client)({})
   })
 }
 
