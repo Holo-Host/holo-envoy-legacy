@@ -1,4 +1,8 @@
 
+export type LookupHappRequest = {
+
+}
+
 export type LookupHappResponse = {
   dnaLocators: Array<string>,
   uiLocator: string,
@@ -10,10 +14,14 @@ export type Instance = {
 
 export type HappID = string
 
+export type InstallHappRequest = {
+  happId: HappID
+}
+
 export type CallRequest = {
   agent: string,
-  happ: HappID,
-  dna: string,
+  happId: HappID,
+  dnaHash: string,
   function: string,
   params: any
 }

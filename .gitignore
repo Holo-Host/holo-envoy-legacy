@@ -2,4 +2,3 @@ node_modules/
 lib/
 .cache/
 yarn-error.log
-intrceptr-host.key

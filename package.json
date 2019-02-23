@@ -5,6 +5,7 @@
   "license": "MIT",
   "scripts": {
     "start": "ts-node src/index.ts",
+    "build-shims": "ts-node shims/build.ts",
     "clean": "rm -fr lib",
     "init": "ts-node -T init-conductor.ts",
     "conductor": "holochain -c ~/.holochain/holo/conductor-config.toml"
@@ -16,6 +17,7 @@
   },
   "devDependencies": {
     "@types/node": "^11.9.4",
+    "static-server": "^2.2.1",
     "tape": "^4.10.0",
     "ts-node": "^8.0.2",
     "typescript": "^3.3.3"

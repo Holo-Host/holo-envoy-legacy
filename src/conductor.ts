@@ -36,6 +36,8 @@ const initialTomlConfig = () => {
 dnas = []
 bridges = []
 
+persistence_dir = "${C.conductorConfigDir}"
+
 [[agents]]
 id = "host-agent"
 key_file = "${keyFile}"

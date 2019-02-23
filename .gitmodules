@@ -1,0 +1,3 @@
+[submodule "shims/happs/simple-app"]
+	path = shims/happs/simple-app
+	url = git@github.com:holochain/simple-app.git

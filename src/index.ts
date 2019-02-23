@@ -6,11 +6,7 @@
 
 
 import startServer from './server'
+import startShimServer from '../shims/happ-server'
 
-const startWebsockets = () => {
-  const port = 3000
-  startServer(port)
-  console.log(`server running on port ${port}`)
-}
-
-startWebsockets()
+startShimServer(3333)
+startServer(3000)

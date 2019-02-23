@@ -21,10 +21,17 @@ export default (port) => {
       host: 'localhost'
     })
 
-    server.register('holo/call',           zomeCall(client))
-    server.register('holo/apps/install',   installHapp(client))
+    server.register(
+      'holo/call', 
+      zomeCall(client)
+    )
+    server.register(
+      'holo/apps/install', 
+      installHapp(client)
+    )
+    console.log('Websocket server running on port', port)
     
-    installHapp(client)({})
+    installHapp(client)({happId: 'TODO'})
   })
 }
 
