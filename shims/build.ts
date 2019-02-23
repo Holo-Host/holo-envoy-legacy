@@ -11,7 +11,7 @@ happs.forEach(dir => {
   } catch {}
 
   console.log('Packaging DNA...')
-  execSync(`cd ${dir} && hc package`)
+  execSync(`cd ${dir} && hc package --strip-meta`)
   console.log('Bundling UI...')
   bundle(path.join(dir, 'ui'), path.join(dir, 'ui.tar'))
 })

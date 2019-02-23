@@ -14,3 +14,12 @@ export const bundle = (input, target) =>
 
 export const unbundle = (input, target) => 
   fs.createReadStream(input).pipe(tar.extract(target))
+
+// from https://decembersoft.com/posts/promises-in-serial-with-array-reduce/
+export const sequentialPromises = tasks => tasks.reduce((promiseChain, currentTask) => {
+  return promiseChain.then(chainResults =>
+    currentTask.then(currentResult =>
+      [ ...chainResults, currentResult ]
+    )
+  );
+}, Promise.resolve([]))

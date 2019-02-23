@@ -90,17 +90,21 @@ const downloadAppResources = async () => {
   return {uiPath, dnaPaths}
 }
 
-const downloadResource = async (baseDir: string, res: HappResource, type: ResourceType) => {
+const downloadResource = async (baseDir: string, res: HappResource, type: ResourceType): Promise<string> => {
   const suffix = type === ResourceType.HappDna ? '.dna.json' : ''
   const resourcePath = path.join(baseDir, res.hash + suffix)
-  const writer = fs.createWriteStream(resourcePath)
   const response = await axios({
     url: res.location,
     method: 'GET',
-    responseType: 'stream'
+    responseType: 'stream',
+    maxContentLength: 999999999999,
   })
-  response.data.pipe(writer)
-  return resourcePath
+  return new Promise((fulfill, reject) => {
+    const writer = fs.createWriteStream(resourcePath)
+      .on("finish", () => fulfill(resourcePath))
+      .on("error", reject)
+    response.data.pipe(writer)
+  })
 }
 
 const unbundleUi = (target: string) => {
