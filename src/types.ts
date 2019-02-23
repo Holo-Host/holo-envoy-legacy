@@ -1,12 +1,4 @@
 
-export type LookupHappRequest = {
-
-}
-
-export type LookupHappResponse = {
-  dnaLocators: Array<string>,
-  uiLocator: string,
-}
 
 export type Instance = {
   id: string

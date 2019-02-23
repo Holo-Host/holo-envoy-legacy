@@ -1,35 +1,46 @@
 import axios from 'axios'
 import * as fs from 'fs'
+import * as os from 'os'
 import * as path from 'path'
 
-import {LookupHappRequest, LookupHappResponse, InstallHappRequest} from '../types'
-import {fail} from '../common'
+import {InstallHappRequest} from '../types'
+import {fail, unbundle} from '../common'
 
+type HappResource = {
+  location: string,
+  hash: string,
+}
+
+enum ResourceType {HappUi, HappDna}
+
+type LookupHappRequest = {
+
+}
+
+type LookupHappResponse = {
+  dnas: Array<HappResource>,
+  ui: HappResource,
+}
 
 export default client => async ({happId}: InstallHappRequest) => {
   // TODO: fetch data from somewhere, write fetched files to temp dir and extract
-  // const {dnaLocators, uiLocator} = await lookupHoloApp({})
-  // const ui = await axios.get(uiLocator)
-  // const dnas = await Promise.all(dnaLocators.map(loc => axios.get(loc)))
-  // const baseDir = fs.mkdtempSync('holo-app-bundle')
   
-  const baseDir = './shims/happs/simple-app'
-  const uiPath = path.join(baseDir, 'ui')
-  const dnaPaths = ['dna1.json'].map(name => path.join(baseDir, name))
+
+  const {uiPath, dnaPaths} = await downloadAppResources()
 
   console.log('Installing hApp ', happId)
   console.log('  DNAs: ', dnaPaths)
   console.log('  UI:   ', uiPath)
   const dnaPromises = dnaPaths.map(async dnaPath =>
     await client.call('admin/dna/install_from_file', {
-      id: 'TODO',
+      id: "TODO-CHANGE-TO-HASH",
       path: dnaPath,
       copy: false, // TODO: change for production
     }).catch(fail)
   )
   
   const uiPromises = await client.call('admin/ui/install', {
-    id: 'TODO',
+    id: `${happId}-ui`,
     root_dir: uiPath
   }).catch(fail)
 
@@ -51,9 +62,51 @@ const lookupHoloApp = ({}: LookupHappRequest): LookupHappResponse => {
   // assuming DNAs are served as JSON packages
   // and UIs are served as ZIP archives
   return {
-    dnaLocators: ['http://localhost:3333/simple-app/dist/dna.json'],
-    uiLocator: 'http://localhost:3333/simple-app/ui.tar',
+    dnas: [
+      {
+        location: 'http://localhost:3333/simple-app/dist/simple-app.dna.json',
+        hash: 'Qm_WHATEVER_TODO'
+      }
+    ],
+    ui: {
+      location: 'http://localhost:3333/simple-app/ui.tar',
+      hash: 'Qm_ALSO_WHATEVER_TODO'
+    },
   }
+}
+
+const downloadAppResources = async () => {
+  const {dnas, ui} = await lookupHoloApp({})
+  const [uiRequest, dnaRequests] = await Promise.all([
+    await axios.get(ui.location),
+    Promise.all(dnas.map(dna => axios.get(dna.location)))
+  ])
+  const baseDir = fs.mkdtempSync(path.join(os.tmpdir(), 'happ-bundle-'))
+  console.debug('using tempdir ', baseDir)
+  
+  const uiPath = await downloadResource(baseDir, ui, ResourceType.HappUi)
+  const dnaPaths = await Promise.all(dnas.map(dna => downloadResource(baseDir, dna, ResourceType.HappDna)))
+  unbundleUi(uiPath)
+  return {uiPath, dnaPaths}
+}
+
+const downloadResource = async (baseDir: string, res: HappResource, type: ResourceType) => {
+  const suffix = type === ResourceType.HappDna ? '.dna.json' : ''
+  const resourcePath = path.join(baseDir, res.hash + suffix)
+  const writer = fs.createWriteStream(resourcePath)
+  const response = await axios({
+    url: res.location,
+    method: 'GET',
+    responseType: 'stream'
+  })
+  response.data.pipe(writer)
+  return resourcePath
+}
+
+const unbundleUi = (target: string) => {
+  const source = target + '.tar'
+  fs.renameSync(target, source)
+  unbundle(source, target)
 }
 
 
