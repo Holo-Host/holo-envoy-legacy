@@ -2,17 +2,14 @@
 import * as tar from 'tar-fs'
 import * as fs from 'fs'
 
-export const errorResponse = msg => ({
-  error: msg
-})
+export const errorResponse = msg => ({error: msg})
 
 export const fail = e => console.error("FAIL: ", e)
 
-
-export const bundle = (input, target) => 
+export const bundle = (input, target) =>
   tar.pack(input).pipe(fs.createWriteStream(target))
 
-export const unbundle = (input, target) => 
+export const unbundle = (input, target) =>
   fs.createReadStream(input).pipe(tar.extract(target))
 
 // from https://decembersoft.com/posts/promises-in-serial-with-array-reduce/
@@ -23,3 +20,12 @@ export const sequentialPromises = tasks => tasks.reduce((promiseChain, currentTa
     )
   );
 }, Promise.resolve([]))
+
+//////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+
+export const InstanceIds = {
+  holoHosting: `holo-hosting`,
+  serviceLogs: happId => `service-logs-${happId}`
+}

@@ -1,6 +1,6 @@
 /**
  * Server for Holo
- * 
+ *
  * Accepts requests similar to what the Conductor
  */
 
@@ -22,15 +22,16 @@ export default (port) => {
     })
 
     server.register(
-      'holo/call', 
+      'holo/call',
       zomeCall(client)
     )
     server.register(
-      'holo/apps/install', 
+      'holo/apps/install',
       installHapp(client)
     )
+
     console.log('Websocket server running on port', port)
-    
+
     installHapp(client)({happId: 'TODO'})
   })
 }
