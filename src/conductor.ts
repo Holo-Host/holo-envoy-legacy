@@ -5,7 +5,7 @@ import * as C from './config'
 
 
 export const initializeConductorConfig = () => {
-  console.log(C.conductorConfigPath)
+  console.log("Creating conductor config at: ", C.conductorConfigPath)
   try {
     fs.mkdirSync(C.conductorConfigDir, {recursive: true})
   } catch(e) {}
