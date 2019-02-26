@@ -6,7 +6,11 @@
 
 
 import startServer from './server'
-import startShimServer from '../shims/happ-server'
+import startWormholeServer from './wormhole-server'
+import startShimServers from '../shims/happ-server'
 
-startShimServer(3333, 7000)
-startServer(3000)
+startShimServers(3333, 7000)
+
+startServer(3000).then(intrceptr => {
+  startWormholeServer(8888, intrceptr)
+})
