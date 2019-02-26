@@ -1,11 +1,18 @@
 import * as StaticServer from 'static-server'
 
-export default (port) => {
-  const server = new StaticServer({
+export default (shimPort, uiPort) => {
+  const shimServer = new StaticServer({
     rootPath: './shims/happs',
-    port
+    port: shimPort
   })
-  console.log('Static server running on port', port)
-  server.start()
+  console.log('Shim server running on port', shimPort)
+  shimServer.start()
+
+  const uiServer = new StaticServer({
+    rootPath: './shims/ui',
+    port: uiPort
+  })
+  console.log('UI server running on port', uiPort)
+  uiServer.start()
 }
 

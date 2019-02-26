@@ -8,5 +8,5 @@
 import startServer from './server'
 import startShimServer from '../shims/happ-server'
 
-startShimServer(3333)
+startShimServer(3333, 7000)
 startServer(3000)
