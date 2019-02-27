@@ -10,7 +10,7 @@ export const initializeConductorConfig = () => {
     fs.mkdirSync(C.conductorConfigDir, {recursive: true})
   } catch(e) {}
   let toml = initialTomlConfig()
-  fs.writeFileSync(C.conductorConfigPath, toml)  
+  fs.writeFileSync(C.conductorConfigPath, toml)
 }
 
 export const spawnConductor = () => {
@@ -24,7 +24,7 @@ const initialTomlConfig = () => {
 
   // TODO: generate key here and use generated key path
   // this is temporary hard-coded config for now
-  const {keyFile, publicAddress} = JSON.parse(fs.readFileSync('shims/intrceptr-host-key.json', 'utf8'))
+  const {keyFile, publicAddress} = JSON.parse(fs.readFileSync('src/shims/intrceptr-host-key.json', 'utf8'))
 
 
   // TODO: add DNAs for

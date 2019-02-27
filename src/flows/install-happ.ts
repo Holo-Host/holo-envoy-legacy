@@ -85,7 +85,7 @@ const lookupHoloApp = ({happId}: LookupHappRequest): LookupHappResponse => {
 }
 
 const downloadAppResources = async (happId) => {
-  const {dnas, ui} = await lookupHoloApp({happId})
+  const {dnas, ui} = lookupHoloApp({happId})
   const [uiRequest, dnaRequests] = await Promise.all([
     await axios.get(ui.location),
     Promise.all(dnas.map(dna => axios.get(dna.location)))
@@ -94,6 +94,7 @@ const downloadAppResources = async (happId) => {
   console.debug('using tempdir ', baseDir)
 
   const uiPath = await downloadResource(baseDir, ui, ResourceType.HappUi)
+
   const uiResource = {
     hash: ui.hash,
     path: uiPath,

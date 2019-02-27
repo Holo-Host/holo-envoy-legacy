@@ -103,8 +103,8 @@ export class IntrceptrServer {
       }
     )
 
-    server.on('listening', data => console.log("<C>", "hi"))
-    server.on('error', data => console.log("<C>", data))
+    server.on('listening', () => console.log("<C> listening"))
+    server.on('error', data => console.log("<C> error: ", data))
 
     this.client = client
     this.server = server

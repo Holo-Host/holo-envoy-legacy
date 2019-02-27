@@ -11,8 +11,11 @@ const dnaHash = 'QmSKxN3FGVrf1vVMav6gohJVi7GcF4jFcKVDhDcjiAnveo'
 
 test('end to end test', async t => {
   const client = new Client(`ws://localhost:${PORTS.intrceptr}`)
+  console.log('started client')
   client.on('open', async () => {
+    console.log('identifying...')
     const agentId = await client.call('holo/identify', {agentKey}).catch(fail)
+    console.log('identified!')
     const happId = 'TODO'
     const func = 'simple/get_links'
     const params = {base: 'QmTODO'}
