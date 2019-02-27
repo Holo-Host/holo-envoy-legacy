@@ -27,7 +27,7 @@ type SigningRequest = {
   callback: (Object) => void
 }
 
-const calcAgentId = x => x 
+const calcAgentId = x => x
 
 const verifySignature = (entry, signature) => true
 
@@ -55,7 +55,7 @@ export class IntrceptrServer {
         } else {
           this.sockets[agentId].push(ws)
         }
-
+        console.log('here?', ws)
         ws.on('close', () => {
           // remove the closed socket
           this.sockets[agentId] = this.sockets[agentId].filter(socket => socket !== ws)
@@ -71,7 +71,7 @@ export class IntrceptrServer {
         const {entry, callback} = this.signingRequests[requestId]
         verifySignature(entry, signature)
         callback(signature)
-        delete this.signingRequests[requestId] 
+        delete this.signingRequests[requestId]
       }
     )
 
@@ -79,7 +79,6 @@ export class IntrceptrServer {
       'holo/call',
       zomeCall(client)
     )
-
 
     server.register(
       'holo/get-hosted',
@@ -104,6 +103,9 @@ export class IntrceptrServer {
       }
     )
 
+    server.on('listening', data => console.log("<C>", "hi"))
+    server.on('error', data => console.log("<C>", data))
+
     this.client = client
     this.server = server
     this.sockets = {}
@@ -125,7 +127,7 @@ export class IntrceptrServer {
     const id = this.nextCallId++
     // Send the signing request to EVERY client identifying with this agentKey
     this.sockets[agentKey].forEach(socket => socket.send(JSON.stringify({
-      jsonrpc: '2.0', 
+      jsonrpc: '2.0',
       id: id,
       method: 'agent/sign',
       params: entry

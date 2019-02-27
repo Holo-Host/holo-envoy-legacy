@@ -25,11 +25,11 @@ type LookupHappResponse = {
 
 export default client => async ({happId}: InstallHappRequest) => {
   // TODO: fetch data from somewhere, write fetched files to temp dir and extract
-  
+
 
   const {ui, dnas} = await downloadAppResources(happId)
 
-  console.log('Installing hApp ', happId)
+  console.log('Installing hApp (TODO real happId)', happId)
   console.log('  DNAs: ', dnas.map(dna => dna.path))
   console.log('  UI:   ', ui.path)
   const dnaPromises = dnas.map(async (dna) =>
@@ -39,7 +39,7 @@ export default client => async ({happId}: InstallHappRequest) => {
       copy: false, // TODO: change for production
     }).catch(fail)
   )
-  
+
   const instancePromises = dnas.map(async (dna) =>
     await client.call('admin/instance/add', {
       id: `${Config.hostAgentId}::${dna.hash}`,
@@ -47,7 +47,7 @@ export default client => async ({happId}: InstallHappRequest) => {
       dna_id: dna.hash,
     }).catch(fail)
   )
-  
+
   const uiPromise = await client.call('admin/ui/install', {
     id: `${happId}-ui`,
     root_dir: ui.path
@@ -92,14 +92,14 @@ const downloadAppResources = async (happId) => {
   ])
   const baseDir = fs.mkdtempSync(path.join(os.tmpdir(), 'happ-bundle-'))
   console.debug('using tempdir ', baseDir)
-  
+
   const uiPath = await downloadResource(baseDir, ui, ResourceType.HappUi)
   const uiResource = {
     hash: ui.hash,
     path: uiPath,
   }
   const dnaResources = await Promise.all(dnas.map(async dna => ({
-    hash: dna.hash, 
+    hash: dna.hash,
     path: await downloadResource(baseDir, dna, ResourceType.HappDna)
   })))
   unbundleUi(uiPath)

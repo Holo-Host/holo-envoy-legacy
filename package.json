@@ -5,11 +5,13 @@
   "license": "MIT",
   "scripts": {
     "start": "ts-node src/index.ts",
+    "build": "tsc src/index.ts",
     "build-shims": "ts-node shims/build.ts",
     "clean": "rm -fr lib",
     "init": "ts-node -T init-conductor.ts",
     "conductor": "holochain -c ~/.holochain/holo/conductor-config.toml",
-    "test": "ts-node test/*"
+    "test": "ts-node test/*",
+    "e2e": "ts-node end2end/one.ts"
   },
   "dependencies": {
     "axios": "^0.18.0",
