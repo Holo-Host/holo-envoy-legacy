@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "build": "tsc src/index.ts",
+    "build": "tsc",
     "build-shims": "ts-node shims/build.ts",
     "clean": "rm -fr lib",
     "init": "ts-node -T init-conductor.ts",

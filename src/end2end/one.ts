@@ -2,8 +2,8 @@
 import * as test from 'tape'
 import {Client} from 'rpc-websockets'
 
-import {PORTS} from '../src/config'
-import {fail} from '../src/common'
+import {PORTS} from '../config'
+import {fail} from '../common'
 
 
 const agentKey = 'HcScIkRaAaaaaaaaaaAaaaAAAAaaaaaaaaAaaaaAaaaaaaaaAaaAAAAatzu4aqa'
