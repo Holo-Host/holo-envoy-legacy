@@ -5,6 +5,7 @@ import * as path from 'path'
 
 import {InstallHappRequest} from '../types'
 import {fail, unbundle} from '../common'
+import * as Config from '../config'
 
 type HappResource = {
   location: string,
@@ -14,7 +15,7 @@ type HappResource = {
 enum ResourceType {HappUi, HappDna}
 
 type LookupHappRequest = {
-
+  happId: string,
 }
 
 type LookupHappResponse = {
@@ -26,25 +27,33 @@ export default client => async ({happId}: InstallHappRequest) => {
   // TODO: fetch data from somewhere, write fetched files to temp dir and extract
   
 
-  const {uiPath, dnaPaths} = await downloadAppResources()
+  const {ui, dnas} = await downloadAppResources(happId)
 
   console.log('Installing hApp ', happId)
-  console.log('  DNAs: ', dnaPaths)
-  console.log('  UI:   ', uiPath)
-  const dnaPromises = dnaPaths.map(async dnaPath =>
+  console.log('  DNAs: ', dnas.map(dna => dna.path))
+  console.log('  UI:   ', ui.path)
+  const dnaPromises = dnas.map(async (dna) =>
     await client.call('admin/dna/install_from_file', {
-      id: "TODO-CHANGE-TO-HASH",
-      path: dnaPath,
+      id: dna.hash,
+      path: dna.path,
       copy: false, // TODO: change for production
     }).catch(fail)
   )
   
-  const uiPromises = await client.call('admin/ui/install', {
+  const instancePromises = dnas.map(async (dna) =>
+    await client.call('admin/instance/add', {
+      id: `${Config.hostAgentId}::${dna.hash}`,
+      agent_id: Config.hostAgentId,
+      dna_id: dna.hash,
+    }).catch(fail)
+  )
+  
+  const uiPromise = await client.call('admin/ui/install', {
     id: `${happId}-ui`,
-    root_dir: uiPath
+    root_dir: ui.path
   }).catch(fail)
 
-  const results = await Promise.all(dnaPromises.concat([uiPromises]))
+  const results = await Promise.all(dnaPromises.concat(instancePromises, [uiPromise]))
   const errors = results.filter(r => !r.success)
   if (errors.length > 0) {
     console.error('hApp installation failed!')
@@ -56,7 +65,7 @@ export default client => async ({happId}: InstallHappRequest) => {
   }
 }
 
-const lookupHoloApp = ({}: LookupHappRequest): LookupHappResponse => {
+const lookupHoloApp = ({happId}: LookupHappRequest): LookupHappResponse => {
   // TODO: make actual call to HHA
   // this is a dummy response for now
   // assuming DNAs are served as JSON packages
@@ -75,8 +84,8 @@ const lookupHoloApp = ({}: LookupHappRequest): LookupHappResponse => {
   }
 }
 
-const downloadAppResources = async () => {
-  const {dnas, ui} = await lookupHoloApp({})
+const downloadAppResources = async (happId) => {
+  const {dnas, ui} = await lookupHoloApp({happId})
   const [uiRequest, dnaRequests] = await Promise.all([
     await axios.get(ui.location),
     Promise.all(dnas.map(dna => axios.get(dna.location)))
@@ -85,9 +94,16 @@ const downloadAppResources = async () => {
   console.debug('using tempdir ', baseDir)
   
   const uiPath = await downloadResource(baseDir, ui, ResourceType.HappUi)
-  const dnaPaths = await Promise.all(dnas.map(dna => downloadResource(baseDir, dna, ResourceType.HappDna)))
+  const uiResource = {
+    hash: ui.hash,
+    path: uiPath,
+  }
+  const dnaResources = await Promise.all(dnas.map(async dna => ({
+    hash: dna.hash, 
+    path: await downloadResource(baseDir, dna, ResourceType.HappDna)
+  })))
   unbundleUi(uiPath)
-  return {uiPath, dnaPaths}
+  return {ui: uiResource, dnas: dnaResources}
 }
 
 const downloadResource = async (baseDir: string, res: HappResource, type: ResourceType): Promise<string> => {

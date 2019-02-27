@@ -40,7 +40,7 @@ persistence_dir = "${C.conductorConfigDir}"
 signing_service_uri = "http://localhost:${C.PORTS.wormhole}"
 
 [[agents]]
-id = "host-agent"
+id = "${C.hostAgentId}"
 name = "Intrceptr Host"
 key_file = "${keyFile}"  # ignored due to holo_remote_key
 public_address = "${publicAddress}"
