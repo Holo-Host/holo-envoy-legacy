@@ -11,11 +11,12 @@ export type InstallHappRequest = {
 }
 
 export type CallRequest = {
-  agent: string,
+  agentId: string,
   happId: HappID,
   dnaHash: string,
   function: string,
-  params: any
+  params: any,
+  signature: string,
 }
 
 export type CallResponse = any

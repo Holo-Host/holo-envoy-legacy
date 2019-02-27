@@ -8,9 +8,10 @@
 import startServer from './server'
 import startWormholeServer from './wormhole-server'
 import startShimServers from '../shims/happ-server'
+import * as C from './config'
 
-startShimServers(3333, 7000)
+startShimServers(C.PORTS.shim, C.PORTS.ui)
 
-startServer(3000).then(intrceptr => {
-  startWormholeServer(8888, intrceptr)
+startServer(C.PORTS.intrceptr).then(intrceptr => {
+  startWormholeServer(C.PORTS.wormhole, intrceptr)
 })

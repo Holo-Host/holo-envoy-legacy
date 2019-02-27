@@ -37,19 +37,28 @@ dnas = []
 bridges = []
 
 persistence_dir = "${C.conductorConfigDir}"
+signing_service_uri = "http://localhost:${C.PORTS.wormhole}"
 
 [[agents]]
 id = "host-agent"
-key_file = "${keyFile}"
 name = "Intrceptr Host"
+key_file = "${keyFile}"  # ignored due to holo_remote_key
 public_address = "${publicAddress}"
+
+[[agents]]
+# TODO: remove after testing
+id = "grandma"
+name = "grandma"
+key_file = "IGNORED"
+public_address = "HcScIkRaAaaaaaaaaaAaaaAAAAaaaaaaaaAaaaaAaaaaaaaaAaaAAAAatzu4aqa"
+holo_remote_key = true
 
 [[interfaces]]
 admin = true
 id = "admin-interface"
 
 [interfaces.driver]
-port = 8888
+port = ${C.PORTS.adminInterface}
 type = "websocket"
 
 [logger]

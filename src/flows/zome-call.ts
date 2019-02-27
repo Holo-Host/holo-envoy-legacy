@@ -2,8 +2,16 @@
 import {Instance, CallRequest, CallResponse} from '../types'
 import {errorResponse, fail, InstanceIds} from '../common'
 
-export default client => async ({agent, happId, dnaHash, function: func, params}: CallRequest) => {
-  let instance = await lookupInstance(client)({dnaHash, agent}).catch(fail)
+export default client => async ({
+  agentId, 
+  happId, 
+  dnaHash, 
+  function: func, 
+  params,
+  signature,
+}: CallRequest) => {
+  // TODO: add replay attack protection? nonce?
+  let instance = await lookupInstance(client)({dnaHash, agentId}).catch(fail)
   console.log('instance found: ', instance)
   if (instance) {
     const method = `${instance.id}/${func}`
@@ -24,10 +32,10 @@ export default client => async ({agent, happId, dnaHash, function: func, params}
   }
 }
 
-const lookupInstance = client => async ({dnaHash, agent}): Promise<Instance | null> => {
+const lookupInstance = client => async ({dnaHash, agentId}): Promise<Instance | null> => {
   const instances = await client.call('info/instances').catch(fail)
   console.log('all instances: ', instances)
-  return instances.find(inst => inst.dnaHash === dnaHash && inst.agent === agent) || null
+  return instances.find(inst => inst.dnaHash === dnaHash && inst.agentId === agentId) || null
 }
 
 ///////////////////////////////////////////////

@@ -7,16 +7,17 @@
 import {Client, Server as RpcServer} from 'rpc-websockets'
 
 import {zomeCall, installHapp} from './flows'
+import {PORTS} from './config'
 
 
 export default (port) => new Promise((fulfill, reject) => {
   // a Client to the interface served by the Conductor
-  const client = new Client('ws://localhost:8888')
+  const client = new Client(`ws://localhost:${PORTS.adminInterface}`)
   client.on('open', () => {
     const server = new RpcServer({port, host: 'localhost'})
     const intrceptr = new IntrceptrServer(server, client)
     console.log('Websocket server running on port', port)
-    // installHapp(client)({happId: 'TODO'})
+    installHapp(client)({happId: 'TODO'})
     fulfill(intrceptr)
   })
 })
@@ -26,6 +27,9 @@ type SigningRequest = {
   callback: (Object) => void
 }
 
+const calcAgentId = x => x 
+
+const verifySignature = (entry, signature) => true
 
 /**
  * A wrapper around a rpc-websockets Server and Client which brokers communication between
@@ -44,33 +48,44 @@ export class IntrceptrServer {
     server.register(
       'holo/identify',
       ({agentKey}, ws) => {
-        console.log('identified as ', agentKey)
-        if (!this.sockets[agentKey]) {
-          this.sockets[agentKey] = [ws]
+        const agentId = calcAgentId(agentKey)
+        console.log('identified as ', agentId)
+        if (!this.sockets[agentId]) {
+          this.sockets[agentId] = [ws]
         } else {
-          this.sockets[agentKey].push(ws)
+          this.sockets[agentId].push(ws)
         }
 
         ws.on('close', () => {
           // remove the closed socket
-          this.sockets[agentKey] = this.sockets[agentKey].filter(socket => socket !== ws)
+          this.sockets[agentId] = this.sockets[agentId].filter(socket => socket !== ws)
         })
+
+        return agentId
       }
     )
 
     server.register(
-      'holo/receiveSignature',
-      ({signature, id}) => {
-        console.debug("TODO: verify signature:", signature)
-        const {entry, callback} = this.signingRequests[id]
+      'holo/clientSignature',
+      ({signature, requestId}) => {
+        const {entry, callback} = this.signingRequests[requestId]
+        verifySignature(entry, signature)
         callback(signature)
-        delete this.signingRequests[id] 
+        delete this.signingRequests[requestId] 
       }
     )
 
     server.register(
       'holo/call',
       zomeCall(client)
+    )
+
+
+    server.register(
+      'holo/get-hosted',
+      (params) => {
+        console.error("TODO")
+      }
     )
 
     server.register(
@@ -104,7 +119,7 @@ export class IntrceptrServer {
 
   /**
    * Function to be called externally, registers a signing request which will be fulfilled
-   * by the `holo/receiveSignature` JSON-RPC method registered on this server
+   * by the `holo/clientSignature` JSON-RPC method registered on this server
    */
   startHoloSigningRequest(agentKey: string, entry: Object, callback: (Object) => void) {
     const id = this.nextCallId++
