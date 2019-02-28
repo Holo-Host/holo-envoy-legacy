@@ -7,7 +7,7 @@
     "start": "ts-node src/index.ts",
     "build": "tsc",
     "prod": "tsc && node lib/index.js",
-    "build-shims": "ts-node shims/build.ts",
+    "build-shims": "ts-node src/shims/build.ts",
     "clean": "rm -fr lib",
     "init": "ts-node -T init-conductor.ts",
     "conductor": "holochain -c ~/.holochain/holo/conductor-config.toml",

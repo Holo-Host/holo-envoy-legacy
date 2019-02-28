@@ -47,29 +47,20 @@ export default client => async ({happId, agentId}: InstallHappRequest) => {
       copy: false,
     })
 
-    console.log("installDna", installDna)
-
     const addInstance = await client.call('admin/instance/add', {
       id: instanceId,
       agent_id: agentId,
       dna_id: dnaId,
     })
 
-    console.log("addInstance", addInstance)
-    console.log('starting instance...', instanceId)
-
-    const startInstance = await client.call('admin/instance/start', {
-      id: instanceId,
-    })
-
-    console.log("startInstance", startInstance)
-
     const addToInterface = await client.call('admin/interface/add_instance', {
       instance_id: instanceId,
       interface_id: Config.happInterfaceId
     })
 
-    console.log("addToInterface", addToInterface)
+    const startInstance = await client.call('admin/instance/start', {
+      id: instanceId
+    })
 
     return ([
       installDna, addInstance, addToInterface, startInstance
@@ -80,23 +71,22 @@ export default client => async ({happId, agentId}: InstallHappRequest) => {
   const uiPromise = await client.call('admin/ui/install', {
     id: `${happId}-ui`,
     root_dir: ui.path
-  }).catch(fail)
+  })
 
-  const dnaResults = (await Promise.all(dnaPromises)).flat()
-  console.log(dnaResults)
+  const dnaResults = await Promise.all(dnaPromises)
+  const uiResults = await Promise.all([uiPromise])
+  const results = uiResults.concat(...dnaResults)
+  const errors = results.filter(r => !r.success)
+  const ok = errors.length === 0
 
-  const promises = dnaPromises.concat([uiPromise])
-  console.log(promises)
-  const results = await Promise.all(promises)
-  const errors = []//results.filter(r => !r.success)
-  if (errors.length > 0) {
+  if (!ok) {
     console.error('hApp installation failed!')
     console.error(errors)
-    return false
   } else {
     console.log("Installation successful!")
-    return true
   }
+
+  return ok
 }
 
 const lookupHoloApp = ({happId}: LookupHappRequest): LookupHappResponse => {

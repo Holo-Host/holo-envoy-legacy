@@ -3,7 +3,7 @@ import * as path from 'path'
 import {execSync} from 'child_process'
 import {bundle} from '../common'
 
-const happs = ['./shims/happs/simple-app']
+const happs = ['./src/shims/happs/simple-app']
 
 happs.forEach(dir => {
   try {
