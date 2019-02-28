@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
 
-import {InstallHappRequest} from '../types'
+import {HappID} from '../types'
 import {fail, unbundle} from '../common'
 import * as Config from '../config'
 
@@ -23,38 +23,72 @@ type LookupHappResponse = {
   ui: HappResource,
 }
 
-export default client => async ({happId}: InstallHappRequest) => {
-  // TODO: fetch data from somewhere, write fetched files to temp dir and extract
+type InstallHappRequest = {
+  happId: HappID,
+  agentId: string,
+}
 
+export default client => async ({happId, agentId}: InstallHappRequest) => {
+  // TODO: fetch data from somewhere, write fetched files to temp dir and extract
 
   const {ui, dnas} = await downloadAppResources(happId)
 
   console.log('Installing hApp (TODO real happId)', happId)
   console.log('  DNAs: ', dnas.map(dna => dna.path))
   console.log('  UI:   ', ui.path)
-  const dnaPromises = dnas.map(async (dna) =>
-    await client.call('admin/dna/install_from_file', {
-      id: dna.hash,
-      path: dna.path,
-      copy: false, // TODO: change for production
-    }).catch(fail)
-  )
 
-  const instancePromises = dnas.map(async (dna) =>
-    await client.call('admin/instance/add', {
-      id: `${Config.hostAgentId}::${dna.hash}`,
-      agent_id: Config.hostAgentId,
-      dna_id: dna.hash,
-    }).catch(fail)
-  )
+  const dnaPromises = dnas.map(async (dna) => {
+    const dnaId = dna.hash
+    const instanceId = `${Config.hostAgentId}::${dna.hash}`
+
+    const installDna = await client.call('admin/dna/install_from_file', {
+      id: dnaId,
+      path: dna.path,
+      copy: false,
+    })
+
+    console.log("installDna", installDna)
+
+    const addInstance = await client.call('admin/instance/add', {
+      id: instanceId,
+      agent_id: agentId,
+      dna_id: dnaId,
+    })
+
+    console.log("addInstance", addInstance)
+    console.log('starting instance...', instanceId)
+
+    const startInstance = await client.call('admin/instance/start', {
+      id: instanceId,
+    })
+
+    console.log("startInstance", startInstance)
+
+    const addToInterface = await client.call('admin/interface/add_instance', {
+      instance_id: instanceId,
+      interface_id: Config.happInterfaceId
+    })
+
+    console.log("addToInterface", addToInterface)
+
+    return ([
+      installDna, addInstance, addToInterface, startInstance
+    ])
+  })
+
 
   const uiPromise = await client.call('admin/ui/install', {
     id: `${happId}-ui`,
     root_dir: ui.path
   }).catch(fail)
 
-  const results = await Promise.all(dnaPromises.concat(instancePromises, [uiPromise]))
-  const errors = results.filter(r => !r.success)
+  const dnaResults = (await Promise.all(dnaPromises)).flat()
+  console.log(dnaResults)
+
+  const promises = dnaPromises.concat([uiPromise])
+  console.log(promises)
+  const results = await Promise.all(promises)
+  const errors = []//results.filter(r => !r.success)
   if (errors.length > 0) {
     console.error('hApp installation failed!')
     console.error(errors)

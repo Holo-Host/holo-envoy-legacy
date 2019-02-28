@@ -6,10 +6,6 @@ export type Instance = {
 
 export type HappID = string
 
-export type InstallHappRequest = {
-  happId: HappID
-}
-
 export type CallRequest = {
   agentId: string,
   happId: HappID,

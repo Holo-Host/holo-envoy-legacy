@@ -54,11 +54,18 @@ public_address = "HcScIkRaAaaaaaaaaaAaaaAAAAaaaaaaaaAaaaaAaaaaaaaaAaaAAAAatzu4aq
 holo_remote_key = true
 
 [[interfaces]]
+id = "${C.adminInterfaceId}"
 admin = true
-id = "admin-interface"
 
 [interfaces.driver]
 port = ${C.PORTS.adminInterface}
+type = "websocket"
+
+[[interfaces]]
+id = "${C.happInterfaceId}"
+
+[interfaces.driver]
+port = ${C.PORTS.happInterface}
 type = "websocket"
 
 [logger]

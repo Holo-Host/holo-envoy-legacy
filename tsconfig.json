@@ -6,7 +6,7 @@
     "module": "commonjs",
     "target": "es6",
     "sourceMap": true,
-    // "lib": ["esnext"],
+    "lib": ["esnext.array", "es2018"],
     // "downlevelIteration": true,
 
     "forceConsistentCasingInFileNames": true,
@@ -17,6 +17,9 @@
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": false
   },
+  "files": [
+    "src/**/*"
+  ],
   "include": [
     "src/**/*"
   ],

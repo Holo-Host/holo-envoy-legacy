@@ -7,18 +7,22 @@
 import {Client, Server as RpcServer} from 'rpc-websockets'
 
 import {zomeCall, installHapp} from './flows'
-import {PORTS} from './config'
+import * as C from './config'
 
 
 export default (port) => new Promise((fulfill, reject) => {
   // a Client to the interface served by the Conductor
-  const client = new Client(`ws://localhost:${PORTS.adminInterface}`)
-  client.on('open', () => {
-    const server = new RpcServer({port, host: 'localhost'})
-    const intrceptr = new IntrceptrServer(server, client)
-    console.log('Websocket server running on port', port)
-    installHapp(client)({happId: 'TODO'})
-    fulfill(intrceptr)
+  const adminClient = new Client(`ws://localhost:${C.PORTS.adminInterface}`)
+  const happClient = new Client(`ws://localhost:${C.PORTS.happInterface}`)
+  console.debug("Connecting to admin and happ interfaces...")
+  adminClient.once('open', () => {
+    happClient.once('open', () => {
+      const server = new RpcServer({port, host: 'localhost'})
+      const intrceptr = new IntrceptrServer({server, adminClient, happClient})
+      console.log('Websocket server running on port', port)
+      installHapp(adminClient)({happId: 'TODO', agentId: C.hostAgentId})
+      fulfill(intrceptr)
+    })
   })
 })
 
@@ -38,12 +42,14 @@ const verifySignature = (entry, signature) => true
  */
 export class IntrceptrServer {
   server: any
-  client: any
+  adminClient: any
+  happClient: any
+  hostedClients: any[]  // TODO
   sockets: {[k: string]: Array<any>} = {}
   nextCallId = 0
   signingRequests = {}
 
-  constructor(server, client) {
+  constructor({server, adminClient, happClient}) {
 
     server.register(
       'holo/identify',
@@ -55,7 +61,6 @@ export class IntrceptrServer {
         } else {
           this.sockets[agentId].push(ws)
         }
-        console.log('here?', ws)
         ws.on('close', () => {
           // remove the closed socket
           this.sockets[agentId] = this.sockets[agentId].filter(socket => socket !== ws)
@@ -77,12 +82,13 @@ export class IntrceptrServer {
 
     server.register(
       'holo/call',
-      zomeCall(client)
+      zomeCall(happClient)
     )
 
     server.register(
       'holo/get-hosted',
       (params) => {
+        // create new client
         console.error("TODO")
       }
     )
@@ -90,7 +96,7 @@ export class IntrceptrServer {
     server.register(
       'holo/happs/install',
       params => {
-        installHapp(client)(params)
+        installHapp(adminClient)(params)
       }
     )
 
@@ -106,7 +112,8 @@ export class IntrceptrServer {
     server.on('listening', () => console.log("<C> listening"))
     server.on('error', data => console.log("<C> error: ", data))
 
-    this.client = client
+    this.adminClient = adminClient
+    this.happClient = happClient
     this.server = server
     this.sockets = {}
   }
@@ -115,7 +122,8 @@ export class IntrceptrServer {
    * Close both the server and client connections
    */
   close() {
-    this.client!.close()
+    this.adminClient!.close()
+    this.happClient!.close()
     this.server!.close()
   }
 
@@ -128,9 +136,8 @@ export class IntrceptrServer {
     // Send the signing request to EVERY client identifying with this agentKey
     this.sockets[agentKey].forEach(socket => socket.send(JSON.stringify({
       jsonrpc: '2.0',
-      id: id,
-      method: 'agent/sign',
-      params: entry
+      notification: 'agent/sign',
+      params: {entry, id}
     })))
     this.signingRequests[id] = {entry, callback}
   }
