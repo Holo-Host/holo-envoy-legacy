@@ -20,7 +20,6 @@ export default (port) => new Promise((fulfill, reject) => {
       const server = new RpcServer({port, host: 'localhost'})
       const intrceptr = new IntrceptrServer({server, adminClient, happClient})
       console.log('Websocket server running on port', port)
-      installHapp(adminClient)({happId: 'TODO', agentId: C.hostAgentId})
       fulfill(intrceptr)
     })
   })
@@ -66,7 +65,7 @@ export class IntrceptrServer {
           this.sockets[agentId] = this.sockets[agentId].filter(socket => socket !== ws)
         })
 
-        return agentId
+        return JSON.stringify(agentId)
       }
     )
 

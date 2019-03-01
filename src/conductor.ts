@@ -24,7 +24,7 @@ const initialTomlConfig = () => {
 
   // TODO: generate key here and use generated key path
   // this is temporary hard-coded config for now
-  const {keyFile, publicAddress} = JSON.parse(fs.readFileSync('src/shims/intrceptr-host-key.json', 'utf8'))
+  const {keyFile, publicAddress} = JSON.parse(fs.readFileSync(C.keyConfigFile, 'utf8'))
 
 
   // TODO: add DNAs for

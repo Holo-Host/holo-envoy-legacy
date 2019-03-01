@@ -1,38 +1,42 @@
-
 import * as test from 'tape'
 import {Client} from 'rpc-websockets'
 
-import {PORTS} from '../config'
+import * as C from '../config'
 import {fail} from '../common'
-
 
 process.on('unhandledRejection', (reason, p) => {
   console.log("UNHANDLED REJECTION:")
   console.log("reason: ", reason)
-  console.log("P:", p)
 })
 
-const agentKey = 'HcScIkRaAaaaaaaaaaAaaaAAAAaaaaaaaaAaaaaAaaaaaaaaAaaAAAAatzu4aqa'
-const dnaHash = 'QmSKxN3FGVrf1vVMav6gohJVi7GcF4jFcKVDhDcjiAnveo'
+const agentName = C.hostAgentId
+const dnaHash = 'Qm_WHATEVER_TODO'
 
 test('end to end test', async t => {
-  const client = new Client(`ws://localhost:${PORTS.intrceptr}`)
-  console.log('started client')
-  client.on('open', async () => {
+  const client = new Client(`ws://localhost:${C.PORTS.intrceptr}`)
+
+  client.once('open', async () => {
+
+    // TODO: conductor panics if installing the same app twice!
+    // console.log('installing happ...')
+    // await client.call('holo/happs/install', {happId: 'TODO', agentId: C.hostAgentId})
+
     console.log('identifying...')
-    const agentId = await client.call('holo/identify', {agentKey})
-    console.log('identified!')
+    const agentId = await client.call('holo/identify', {agentKey: agentName}).then(JSON.parse)
+    t.equal(agentId, agentName)
+
     const happId = 'TODO'
     const func = 'simple/get_links'
     const params = {base: 'QmTODO'}
     const signature = 'TODO'
-    t.equal(agentId, agentKey)
 
     const result = await client.call('holo/call', {
-      agentId, happId, dnaHash, function: func, params, signature
-    })
-    t.ok(result.Ok, "wrong result: " + JSON.stringify(result))
+      agentId: agentName, happId, dnaHash, function: func, params, signature
+    }).then(JSON.parse)
 
+    t.ok(result.Ok)
+
+    client.close()
     t.end()
   })
   client.on('error', msg => console.error("WS Client error: ", msg))

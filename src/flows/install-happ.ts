@@ -66,27 +66,24 @@ export default client => async ({happId, agentId}: InstallHappRequest) => {
       installDna, addInstance, addToInterface, startInstance
     ])
   })
+  const dnaResults = await Promise.all(dnaPromises)
 
-
-  const uiPromise = await client.call('admin/ui/install', {
+  const uiResult = await client.call('admin/ui/install', {
     id: `${happId}-ui`,
     root_dir: ui.path
   })
 
-  const dnaResults = await Promise.all(dnaPromises)
-  const uiResults = await Promise.all([uiPromise])
-  const results = uiResults.concat(...dnaResults)
+  // flatten everything out
+  const results = ([] as any[]).concat(...dnaResults).concat([uiResult])
   const errors = results.filter(r => !r.success)
-  const ok = errors.length === 0
 
-  if (!ok) {
-    console.error('hApp installation failed!')
-    console.error(errors)
-  } else {
-    console.log("Installation successful!")
+  if (errors.length > 0) {
+    throw({
+      reason: 'hApp installation failed!',
+      errors
+    })
   }
-
-  return ok
+  console.log("Installation successful!")
 }
 
 const lookupHoloApp = ({happId}: LookupHappRequest): LookupHappResponse => {

@@ -7,6 +7,7 @@ export const conductorConfigPath = path.join(conductorConfigDir, 'conductor-conf
 export const hostAgentId = 'host-agent'
 export const happInterfaceId = 'happ-interface'
 export const adminInterfaceId = 'admin-interface'
+export const keyConfigFile = 'src/shims/intrceptr-host-key.json'
 
 export const PORTS = {
   wormhole: 8888,

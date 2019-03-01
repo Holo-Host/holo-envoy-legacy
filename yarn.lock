@@ -821,10 +821,9 @@ resumer@~0.0.0:
   dependencies:
     through "~2.3.4"
 
-rpc-websockets@^4.3.5:
+rpc-websockets@maackle/rpc-websockets:
   version "4.3.5"
-  resolved "https://registry.yarnpkg.com/rpc-websockets/-/rpc-websockets-4.3.5.tgz#a22bf0bf4ecb4b445742c5362b2a50cc727ea16c"
-  integrity sha512-hHOgJQbb/NYDqoFeRo5wrW1ICAmMSgWgEm2z5dillrEDf6ZTNiG8Cy/cE3cdHMacQiwIRKnZRbex/fJthzdyzw==
+  resolved "https://codeload.github.com/maackle/rpc-websockets/tar.gz/8fafa1be389bc8843d43285490c9ae0fac2fccf4"
   dependencies:
     assert-args "^1.2.1"
     babel-runtime "^6.26.0"

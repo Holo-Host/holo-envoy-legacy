@@ -9,7 +9,7 @@ export default client => async ({
   function: func, 
   params,
   signature,
-}: CallRequest) => {
+}: CallRequest, _ws) => {
   // TODO: add replay attack protection? nonce?
   let instance = await lookupInstance(client)({dnaHash, agentId}).catch(fail)
   console.log('instance found: ', instance)
@@ -19,8 +19,14 @@ export default client => async ({
     const requestEntryHash = await logServiceRequest(client,
       {happId, dnaHash, requestData})
 
-    const result = await client.call(method, params).catch(fail)
-    console.log('result: ', result)
+    let result
+    try {
+      console.debug("Calling...", method)
+      result = await client.call(method, params).catch(fail)
+    } catch(e) {
+      console.error("function not found: ", func)
+      throw e
+    }
 
     const responseData = result
     const metrics = calcMetrics(requestData, responseData)
@@ -28,14 +34,17 @@ export default client => async ({
       {happId, requestEntryHash, responseData, metrics})
     return result
   } else {
-    return errorResponse(`No instance found for happId '${happId}' and dnaHash ${dnaHash}`)
+    return errorResponse(`No instance found for happId '${happId}' 
+      where agentId == '${agentId}' 
+      and   dnaHash == '${dnaHash}'
+    `)
   }
 }
 
 const lookupInstance = client => async ({dnaHash, agentId}): Promise<Instance | null> => {
   const instances = await client.call('info/instances').catch(fail)
   console.log('all instances: ', instances)
-  return instances.find(inst => inst.dnaHash === dnaHash && inst.agentId === agentId) || null
+  return instances.find(inst => inst.dna === dnaHash && inst.agent === agentId) || null
 }
 
 ///////////////////////////////////////////////
@@ -48,7 +57,8 @@ type ServiceMetrics = {
 
 const logServiceRequest = async (client, {happId, dnaHash, requestData}) => {
   const instanceId = InstanceIds.serviceLogs(happId)
-  const hash = await client.call(`${instanceId}/logs/request`, {
+  // const hash = await client.call(`${instanceId}/logs/request`, {
+  const hash = 'TODO'; console.warn('TODO, call: ', `${instanceId}/logs/request`, {
     dnaHash,
     requestData,
   })
@@ -57,7 +67,8 @@ const logServiceRequest = async (client, {happId, dnaHash, requestData}) => {
 
 const logServiceResponse = async (client, {happId, requestEntryHash, responseData, metrics}) => {
   const instanceId = InstanceIds.serviceLogs(happId)
-  const hash = await client.call(`${instanceId}/logs/response`, {
+  // const hash = await client.call(`${instanceId}/logs/response`, {
+  const hash = 'TODO'; console.warn('TODO, call: ', `${instanceId}/logs/response`, {
     requestEntryHash,
     responseData,
     metrics,
@@ -67,7 +78,8 @@ const logServiceResponse = async (client, {happId, requestEntryHash, responseDat
 
 const logServiceSignature = async (client, {happId, responseEntryHash, signature}) => {
   const instanceId = InstanceIds.serviceLogs(happId)
-  const hash = await client.call(`${instanceId}/logs/signature`, {
+  // const hash = await client.call(`${instanceId}/logs/signature`, {
+  const hash = 'TODO'; console.warn('TODO, call: ', `${instanceId}/logs/signature`, {
     responseEntryHash,
     signature
   })

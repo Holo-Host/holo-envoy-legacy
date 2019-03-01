@@ -18,7 +18,7 @@
     "axios": "^0.18.0",
     "body-parser": "^1.18.3",
     "express": "^4.16.4",
-    "rpc-websockets": "^4.3.5",
+    "rpc-websockets": "maackle/rpc-websockets",
     "tar-fs": "^2.0.0"
   },
   "devDependencies": {
