@@ -35,6 +35,7 @@ test('end to end test', async t => {
     }).then(JSON.parse)
 
     t.ok(result.Ok)
+    t.equal(result.Ok.addresses.length, 0)
 
     client.close()
     t.end()

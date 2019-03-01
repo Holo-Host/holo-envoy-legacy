@@ -6,8 +6,10 @@
 
 import {Client, Server as RpcServer} from 'rpc-websockets'
 
-import {zomeCall, installHapp} from './flows'
 import * as C from './config'
+import {zomeCall, installHapp} from './flows'
+import {InstallHappRequest} from './flows/install-happ'
+import {CallRequest} from './flows/zome-call'
 
 
 export default (port) => new Promise((fulfill, reject) => {
@@ -48,25 +50,17 @@ export class IntrceptrServer {
   nextCallId = 0
   signingRequests = {}
 
+  zomeCall: (r: CallRequest, ws: any) => Promise<any>
+  installHapp: (r: InstallHappRequest) => Promise<any>
+
   constructor({server, adminClient, happClient}) {
+
+    this.zomeCall = zomeCall(happClient)
+    this.installHapp = installHapp(adminClient)
 
     server.register(
       'holo/identify',
-      ({agentKey}, ws) => {
-        const agentId = calcAgentId(agentKey)
-        console.log('identified as ', agentId)
-        if (!this.sockets[agentId]) {
-          this.sockets[agentId] = [ws]
-        } else {
-          this.sockets[agentId].push(ws)
-        }
-        ws.on('close', () => {
-          // remove the closed socket
-          this.sockets[agentId] = this.sockets[agentId].filter(socket => socket !== ws)
-        })
-
-        return JSON.stringify(agentId)
-      }
+      this.addAgent
     )
 
     server.register(
@@ -81,7 +75,7 @@ export class IntrceptrServer {
 
     server.register(
       'holo/call',
-      zomeCall(happClient)
+      this.zomeCall
     )
 
     server.register(
@@ -94,9 +88,7 @@ export class IntrceptrServer {
 
     server.register(
       'holo/happs/install',
-      params => {
-        installHapp(adminClient)(params)
-      }
+      this.installHapp
     )
 
     server.register(
@@ -115,6 +107,23 @@ export class IntrceptrServer {
     this.happClient = happClient
     this.server = server
     this.sockets = {}
+
+  }
+
+  addAgent = ({agentKey}, ws) => {
+    const agentId = calcAgentId(agentKey)
+    console.log('identified as ', agentId)
+    if (!this.sockets[agentId]) {
+      this.sockets[agentId] = [ws]
+    } else {
+      this.sockets[agentId].push(ws)
+    }
+    ws.on('close', () => {
+      // remove the closed socket
+      this.sockets[agentId] = this.sockets[agentId].filter(socket => socket !== ws)
+    })
+
+    return JSON.stringify(agentId)
   }
 
   /**

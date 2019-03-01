@@ -5,16 +5,18 @@ import {EventEmitter} from 'events'
 
 import {IntrceptrServer} from '../src/server'
 
+const testClient = () => sinon.stub(new RpcClient())
 
-const TestClient = sinon.stub(RpcClient)
-const testClient = () => new TestClient()
+const testRpcServer = () => sinon.stub(new RpcServer({noServer: true}))
 
-const testRpcServer = () => sinon.stub({
-  register: () => {},
-  close: () => {},
+const testServer = () => new IntrceptrServer({
+  server: testRpcServer(), 
+  adminClient: testClient(),
+  happClient: testClient(),
 })
 
-const testServer = () => new IntrceptrServer(testRpcServer(), testClient())
+const amity = {agentKey: 'amity'}
+const beatrice = {agentKey: 'beatrice'}
 
 const testSocket = (server) => new EventEmitter()
 
@@ -24,15 +26,15 @@ test('can manage several connections for the same agent', t => {
   const ws1 = testSocket(server)
   const ws2 = testSocket(server)
 
-  server.addAgent('agent', ws1)
-  server.addAgent('agent', ws2)
+  server.addAgent(amity, ws1)
+  server.addAgent(amity, ws2)
 
-  t.deepEqual(server.sockets, {'agent': [ws1, ws2]})
+  t.deepEqual(server.sockets, {amity: [ws1, ws2]})
 
   ws1.emit('close')
   ws2.emit('close')
 
-  t.deepEqual(server.sockets, {'agent': []})
+  t.deepEqual(server.sockets, {amity: []})
 
   t.end()
 })
@@ -46,18 +48,18 @@ test('can manage connections for several agents', t => {
   const ws4 = testSocket(server)
   const ws5 = testSocket(server)
 
-  server.addAgent('amity', ws1)
-  server.addAgent('amity', ws2)
+  server.addAgent(amity, ws1)
+  server.addAgent(amity, ws2)
   t.deepEqual(server.sockets.amity, [ws1, ws2])
 
-  server.addAgent('beatrice', ws3)
+  server.addAgent(beatrice, ws3)
   t.deepEqual(server.sockets.beatrice, [ws3])
 
-  server.addAgent('amity', ws4)
+  server.addAgent(amity, ws4)
   ws2.emit('close')
   t.deepEqual(server.sockets.amity, [ws1, ws4])
 
-  server.addAgent('beatrice', ws5)
+  server.addAgent(beatrice, ws5)
   t.deepEqual(server.sockets.beatrice, [ws3, ws5])
 
   ws1.emit('close')

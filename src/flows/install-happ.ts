@@ -23,7 +23,7 @@ type LookupHappResponse = {
   ui: HappResource,
 }
 
-type InstallHappRequest = {
+export type InstallHappRequest = {
   happId: HappID,
   agentId: string,
 }

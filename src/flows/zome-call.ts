@@ -1,6 +1,18 @@
 
-import {Instance, CallRequest, CallResponse} from '../types'
+import {Instance, HappID} from '../types'
 import {errorResponse, fail, InstanceIds} from '../common'
+
+
+export type CallRequest = {
+  agentId: string,
+  happId: HappID,
+  dnaHash: string,
+  function: string,
+  params: any,
+  signature: string,
+}
+
+export type CallResponse = any
 
 export default client => async ({
   agentId, 
