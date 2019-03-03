@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@types/node": "^11.9.4",
+    "commander": "^2.19.0",
     "sinon": "^7.2.4",
     "static-server": "^2.2.1",
     "tape": "^4.10.0",
