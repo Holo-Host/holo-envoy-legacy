@@ -26,8 +26,8 @@ test('can manage several connections for the same agent', t => {
   const ws1 = testSocket(server)
   const ws2 = testSocket(server)
 
-  server.addAgent(amity, ws1)
-  server.addAgent(amity, ws2)
+  server.identifyAgent(amity, ws1)
+  server.identifyAgent(amity, ws2)
 
   t.deepEqual(server.sockets, {amity: [ws1, ws2]})
 
@@ -48,18 +48,18 @@ test('can manage connections for several agents', t => {
   const ws4 = testSocket(server)
   const ws5 = testSocket(server)
 
-  server.addAgent(amity, ws1)
-  server.addAgent(amity, ws2)
+  server.identifyAgent(amity, ws1)
+  server.identifyAgent(amity, ws2)
   t.deepEqual(server.sockets.amity, [ws1, ws2])
 
-  server.addAgent(beatrice, ws3)
+  server.identifyAgent(beatrice, ws3)
   t.deepEqual(server.sockets.beatrice, [ws3])
 
-  server.addAgent(amity, ws4)
+  server.identifyAgent(amity, ws4)
   ws2.emit('close')
   t.deepEqual(server.sockets.amity, [ws1, ws4])
 
-  server.addAgent(beatrice, ws5)
+  server.identifyAgent(beatrice, ws5)
   t.deepEqual(server.sockets.beatrice, [ws3, ws5])
 
   ws1.emit('close')

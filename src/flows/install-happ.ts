@@ -25,28 +25,61 @@ type LookupHappResponse = {
 
 export type InstallHappRequest = {
   happId: HappID,
-  agentId: string,
 }
 
-export default client => async ({happId, agentId}: InstallHappRequest) => {
-  // TODO: fetch data from somewhere, write fetched files to temp dir and extract
+export type InstallHappResponse = void
 
+export default client => async ({happId}: InstallHappRequest): Promise<InstallHappResponse> => {
+  const agentId = Config.hostAgentId
+  await installDnasAndUi(client, {happId})
+  await setupInstances(client, {happId, agentId})
+}
+
+export const installDnasAndUi = async (client, {happId}) => {
+  // TODO: fetch data from somewhere, write fetched files to temp dir and extract
+  // TODO: used cached version if possible
   const {ui, dnas} = await downloadAppResources(happId)
 
   console.log('Installing hApp (TODO real happId)', happId)
   console.log('  DNAs: ', dnas.map(dna => dna.path))
   console.log('  UI:   ', ui.path)
 
+  const dnaResults = await Promise.all(
+    dnas.map((dna) => {
+      const dnaId = dna.hash
+      return client.call('admin/dna/install_from_file', {
+        id: dnaId,
+        path: dna.path,
+        copy: false,
+      })
+    })
+  )
+
+  const uiResult = await client.call('admin/ui/install', {
+    id: `${happId}-ui`,
+    root_dir: ui.path
+  })
+
+  const results = ([] as any[]).concat(dnaResults).concat([uiResult])
+  const errors = results.filter(r => !r.success)
+
+  if (errors.length > 0) {
+    throw({
+      reason: 'hApp installation failed!',
+      errors
+    })
+  }
+  console.log("Installation successful!")
+}
+
+export const setupInstances = async (client, {happId, agentId}) => {
+  const {dnas, ui} = await lookupHoloApp({happId})
+
   const dnaPromises = dnas.map(async (dna) => {
     const dnaId = dna.hash
-    const instanceId = `${Config.hostAgentId}::${dna.hash}`
+    const instanceId = `${agentId}::${dnaId}`
 
-    const installDna = await client.call('admin/dna/install_from_file', {
-      id: dnaId,
-      path: dna.path,
-      copy: false,
-    })
-
+    // TODO handle case where instance exists
     const addInstance = await client.call('admin/instance/add', {
       id: instanceId,
       agent_id: agentId,
@@ -63,35 +96,30 @@ export default client => async ({happId, agentId}: InstallHappRequest) => {
     })
 
     return ([
-      installDna, addInstance, addToInterface, startInstance
+      addInstance, addToInterface, startInstance
     ])
   })
   const dnaResults = await Promise.all(dnaPromises)
 
-  const uiResult = await client.call('admin/ui/install', {
-    id: `${happId}-ui`,
-    root_dir: ui.path
-  })
-
   // flatten everything out
-  const results = ([] as any[]).concat(...dnaResults).concat([uiResult])
+  const results = ([] as any[]).concat(...dnaResults)
   const errors = results.filter(r => !r.success)
 
   if (errors.length > 0) {
     throw({
-      reason: 'hApp installation failed!',
+      reason: 'hApp instance setup failed!',
       errors
     })
   }
-  console.log("Installation successful!")
+  console.log("Instance setup successful!")
 }
 
-const lookupHoloApp = ({happId}: LookupHappRequest): LookupHappResponse => {
+const lookupHoloApp = ({happId}: LookupHappRequest): Promise<LookupHappResponse> => {
   // TODO: make actual call to HHA
   // this is a dummy response for now
   // assuming DNAs are served as JSON packages
   // and UIs are served as ZIP archives
-  return {
+  return Promise.resolve({
     dnas: [
       {
         location: 'http://localhost:3333/simple-app/dist/simple-app.dna.json',
@@ -102,11 +130,11 @@ const lookupHoloApp = ({happId}: LookupHappRequest): LookupHappResponse => {
       location: 'http://localhost:3333/simple-app/ui.tar',
       hash: 'Qm_ALSO_WHATEVER_TODO'
     },
-  }
+  })
 }
 
 const downloadAppResources = async (happId) => {
-  const {dnas, ui} = lookupHoloApp({happId})
+  const {dnas, ui} = await lookupHoloApp({happId})
   const [uiRequest, dnaRequests] = await Promise.all([
     await axios.get(ui.location),
     Promise.all(dnas.map(dna => axios.get(dna.location)))

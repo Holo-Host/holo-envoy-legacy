@@ -6,14 +6,16 @@
 
 import {Client, Server as RpcServer} from 'rpc-websockets'
 
+import {agentIdFromKey} from './common'
 import * as C from './config'
-import {zomeCall, installHapp} from './flows'
+import {zomeCall, installHapp, newAgent} from './flows'
 import {InstallHappRequest} from './flows/install-happ'
 import {CallRequest} from './flows/zome-call'
+import {NewAgentRequest} from './flows/new-agent'
 
 
 export default (port) => new Promise((fulfill, reject) => {
-  // a Client to the interface served by the Conductor
+  // clients to the interface served by the Conductor
   const adminClient = new Client(`ws://localhost:${C.PORTS.adminInterface}`)
   const happClient = new Client(`ws://localhost:${C.PORTS.happInterface}`)
   console.debug("Connecting to admin and happ interfaces...")
@@ -32,8 +34,6 @@ type SigningRequest = {
   callback: (Object) => void
 }
 
-const calcAgentId = x => x
-
 const verifySignature = (entry, signature) => true
 
 /**
@@ -43,9 +43,9 @@ const verifySignature = (entry, signature) => true
  */
 export class IntrceptrServer {
   server: any
-  adminClient: any
+  adminClient: any  // TODO: move this to separate admin-only server that's not publicly exposed!
   happClient: any
-  hostedClients: any[]  // TODO
+  hostedClients: any[]  // TODO use this if ever we put each client on their own interface
   sockets: {[k: string]: Array<any>} = {}
   nextCallId = 0
   signingRequests = {}
@@ -60,7 +60,7 @@ export class IntrceptrServer {
 
     server.register(
       'holo/identify',
-      this.addAgent
+      this.identifyAgent
     )
 
     server.register(
@@ -78,17 +78,15 @@ export class IntrceptrServer {
       this.zomeCall
     )
 
-    server.register(
-      'holo/get-hosted',
-      (params) => {
-        // create new client
-        console.error("TODO")
-      }
-    )
-
+    // TODO: expose only over separate host admin-only interface
     server.register(
       'holo/happs/install',
       this.installHapp
+    )
+
+    server.register(
+      'holo/agents/new',
+      this.newHostedAgent
     )
 
     server.register(
@@ -107,11 +105,10 @@ export class IntrceptrServer {
     this.happClient = happClient
     this.server = server
     this.sockets = {}
-
   }
 
-  addAgent = ({agentKey}, ws) => {
-    const agentId = calcAgentId(agentKey)
+  identifyAgent = ({agentKey}, ws) => {
+    const agentId = agentIdFromKey(agentKey)
     console.log('identified as ', agentId)
     if (!this.sockets[agentId]) {
       this.sockets[agentId] = [ws]
@@ -123,7 +120,12 @@ export class IntrceptrServer {
       this.sockets[agentId] = this.sockets[agentId].filter(socket => socket !== ws)
     })
 
-    return JSON.stringify(agentId)
+    return agentId
+  }
+
+  newHostedAgent = async ({agentKey, happId}, _ws) => {
+    const signature = 'TODO'
+    await newAgent(this.adminClient)({agentKey, happId, signature}, _ws)
   }
 
   /**
@@ -142,6 +144,9 @@ export class IntrceptrServer {
   startHoloSigningRequest(agentKey: string, entry: Object, callback: (Object) => void) {
     const id = this.nextCallId++
     // Send the signing request to EVERY client identifying with this agentKey
+    if (!(agentKey in this.sockets)) {
+      throw "Unidentified agent: " + agentKey
+    }
     this.sockets[agentKey].forEach(socket => socket.send(JSON.stringify({
       jsonrpc: '2.0',
       notification: 'agent/sign',

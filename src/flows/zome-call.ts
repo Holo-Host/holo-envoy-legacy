@@ -34,9 +34,9 @@ export default client => async ({
     let result
     try {
       console.debug("Calling...", method)
-      result = await client.call(method, params).catch(fail)
+      result = JSON.parse(await client.call(method, params).catch(fail))
     } catch(e) {
-      console.error("function not found: ", func)
+      console.error("function call failed: ", func)
       throw e
     }
 
