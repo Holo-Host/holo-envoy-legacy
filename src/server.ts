@@ -85,6 +85,7 @@ export class IntrceptrServer {
     )
 
     server.register(
+      // TODO: something in here to update the agent key associated with this socket connection?
       'holo/agents/new',
       this.newHostedAgent
     )
@@ -108,6 +109,7 @@ export class IntrceptrServer {
   }
 
   identifyAgent = ({agentKey}, ws) => {
+    // TODO: also take salt and signature of salt to prove browser owns agent ID
     const agentId = agentIdFromKey(agentKey)
     console.log('identified as ', agentId)
     if (!this.sockets[agentId]) {

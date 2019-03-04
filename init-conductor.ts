@@ -1,4 +1,5 @@
 
-import {initializeConductorConfig} from './src/conductor'
+import {initializeConductorConfig, cleanConductorStorage} from './src/conductor'
 
 initializeConductorConfig()
+cleanConductorStorage()

@@ -12,6 +12,8 @@ process.on('unhandledRejection', (reason, p) => {
 const dnaHash = 'Qm_WHATEVER_TODO'
 const agentKey = 'total-dummy-fake-not-real-agent-public-address'
 
+// TODO: make client actually respond to wormhole notification
+
 const withClient = fn => {
   const client = new Client(`ws://localhost:${C.PORTS.intrceptr}`)
   client.once('open', async () => {

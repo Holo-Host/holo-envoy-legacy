@@ -1,6 +1,8 @@
 
 import {spawn} from 'child_process'
 import * as fs from 'fs'
+import * as path from 'path'
+import * as rimraf from 'rimraf'
 import * as C from './config'
 
 
@@ -11,6 +13,10 @@ export const initializeConductorConfig = () => {
   } catch(e) {}
   let toml = initialTomlConfig()
   fs.writeFileSync(C.conductorConfigPath, toml)
+}
+
+export const cleanConductorStorage = () => {
+  rimraf.sync(path.join(C.conductorConfigDir, 'storage'))
 }
 
 export const spawnConductor = () => {
