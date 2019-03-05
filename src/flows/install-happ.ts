@@ -158,17 +158,21 @@ const downloadAppResources = async (happId): Promise<DownloadResult> => {
 const downloadResource = async (baseDir: string, res: HappResource, type: ResourceType): Promise<string> => {
   const suffix = type === ResourceType.HappDna ? '.dna.json' : ''
   const resourcePath = path.join(baseDir, res.hash + suffix)
-  const response = await axios({
+  const response: any = await axios({
     url: res.location,
     method: 'GET',
     responseType: 'stream',
     maxContentLength: 999999999999,
-  })
+  }).catch(e => e.response)
   return new Promise((fulfill, reject) => {
-    const writer = fs.createWriteStream(resourcePath)
-      .on("finish", () => fulfill(resourcePath))
-      .on("error", reject)
-    response.data.pipe(writer)
+    if (response.status != 200) {
+      reject(`Could not fetch ${res.location}: ${response.statusText} ${response.status}`)
+    } else {
+      const writer = fs.createWriteStream(resourcePath)
+        .on("finish", () => fulfill(resourcePath))
+        .on("error", reject)
+      response.data.pipe(writer)
+    }
   })
 }
 

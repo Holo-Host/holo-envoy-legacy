@@ -51,12 +51,10 @@ export class IntrceptrServer {
   signingRequests = {}
 
   zomeCall: (r: CallRequest, ws: any) => Promise<any>
-  installHapp: (r: InstallHappRequest) => Promise<any>
 
   constructor({server, adminClient, happClient}) {
 
     this.zomeCall = zomeCall(happClient)
-    this.installHapp = installHapp(adminClient)
 
     server.register(
       'holo/identify',
@@ -76,12 +74,6 @@ export class IntrceptrServer {
     server.register(
       'holo/call',
       this.zomeCall
-    )
-
-    // TODO: expose only over separate host admin-only interface
-    server.register(
-      'holo/happs/install',
-      this.installHapp
     )
 
     server.register(

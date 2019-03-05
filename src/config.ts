@@ -11,6 +11,7 @@ export const keyConfigFile = 'src/shims/intrceptr-host-key.json'
 
 export const PORTS = {
   wormhole: 8888,
+  admin: 9999,
   shim: 3333,
   ui: 7000,
   intrceptr: 3000,
