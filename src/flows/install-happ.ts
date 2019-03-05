@@ -48,8 +48,15 @@ export const installDnasAndUi = async (client, {happId}) => {
   }
 
   const dnaResults = await Promise.all(
-    dnas.map((dna) => {
+    dnas.map(async (dna) => {
       const dnaId = dna.hash
+      const installedDnas = await client.call('admin/dna/list')
+      // TODO: make sure the true DNA hash and ID really match here.
+      // for now this is checking with ID since for testing I'm not using real DNA hashes
+      if (installedDnas.find(({id}) => id === dnaId)) {
+        console.log(`DNA with ID ${dnaId} already installed; skipping.`)
+        return {success: true}
+      }
       return client.call('admin/dna/install_from_file', {
         id: dnaId,
         path: dna.path,
@@ -85,6 +92,12 @@ export const setupInstances = async (client, {happId, agentId}) => {
   const dnaPromises = dnas.map(async (dna) => {
     const dnaId = dna.hash
     const instanceId = `${agentId}::${dnaId}`
+
+    const instanceList = await client.call('admin/instance/list')
+    if (instanceList.find(({id}) => id === instanceId)) {
+      console.log(`Instance with ID ${instanceId} already set up; skipping.`)
+      return {success: true}
+    }
 
     // TODO handle case where instance exists
     const addInstance = await client.call('admin/instance/add', {
