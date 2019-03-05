@@ -6,11 +6,7 @@ import * as path from 'path'
 import {HappID} from '../types'
 import {fail, unbundle} from '../common'
 import * as Config from '../config'
-
-type HappResource = {
-  location: string,
-  hash: string,
-}
+import {HAPP_DATABASE, HappResource, HappEntry} from '../shims/happ-server'
 
 enum ResourceType {HappUi, HappDna}
 
@@ -18,13 +14,18 @@ type LookupHappRequest = {
   happId: string,
 }
 
-type LookupHappResponse = {
-  dnas: Array<HappResource>,
-  ui: HappResource,
-}
-
 export type InstallHappRequest = {
   happId: HappID,
+}
+
+type HappDownloadedResource = {
+  path: string,
+  hash: string,
+}
+
+type DownloadResult = {
+  ui: HappDownloadedResource | void,
+  dnas: Array<HappDownloadedResource>,
 }
 
 export type InstallHappResponse = void
@@ -42,7 +43,9 @@ export const installDnasAndUi = async (client, {happId}) => {
 
   console.log('Installing hApp (TODO real happId)', happId)
   console.log('  DNAs: ', dnas.map(dna => dna.path))
-  console.log('  UI:   ', ui.path)
+  if (ui) {
+    console.log('  UI:   ', ui.path)
+  }
 
   const dnaResults = await Promise.all(
     dnas.map((dna) => {
@@ -55,12 +58,16 @@ export const installDnasAndUi = async (client, {happId}) => {
     })
   )
 
-  const uiResult = await client.call('admin/ui/install', {
-    id: `${happId}-ui`,
-    root_dir: ui.path
-  })
+  const results = ([] as any[]).concat(dnaResults)
 
-  const results = ([] as any[]).concat(dnaResults).concat([uiResult])
+  if (ui) {
+    const uiResult = await client.call('admin/ui/install', {
+      id: `${happId}-ui`,
+      root_dir: ui.path
+    })
+    results.concat([uiResult])
+  }
+
   const errors = results.filter(r => !r.success)
 
   if (errors.length > 0) {
@@ -114,45 +121,37 @@ export const setupInstances = async (client, {happId, agentId}) => {
   console.log("Instance setup successful!")
 }
 
-const lookupHoloApp = ({happId}: LookupHappRequest): Promise<LookupHappResponse> => {
+const lookupHoloApp = ({happId}: LookupHappRequest): Promise<HappEntry> => {
   // TODO: make actual call to HHA
   // this is a dummy response for now
   // assuming DNAs are served as JSON packages
   // and UIs are served as ZIP archives
-  return Promise.resolve({
-    dnas: [
-      {
-        location: 'http://localhost:3333/simple-app/dist/simple-app.dna.json',
-        hash: 'Qm_WHATEVER_TODO'
-      }
-    ],
-    ui: {
-      location: 'http://localhost:3333/simple-app/ui.tar',
-      hash: 'Qm_ALSO_WHATEVER_TODO'
-    },
-  })
+
+  if (!(happId in HAPP_DATABASE)) {
+    throw `happId not found in shim database: ${happId}`
+  }
+  return Promise.resolve(HAPP_DATABASE[happId])
 }
 
-const downloadAppResources = async (happId) => {
+const downloadAppResources = async (happId): Promise<DownloadResult> => {
   const {dnas, ui} = await lookupHoloApp({happId})
-  const [uiRequest, dnaRequests] = await Promise.all([
-    await axios.get(ui.location),
-    Promise.all(dnas.map(dna => axios.get(dna.location)))
-  ])
+
   const baseDir = fs.mkdtempSync(path.join(os.tmpdir(), 'happ-bundle-'))
   console.debug('using tempdir ', baseDir)
 
-  const uiPath = await downloadResource(baseDir, ui, ResourceType.HappUi)
-
-  const uiResource = {
-    hash: ui.hash,
-    path: uiPath,
+  let uiResource: HappDownloadedResource | void
+  if (ui) {
+    const uiPath = await downloadResource(baseDir, ui, ResourceType.HappUi)
+    unbundleUi(uiPath)
+    uiResource = {
+      hash: ui.hash,
+      path: uiPath,
+    }
   }
-  const dnaResources = await Promise.all(dnas.map(async dna => ({
+  const dnaResources = await Promise.all(dnas.map(async (dna): Promise<HappDownloadedResource> => ({
     hash: dna.hash,
     path: await downloadResource(baseDir, dna, ResourceType.HappDna)
   })))
-  unbundleUi(uiPath)
   return {ui: uiResource, dnas: dnaResources}
 }
 

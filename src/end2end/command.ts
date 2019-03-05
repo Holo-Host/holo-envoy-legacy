@@ -32,9 +32,10 @@ export const withClient = fn => {
 
 //////////////////////////////////////////////////
 
-const install = (dir, cmd) => withClient(client =>
-  client.call('holo/happs/install', {happId: 'TODO', agentId: C.hostAgentId})
-)
+const install = (dir, cmd) => withClient(async client => {
+  await client.call('holo/happs/install', {happId: 'simple-app', agentId: C.hostAgentId})
+  await client.call('holo/happs/install', {happId: 'holo-hosting', agentId: C.hostAgentId})
+})
 
 const newAgent = (dir, cmd) => withClient(async client => {
   await client.call('holo/identify', {agentKey})
