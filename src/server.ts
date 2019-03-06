@@ -13,6 +13,7 @@ import {InstallHappRequest} from './flows/install-happ'
 import {CallRequest} from './flows/zome-call'
 import {NewAgentRequest} from './flows/new-agent'
 
+const successResponse = { success: true }
 
 export default (port) => new Promise((fulfill, reject) => {
   // clients to the interface served by the Conductor
@@ -68,6 +69,7 @@ export class IntrceptrServer {
         verifySignature(entry, signature)
         callback(signature)
         delete this.signingRequests[requestId]
+        return successResponse
       }
     )
 
@@ -79,7 +81,10 @@ export class IntrceptrServer {
     server.register(
       // TODO: something in here to update the agent key associated with this socket connection?
       'holo/agents/new',
-      this.newHostedAgent
+      (params, ws) => { 
+        this.newHostedAgent(params, ws)
+        return successResponse
+      }
     )
 
     server.register(
@@ -114,7 +119,7 @@ export class IntrceptrServer {
       this.sockets[agentId] = this.sockets[agentId].filter(socket => socket !== ws)
     })
 
-    return agentId
+    return { agentId }
   }
 
   newHostedAgent = async ({agentKey, happId}, _ws) => {
