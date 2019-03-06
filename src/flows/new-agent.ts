@@ -1,6 +1,6 @@
 
 import {Instance, HappID} from '../types'
-import {errorResponse, fail, InstanceIds, agentIdFromKey} from '../common'
+import {errorResponse, fail, InstanceIds, agentIdFromKey, zomeCallByInstance} from '../common'
 import {setupInstances} from './install-happ'
 
 
@@ -17,8 +17,17 @@ export default (adminClient) => async ({
   happId, 
   signature,
 }: NewAgentRequest, _ws): Promise<NewAgentResponse> => {
-  await createAgent(adminClient, agentKey)
-  await setupInstances(adminClient, {happId, agentId: agentIdFromKey(agentKey)})
+  const enabledApps = await zomeCallByInstance(adminClient, {
+    instanceId: 'holo-hosting-instance-TODO-real-id', 
+    func: 'host/get_enabled_app',
+    params: {}
+  })
+  if (enabledApps.find(app => console.log(`TODO check if app is enabled`, app))) {
+    await createAgent(adminClient, agentKey)
+    await setupInstances(adminClient, {happId, agentId: agentIdFromKey(agentKey)})
+  } else {
+    throw `App is not enabled for hosting: ${happId}`
+  }
 }
 
 

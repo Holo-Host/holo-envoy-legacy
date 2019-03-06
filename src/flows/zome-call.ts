@@ -1,6 +1,6 @@
 
 import {Instance, HappID} from '../types'
-import {errorResponse, fail, InstanceIds} from '../common'
+import {errorResponse, fail, InstanceIds, zomeCallByDna} from '../common'
 
 
 export type CallRequest = {
@@ -23,40 +23,17 @@ export default client => async ({
   signature,
 }: CallRequest, _ws) => {
   // TODO: add replay attack protection? nonce?
-  let instance = await lookupInstance(client)({dnaHash, agentId}).catch(fail)
-  console.log('instance found: ', instance)
-  if (instance) {
-    const method = `${instance.id}/${func}`
-    const requestData = {method, params}
-    const requestEntryHash = await logServiceRequest(client,
-      {happId, dnaHash, requestData})
+  // TODO: figure out actual payload, especially after conductor RPC call is refactored
+  const requestData = {func, params}
+  const requestEntryHash = await logServiceRequest(client,
+    {happId, dnaHash, requestData})
 
-    let result
-    try {
-      console.debug("Calling...", method)
-      result = JSON.parse(await client.call(method, params).catch(fail))
-    } catch(e) {
-      console.error("function call failed: ", func)
-      throw e
-    }
-
-    const responseData = result
-    const metrics = calcMetrics(requestData, responseData)
-    const responseEntryHash = await logServiceResponse(client,
-      {happId, requestEntryHash, responseData, metrics})
-    return result
-  } else {
-    return errorResponse(`No instance found for happId '${happId}' 
-      where agentId == '${agentId}' 
-      and   dnaHash == '${dnaHash}'
-    `)
-  }
-}
-
-const lookupInstance = client => async ({dnaHash, agentId}): Promise<Instance | null> => {
-  const instances = await client.call('info/instances').catch(fail)
-  console.log('all instances: ', instances)
-  return instances.find(inst => inst.dna === dnaHash && inst.agent === agentId) || null
+  const result = await zomeCallByDna(client, {agentId, dnaHash, func, params})
+  const responseData = result
+  const metrics = calcMetrics(requestData, responseData)
+  const responseEntryHash = await logServiceResponse(client,
+    {happId, requestEntryHash, responseData, metrics})
+  return result
 }
 
 ///////////////////////////////////////////////
