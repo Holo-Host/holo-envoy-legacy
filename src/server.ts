@@ -16,8 +16,8 @@ import {NewAgentRequest} from './flows/new-agent'
 
 export default (port) => new Promise((fulfill, reject) => {
   // clients to the interface served by the Conductor
-  const adminClient = new Client(`ws://localhost:${C.PORTS.adminInterface}`)
-  const happClient = new Client(`ws://localhost:${C.PORTS.happInterface}`)
+  const adminClient = new Client(`ws://localhost:${C.PORTS.masterInterface}`)
+  const happClient = new Client(`ws://localhost:${C.PORTS.publicInterface}`)
   console.debug("Connecting to admin and happ interfaces...")
   adminClient.once('open', () => {
     happClient.once('open', () => {

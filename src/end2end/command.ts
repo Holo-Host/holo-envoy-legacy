@@ -38,8 +38,10 @@ const adminCall = (uri, data) => axios.post(`http://localhost:${C.PORTS.admin}/$
 const install = async (dir, cmd) => {
   const installSimple = await adminCall('holo/happs/install', {happId: 'simple-app', agentId: C.hostAgentId})
   console.log('install simple-app: ', installSimple.statusText, installSimple.status)
-  const installHHA = await adminCall('holo/happs/install', {happId: 'holo-hosting', agentId: C.hostAgentId})
-  console.log('install holo-hosting-app: ', installHHA.statusText, installHHA.status)
+  const installServiceLogs = await adminCall('holo/happs/install', {happId: 'servicelogger', agentId: C.hostAgentId})
+  console.log('install servicelogger: ', installServiceLogs.statusText, installServiceLogs.status)
+  // const installHHA = await adminCall('holo/happs/install', {happId: 'holo-hosting', agentId: C.hostAgentId})
+  // console.log('install holo-hosting-app: ', installHHA.statusText, installHHA.status)
 }
 
 const newAgent = (dir, cmd) => withInterceptrClient(async client => {

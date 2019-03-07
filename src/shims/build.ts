@@ -8,12 +8,12 @@ const happs = [
     dnas: ['./src/shims/happ-data/simple-app/'],
     ui: './src/shims/happ-data/simple-app/ui/'
   },
-  // {
-  //   dnas: ['./src/shims/happ-data/servicelogger/']
-  // },
   {
-    dnas: ['./src/shims/happ-data/Holo-Hosting-App/dna-src/']
-  }
+    dnas: ['./src/shims/happ-data/servicelogger/']
+  },
+  // {
+  //   dnas: ['./src/shims/happ-data/Holo-Hosting-App/dna-src/']
+  // }
 ]
 
 happs.forEach(happ => {
