@@ -39,32 +39,37 @@ export const InstanceIds = {
 
 export const agentIdFromKey = key => key
 
-export const zomeCallByDna = async (client, {agentId, dnaHash, func, params}) => {
-  let instance = await lookupInstance(client, {dnaHash, agentId})
-  console.log('instance found: ', instance)
-  if (instance) {
-    return await zomeCallByInstance(client, {instanceId: instance.id, func, params})
+export const removeInstanceFromCallString = callString => {
+  return callString.split('/').slice(1).join('/')
+}
+
+export const zomeCallByDna = async (client, {agentKey, dnaHash, func, params}) => {
+  // let instance = await lookupInstance(client, {dnaHash, agentKey})
+  const instanceId = `${agentKey}::${dnaHash}`
+  console.log('instance found: ', instanceId)
+  if (instanceId) {
+    return await zomeCallByInstance(client, {instanceId, func, params})
   } else {
     return errorResponse(`No instance found 
-      where agentId == '${agentId}' 
+      where agentKey == '${agentKey}' 
       and   dnaHash == '${dnaHash}'
     `)
   }
 }
 
 export const zomeCallByInstance = async (client, {instanceId, func, params}) => {
-  const method = `${instanceId}/${func}`
+  const method = `${instanceId}/${removeInstanceFromCallString(func)}`
   try {
     console.debug("Calling...", method)
     return JSON.parse(await client.call(method, params))
   } catch(e) {
-    console.error("function call failed: ", func)
+    console.error("function call failed: ", method, e)
     throw e
   }
 }
 
-export const lookupInstance = async (client, {dnaHash, agentId}): Promise<Instance | null> => {
+export const lookupInstance = async (client, {dnaHash, agentKey}): Promise<Instance | null> => {
   const instances = await client.call('info/instances').catch(fail)
   console.log('all instances: ', instances)
-  return instances.find(inst => inst.dna === dnaHash && inst.agent === agentId) || null
+  return instances.find(inst => inst.dna === dnaHash && inst.agent === agentKey) || null
 }

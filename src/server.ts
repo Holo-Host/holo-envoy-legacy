@@ -82,7 +82,15 @@ export class IntrceptrServer {
       // TODO: something in here to update the agent key associated with this socket connection?
       'holo/agents/new',
       (params, ws) => { 
-        this.newHostedAgent(params, ws)
+        try {
+          console.log('adding new server event at', `agent/${params.agentKey}/sign`)
+          server.event(`agent/${params.agentKey}/sign`)
+        } catch (e) {
+          console.log("tried to re-add the same event. Its ok we forgive you")
+        }
+        this.newHostedAgent(params, ws).catch(e => {
+          console.error(e)
+        })
         return successResponse
       }
     )
@@ -142,15 +150,10 @@ export class IntrceptrServer {
    */
   startHoloSigningRequest(agentKey: string, entry: Object, callback: (Object) => void) {
     const id = this.nextCallId++
-    // Send the signing request to EVERY client identifying with this agentKey
     if (!(agentKey in this.sockets)) {
       throw "Unidentified agent: " + agentKey
     }
-    this.sockets[agentKey].forEach(socket => socket.send(JSON.stringify({
-      jsonrpc: '2.0',
-      notification: 'agent/sign',
-      params: {entry, id}
-    })))
+    this.server.emit(`agent/${agentKey}/sign`, {entry, id})
     this.signingRequests[id] = {entry, callback}
   }
 
