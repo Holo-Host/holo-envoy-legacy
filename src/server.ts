@@ -47,7 +47,7 @@ export class IntrceptrServer {
   adminClient: any  // TODO: move this to separate admin-only server that's not publicly exposed!
   happClient: any
   hostedClients: any[]  // TODO use this if ever we put each client on their own interface
-  sockets: {[k: string]: Array<any>} = {}
+  // sockets: {[k: string]: Array<any>} = {}
   nextCallId = 0
   signingRequests = {}
 
@@ -81,16 +81,8 @@ export class IntrceptrServer {
     server.register(
       // TODO: something in here to update the agent key associated with this socket connection?
       'holo/agents/new',
-      (params, ws) => { 
-        try {
-          console.log('adding new server event at', `agent/${params.agentKey}/sign`)
-          server.event(`agent/${params.agentKey}/sign`)
-        } catch (e) {
-          console.log("tried to re-add the same event. Its ok we forgive you")
-        }
-        this.newHostedAgent(params, ws).catch(e => {
-          console.error(e)
-        })
+      async (params, ws) => { 
+        await this.newHostedAgent(params, ws)
         return successResponse
       }
     )
@@ -110,22 +102,25 @@ export class IntrceptrServer {
     this.adminClient = adminClient
     this.happClient = happClient
     this.server = server
-    this.sockets = {}
+    // this.sockets = {}
   }
 
   identifyAgent = ({agentKey}, ws) => {
     // TODO: also take salt and signature of salt to prove browser owns agent ID
+    console.log("adding new event to server", `agent/${agentKey}/sign`)
+    this.server.event(`agent/${agentKey}/sign`)
+
     const agentId = agentIdFromKey(agentKey)
     console.log('identified as ', agentId)
-    if (!this.sockets[agentId]) {
-      this.sockets[agentId] = [ws]
-    } else {
-      this.sockets[agentId].push(ws)
-    }
-    ws.on('close', () => {
-      // remove the closed socket
-      this.sockets[agentId] = this.sockets[agentId].filter(socket => socket !== ws)
-    })
+    // if (!this.sockets[agentId]) {
+    //   this.sockets[agentId] = [ws]
+    // } else {
+    //   this.sockets[agentId].push(ws)
+    // }
+    // ws.on('close', () => {
+    //   // remove the closed socket
+    //   this.sockets[agentId] = this.sockets[agentId].filter(socket => socket !== ws)
+    // })
 
     return { agentId }
   }
@@ -150,9 +145,9 @@ export class IntrceptrServer {
    */
   startHoloSigningRequest(agentKey: string, entry: Object, callback: (Object) => void) {
     const id = this.nextCallId++
-    if (!(agentKey in this.sockets)) {
-      throw "Unidentified agent: " + agentKey
-    }
+    // if (!(agentKey in this.sockets)) {
+    //   throw "Unidentified agent: " + agentKey
+    // }
     this.server.emit(`agent/${agentKey}/sign`, {entry, id})
     this.signingRequests[id] = {entry, callback}
   }
