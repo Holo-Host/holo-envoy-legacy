@@ -60,6 +60,7 @@ export const installDnasAndUi = async (client, {happId}) => {
       return client.call('admin/dna/install_from_file', {
         id: dnaId,
         path: dna.path,
+        expected_hash: dna.hash,
         copy: false,
       })
     })

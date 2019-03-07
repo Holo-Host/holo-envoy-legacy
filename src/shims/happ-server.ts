@@ -31,12 +31,12 @@ export const HAPP_DATABASE = {
     dnas: [
       {
         location: 'http://localhost:3333/simple-app/dist/simple-app.dna.json',
-        hash: 'Qm_DNA_Simple_App'
+        hash: 'QmSKxN3FGVrf1vVMav6gohJVi7GcF4jFcKVDhDcjiAnveo'
       }
     ],
     ui: {
       location: 'http://localhost:3333/simple-app/ui.tar',
-      hash: 'Qm_UI_Simple_App'
+      hash: 'Qm_UI_Simple_App_TODO'
     },
   },
   'holo-hosting': {
