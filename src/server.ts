@@ -4,6 +4,7 @@
  * Accepts requests similar to what the Conductor
  */
 
+import * as express from 'express'
 import {Client, Server as RpcServer} from 'rpc-websockets'
 
 import {agentIdFromKey} from './common'
@@ -21,9 +22,7 @@ export default (port) => new Promise((fulfill, reject) => {
   console.debug("Connecting to admin and happ interfaces...")
   adminClient.once('open', () => {
     happClient.once('open', () => {
-      const server = new RpcServer({port, host: 'localhost'})
-      const intrceptr = new IntrceptrServer({server, adminClient, happClient})
-      console.log('Websocket server running on port', port)
+      const intrceptr = new IntrceptrServer({port, adminClient, happClient})
       fulfill(intrceptr)
     })
   })
@@ -35,6 +34,7 @@ type SigningRequest = {
 }
 
 const verifySignature = (entry, signature) => true
+
 
 /**
  * A wrapper around a rpc-websockets Server and Client which brokers communication between
@@ -52,16 +52,39 @@ export class IntrceptrServer {
 
   zomeCall: (r: CallRequest, ws: any) => Promise<any>
 
-  constructor({server, adminClient, happClient}) {
+  constructor({port, adminClient, happClient}) {
 
-    this.zomeCall = zomeCall(happClient)
+    const httpServer = this.buildHttpServer()
+    const wss = this.buildWebsocketServer(httpServer)
 
-    server.register(
+    httpServer.listen(port, () => console.log('HTTP server running on port', port))
+    wss.on('listening', () => console.log("Websocket server listening on port", port))
+    wss.on('error', data => console.log("<C> error: ", data))
+
+    this.adminClient = adminClient
+    this.happClient = happClient
+    this.server = wss
+    this.sockets = {}
+  }
+
+  buildHttpServer = () => {
+    const app = express()
+    
+    // TODO: redirect to ports of conductor UI interfaces
+    app.use('/hi', (req, res) => res.send('hello!'))
+
+    return require('http').createServer(app)
+  }
+
+  buildWebsocketServer = (httpServer) => {
+    const wss = new RpcServer({server: httpServer})
+
+    wss.register(
       'holo/identify',
       this.identifyAgent
     )
 
-    server.register(
+    wss.register(
       'holo/clientSignature',
       ({signature, requestId}) => {
         const {entry, callback} = this.signingRequests[requestId]
@@ -71,18 +94,18 @@ export class IntrceptrServer {
       }
     )
 
-    server.register(
+    wss.register(
       'holo/call',
-      this.zomeCall
+      zomeCall(this.happClient)
     )
 
-    server.register(
+    wss.register(
       // TODO: something in here to update the agent key associated with this socket connection?
       'holo/agents/new',
       this.newHostedAgent
     )
 
-    server.register(
+    wss.register(
       'holo/debug',
       params => {
         const entry = "Sign this."
@@ -91,13 +114,7 @@ export class IntrceptrServer {
       }
     )
 
-    server.on('listening', () => console.log("<C> listening"))
-    server.on('error', data => console.log("<C> error: ", data))
-
-    this.adminClient = adminClient
-    this.happClient = happClient
-    this.server = server
-    this.sockets = {}
+    return wss
   }
 
   identifyAgent = ({agentKey}, ws) => {
