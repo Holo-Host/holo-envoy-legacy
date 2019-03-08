@@ -22,8 +22,8 @@ export default (port) => new Promise((fulfill, reject) => {
   console.debug("Connecting to admin and happ interfaces...")
   adminClient.once('open', () => {
     happClient.once('open', () => {
-      const intrceptr = new IntrceptrServer({port, adminClient, happClient})
-      fulfill(intrceptr)
+      const intrceptr = new IntrceptrServer({adminClient, happClient})
+      intrceptr.start(port).then(() => fulfill(intrceptr))
     })
   })
 })
@@ -52,31 +52,41 @@ export class IntrceptrServer {
 
   zomeCall: (r: CallRequest, ws: any) => Promise<any>
 
-  constructor({port, adminClient, happClient}) {
+  constructor({adminClient, happClient}) {
+    this.adminClient = adminClient
+    this.happClient = happClient
+    this.sockets = {}
+  }
 
-    const httpServer = this.buildHttpServer()
-    const wss = this.buildWebsocketServer(httpServer)
+  start = async (port) => {
+    const httpServer = await this.buildHttpServer(this.adminClient)
+    const wss = await this.buildWebsocketServer(httpServer)
 
     httpServer.listen(port, () => console.log('HTTP server running on port', port))
     wss.on('listening', () => console.log("Websocket server listening on port", port))
     wss.on('error', data => console.log("<C> error: ", data))
-
-    this.adminClient = adminClient
-    this.happClient = happClient
+    
     this.server = wss
-    this.sockets = {}
   }
 
-  buildHttpServer = () => {
+  buildHttpServer = async (adminClient) => {
     const app = express()
+
+    const uis = await adminClient.call('admin/ui/list')
+
+    uis.forEach(ui => {
+      const dir = ui.root_dir
+      const hash = ui.id  // TODO: eventually needs to be hApp hash!
+      app.use(`/${hash}`, express.static(dir))
+      console.log(`serving UI '${hash}' from '${dir}'`)
+    })
     
     // TODO: redirect to ports of conductor UI interfaces
-    app.use('/hi', (req, res) => res.send('hello!'))
 
     return require('http').createServer(app)
   }
 
-  buildWebsocketServer = (httpServer) => {
+  buildWebsocketServer = async (httpServer) => {
     const wss = new RpcServer({server: httpServer})
 
     wss.register(
