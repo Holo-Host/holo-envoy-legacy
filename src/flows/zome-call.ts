@@ -4,7 +4,7 @@ import {errorResponse, fail, InstanceIds, zomeCallByDna} from '../common'
 
 
 export type CallRequest = {
-  agentKey: string,
+  agentId: string,
   happId: HappID,
   dnaHash: string,
   function: string,
@@ -15,7 +15,7 @@ export type CallRequest = {
 export type CallResponse = any
 
 export default client => async ({
-  agentKey, 
+  agentId, 
   happId, 
   dnaHash, 
   function: func, 
@@ -28,7 +28,7 @@ export default client => async ({
   // const requestEntryHash = await logServiceRequest(client,
   //   {happId, dnaHash, requestData})
 
-  const result = await zomeCallByDna(client, {agentKey, dnaHash, func, params})
+  const result = await zomeCallByDna(client, {agentId, dnaHash, func, params})
   // const responseData = result
   // const metrics = calcMetrics(requestData, responseData)
   // const responseEntryHash = await logServiceResponse(client,

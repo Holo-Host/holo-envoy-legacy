@@ -43,15 +43,15 @@ export const removeInstanceFromCallString = callString => {
   return callString.split('/').slice(1).join('/')
 }
 
-export const zomeCallByDna = async (client, {agentKey, dnaHash, func, params}) => {
-  // let instance = await lookupInstance(client, {dnaHash, agentKey})
-  const instanceId = `${agentKey}::${dnaHash}`
+export const zomeCallByDna = async (client, {agentId, dnaHash, func, params}) => {
+  // let instance = await lookupInstance(client, {dnaHash, agentId})
+  const instanceId = `${agentId}::${dnaHash}`
   console.log('instance found: ', instanceId)
   if (instanceId) {
     return await zomeCallByInstance(client, {instanceId, func, params})
   } else {
     return errorResponse(`No instance found 
-      where agentKey == '${agentKey}' 
+      where agentId == '${agentId}' 
       and   dnaHash == '${dnaHash}'
     `)
   }
@@ -68,8 +68,8 @@ export const zomeCallByInstance = async (client, {instanceId, func, params}) => 
   }
 }
 
-export const lookupInstance = async (client, {dnaHash, agentKey}): Promise<Instance | null> => {
+export const lookupInstance = async (client, {dnaHash, agentId}): Promise<Instance | null> => {
   const instances = await client.call('info/instances').catch(fail)
   console.log('all instances: ', instances)
-  return instances.find(inst => inst.dna === dnaHash && inst.agent === agentKey) || null
+  return instances.find(inst => inst.dna === dnaHash && inst.agent === agentId) || null
 }
