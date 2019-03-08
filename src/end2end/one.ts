@@ -11,7 +11,7 @@ process.on('unhandledRejection', (reason, p) => {
 })
 
 const dnaHash = 'Qm_WHATEVER_TODO'
-const agentKey = 'total-dummy-fake-not-real-agent-public-address'
+const agentId = 'total-dummy-fake-not-real-agent-public-address'
 
 
 test('can install app', async t => {
@@ -20,7 +20,7 @@ test('can install app', async t => {
     console.log('installing happ...')
     await client.call('holo/happs/install', {happId: 'TODO', agentId: C.hostAgentId})
 
-    const newAgent = await client.call('holo/agents/new', {agentKey, happId: 'TODO NOT REAL HAPPID'})
+    const newAgent = await client.call('holo/agents/new', {agentId, happId: 'TODO NOT REAL HAPPID'})
 
     t.end()
   })
@@ -30,7 +30,7 @@ test('end to end test (assuming app is installed)', async t => {
   withClient(async (client) => {
     console.log('identifying...')
     const agentName = C.hostAgentId
-    const agentId = await client.call('holo/identify', {agentKey: agentName})
+    const agentId = await client.call('holo/identify', {agentId: agentName})
     t.equal(agentId, agentName)
     console.log('identified!')
 
@@ -54,8 +54,8 @@ test('end to end hosted agent test (assuming app is installed)', async t => {
     console.log('identifying...')
     // const num = Math.floor(Math.random() * 10000)
     // const num = '5079'
-    const agentId = await client.call('holo/identify', {agentKey})
-    t.equal(agentId, agentKey)
+    const agentId = await client.call('holo/identify', {agentId})
+    t.equal(agentId, agentId)
 
     const happId = 'TODO'
     const func = 'simple/get_links'
@@ -63,7 +63,7 @@ test('end to end hosted agent test (assuming app is installed)', async t => {
     const signature = 'TODO'
 
     const result = await client.call('holo/call', {
-      agentId: agentKey, happId, dnaHash, function: func, params, signature
+      agentId: agentId, happId, dnaHash, function: func, params, signature
     })
 
     t.ok(result.Ok)

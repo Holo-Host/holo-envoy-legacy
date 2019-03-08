@@ -105,12 +105,11 @@ export class IntrceptrServer {
     // this.sockets = {}
   }
 
-  identifyAgent = ({agentKey}, ws) => {
+  identifyAgent = ({agentId}, ws) => {
     // TODO: also take salt and signature of salt to prove browser owns agent ID
-    console.log("adding new event to server", `agent/${agentKey}/sign`)
-    this.server.event(`agent/${agentKey}/sign`)
+    console.log("adding new event to server", `agent/${agentId}/sign`)
+    this.server.event(`agent/${agentId}/sign`)
 
-    const agentId = agentIdFromKey(agentKey)
     console.log('identified as ', agentId)
     // if (!this.sockets[agentId]) {
     //   this.sockets[agentId] = [ws]
@@ -125,9 +124,9 @@ export class IntrceptrServer {
     return { agentId }
   }
 
-  newHostedAgent = async ({agentKey, happId}, _ws) => {
+  newHostedAgent = async ({agentId, happId}, _ws) => {
     const signature = 'TODO'
-    await newAgent(this.adminClient)({agentKey, happId, signature}, _ws)
+    await newAgent(this.adminClient)({agentId, happId, signature}, _ws)
   }
 
   /**
@@ -143,12 +142,12 @@ export class IntrceptrServer {
    * Function to be called externally, registers a signing request which will be fulfilled
    * by the `holo/clientSignature` JSON-RPC method registered on this server
    */
-  startHoloSigningRequest(agentKey: string, entry: Object, callback: (Object) => void) {
+  startHoloSigningRequest(agentId: string, entry: Object, callback: (Object) => void) {
     const id = this.nextCallId++
-    // if (!(agentKey in this.sockets)) {
-    //   throw "Unidentified agent: " + agentKey
+    // if (!(agentId in this.sockets)) {
+    //   throw "Unidentified agent: " + agentId
     // }
-    this.server.emit(`agent/${agentKey}/sign`, {entry, id})
+    this.server.emit(`agent/${agentId}/sign`, {entry, id})
     this.signingRequests[id] = {entry, callback}
   }
 
