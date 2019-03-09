@@ -10,7 +10,8 @@ process.on('unhandledRejection', (reason, p) => {
   console.log("reason: ", reason)
 })
 
-const dnaHash = 'Qm_WHATEVER_TODO'
+const happId = 'simple-app'
+const dnaHash = 'QmSKxN3FGVrf1vVMav6gohJVi7GcF4jFcKVDhDcjiAnveo'
 const agentKey = 'dummy-fake-not-real-agent-public-address'
 
 export const withInterceptrClient = fn => {
@@ -36,21 +37,32 @@ const adminCall = (uri, data) => axios.post(`http://localhost:${C.PORTS.admin}/$
 //////////////////////////////////////////////////
 
 const install = async (dir, cmd) => {
-  const installSimple = await adminCall('holo/happs/install', {happId: 'simple-app', agentId: C.hostAgentId})
+  const installSimple = await adminCall('holo/happs/install', {happId, agentId: C.hostAgentId})
   console.log('install simple-app: ', installSimple.statusText, installSimple.status)
-  const installServiceLogs = await adminCall('holo/happs/install', {happId: 'servicelogger', agentId: C.hostAgentId})
-  console.log('install servicelogger: ', installServiceLogs.statusText, installServiceLogs.status)
   // const installHHA = await adminCall('holo/happs/install', {happId: 'holo-hosting', agentId: C.hostAgentId})
   // console.log('install holo-hosting-app: ', installHHA.statusText, installHHA.status)
 }
 
 const newAgent = (dir, cmd) => withInterceptrClient(async client => {
   await client.call('holo/identify', {agentKey})
-  await client.call('holo/agents/new', {agentKey, happId: 'TODO NOT REAL HAPPID'})
+  await client.call('holo/agents/new', {agentKey, happId})
+})
+
+const zomeCall = (dir, cmd) => withInterceptrClient(async client => {
+  const result = await client.call('holo/call', {
+    agentId: agentKey,
+    happId,
+    dnaHash: dnaHash,
+    function: 'simple/get_links',
+    params: {base: 'TODO'},
+    signature: 'TODO',
+  })
+  console.log("how about that! ", result)
 })
 
 commander.version('0.0.1')
 commander.command('install').action(install)
 commander.command('new-agent').action(newAgent)
+commander.command('zome-call').action(zomeCall)
 
 commander.parse(process.argv)

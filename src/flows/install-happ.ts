@@ -34,12 +34,12 @@ export default client => async ({happId}: InstallHappRequest): Promise<InstallHa
   const agentId = Config.hostAgentId
   await installDnasAndUi(client, {happId})
   await setupInstances(client, {
-    happId, 
-    agentId, 
-    conductorInterface: Config.ConductorInterface.Public
+    happId,
+    agentId,
+    conductorInterface: Config.ConductorInterface.Public,
   })
-  // TODO: wait, not here!
-  await setupServiceLogger(client, {hostedHappId: happId, agentId})
+  // TODO: is this the right place?
+  await setupServiceLogger(client, {hostedHappId: happId})
 }
 
 export const installDnasAndUi = async (client, opts: {happId: string, properties?: any}) => {
@@ -56,20 +56,14 @@ export const installDnasAndUi = async (client, opts: {happId: string, properties
 
   const dnaResults = await Promise.all(
     dnas.map(async (dna) => {
-      const dnaId = dna.hash
-      const installedDnas = await client.call('admin/dna/list')
-      // TODO: make sure the true DNA hash and ID really match here.
-      // for now this is checking with ID since for testing I'm not using real DNA hashes
-      if (installedDnas.find(({id}) => id === dnaId)) {
-        console.log(`DNA with ID ${dnaId} already installed; skipping.`)
+      if (await isDnaInstalled(client, dna.hash)) {
+        console.log(`DNA with ID ${dna.hash} already installed; skipping.`)
         return {success: true}
       }
-      return client.call('admin/dna/install_from_file', {
-        id: dnaId,
+      return installDna(client, {
+        hash: dna.hash,
         path: dna.path,
-        expected_hash: dna.hash,
-        copy: false,  // TODO: set true later
-        properties,
+        properties: undefined,
       })
     })
   )
@@ -95,6 +89,52 @@ export const installDnasAndUi = async (client, opts: {happId: string, properties
   console.log("Installation successful!")
 }
 
+const isDnaInstalled = async (client, dnaId) => {
+  const installedDnas = await client.call('admin/dna/list')
+  // TODO: make sure the true DNA hash and ID really match here.
+  // for now this is checking with ID since for testing I'm not using real DNA hashes
+  return (installedDnas.find(({id}) => id === dnaId))
+}
+
+const installDna = async (client, {hash, path, properties}) => {
+  return client.call('admin/dna/install_from_file', {
+    id: hash,
+    path: path,
+    expected_hash: hash,
+    copy: true,
+    properties,
+  })
+}
+
+const setupInstance = async (client, {instanceId, agentId, dnaId, conductorInterface}) => {
+
+  const instanceList = await client.call('admin/instance/list')
+  if (instanceList.find(({id}) => id === instanceId)) {
+    console.log(`Instance with ID ${instanceId} already set up; skipping.`)
+    return {success: true}
+  }
+
+  // TODO handle case where instance exists
+  const addInstance = await client.call('admin/instance/add', {
+    id: instanceId,
+    agent_id: agentId,
+    dna_id: dnaId,
+  })
+
+  const addToInterface = await client.call('admin/interface/add_instance', {
+    instance_id: instanceId,
+    interface_id: conductorInterface,
+  })
+
+  const startInstance = await client.call('admin/instance/start', {
+    id: instanceId
+  })
+
+  return ([
+    addInstance, addToInterface, startInstance
+  ])
+}
+
 export const setupInstances = async (client, opts: {happId: string, agentId: string, conductorInterface: Config.ConductorInterface}) => {
   const {happId, agentId, conductorInterface} = opts
   const {dnas, ui} = await lookupHoloApp({happId})
@@ -102,32 +142,12 @@ export const setupInstances = async (client, opts: {happId: string, agentId: str
   const dnaPromises = dnas.map(async (dna) => {
     const dnaId = dna.hash
     const instanceId = `${agentId}::${dnaId}`
-
-    const instanceList = await client.call('admin/instance/list')
-    if (instanceList.find(({id}) => id === instanceId)) {
-      console.log(`Instance with ID ${instanceId} already set up; skipping.`)
-      return {success: true}
-    }
-
-    // TODO handle case where instance exists
-    const addInstance = await client.call('admin/instance/add', {
-      id: instanceId,
-      agent_id: agentId,
-      dna_id: dnaId,
+    return setupInstance(client, {
+      dnaId, 
+      agentId,
+      instanceId,
+      conductorInterface
     })
-
-    const addToInterface = await client.call('admin/interface/add_instance', {
-      instance_id: instanceId,
-      interface_id: conductorInterface,
-    })
-
-    const startInstance = await client.call('admin/instance/start', {
-      id: instanceId
-    })
-
-    return ([
-      addInstance, addToInterface, startInstance
-    ])
   })
   const dnaResults = await Promise.all(dnaPromises)
 
@@ -144,20 +164,15 @@ export const setupInstances = async (client, opts: {happId: string, agentId: str
   console.log("Instance setup successful!")
 }
 
-const setupServiceLogger = async (client, {hostedHappId, agentId}) => {
-  const serviceLoggerHappId = Config.HASHES.serviceLogger
+const setupServiceLogger = async (adminClient, {hostedHappId}) => {
+  const {hash, path} = Config.DNAS.serviceLogger
+  const instanceId = Config.serviceLoggerInstanceId(hostedHappId)
+  const agentId = Config.hostAgentId
   const properties = {
     forApp: hostedHappId
   }
-  await installDnasAndUi(client, {
-    happId: serviceLoggerHappId, 
-    properties
-  })
-  await setupInstances(client, {
-    happId: serviceLoggerHappId, 
-    agentId: Config.hostAgentId, 
-    conductorInterface: Config.ConductorInterface.Internal
-  })
+  await installDna(adminClient, {hash, path, properties})
+  await setupInstance(adminClient, {instanceId, dnaId: hash, agentId, conductorInterface: Config.ConductorInterface.Internal })
 
   // TODO NEXT: 
   // - Open client to Internal interface

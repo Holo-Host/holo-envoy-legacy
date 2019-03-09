@@ -16,15 +16,18 @@ import {NewAgentRequest} from './flows/new-agent'
 
 export default (port) => new Promise((fulfill, reject) => {
   // clients to the interface served by the Conductor
-  const adminClient = new Client(`ws://localhost:${C.PORTS.masterInterface}`)
-  const happClient = new Client(`ws://localhost:${C.PORTS.publicInterface}`)
+  const masterClient = new Client(`ws://localhost:${C.PORTS.masterInterface}`)
+  const publicClient = new Client(`ws://localhost:${C.PORTS.publicInterface}`)
+  const internalClient = new Client(`ws://localhost:${C.PORTS.internalInterface}`)
   console.debug("Connecting to admin and happ interfaces...")
-  adminClient.once('open', () => {
-    happClient.once('open', () => {
-      const server = new RpcServer({port, host: 'localhost'})
-      const intrceptr = new IntrceptrServer({server, adminClient, happClient})
-      console.log('Websocket server running on port', port)
-      fulfill(intrceptr)
+  masterClient.once('open', () => {
+    publicClient.once('open', () => {
+      internalClient.once('open', () => {
+        const server = new RpcServer({port, host: 'localhost'})
+        const intrceptr = new IntrceptrServer({server, masterClient, publicClient, internalClient})
+        console.log('Websocket server running on port', port)
+        fulfill(intrceptr)
+      })
     })
   })
 })
@@ -43,8 +46,9 @@ const verifySignature = (entry, signature) => true
  */
 export class IntrceptrServer {
   server: any
-  adminClient: any  // TODO: move this to separate admin-only server that's not publicly exposed!
-  happClient: any
+  masterClient: any  // TODO: move this to separate admin-only server that's not publicly exposed!
+  publicClient: any
+  internalClient: any
   hostedClients: any[]  // TODO use this if ever we put each client on their own interface
   sockets: {[k: string]: Array<any>} = {}
   nextCallId = 0
@@ -52,9 +56,9 @@ export class IntrceptrServer {
 
   zomeCall: (r: CallRequest, ws: any) => Promise<any>
 
-  constructor({server, adminClient, happClient}) {
+  constructor({server, masterClient, publicClient, internalClient}) {
 
-    this.zomeCall = zomeCall(happClient)
+    this.zomeCall = zomeCall(publicClient, internalClient)
 
     server.register(
       'holo/identify',
@@ -94,8 +98,9 @@ export class IntrceptrServer {
     server.on('listening', () => console.log("<C> listening"))
     server.on('error', data => console.log("<C> error: ", data))
 
-    this.adminClient = adminClient
-    this.happClient = happClient
+    this.masterClient = masterClient
+    this.publicClient = publicClient
+    this.internalClient = internalClient
     this.server = server
     this.sockets = {}
   }
@@ -119,15 +124,16 @@ export class IntrceptrServer {
 
   newHostedAgent = async ({agentKey, happId}, _ws) => {
     const signature = 'TODO'
-    await newAgent(this.adminClient)({agentKey, happId, signature}, _ws)
+    await newAgent(this.masterClient)({agentKey, happId, signature}, _ws)
   }
 
   /**
    * Close both the server and client connections
    */
   close() {
-    this.adminClient!.close()
-    this.happClient!.close()
+    this.masterClient!.close()
+    this.publicClient!.close()
+    this.internalClient!.close()
     this.server!.close()
   }
 

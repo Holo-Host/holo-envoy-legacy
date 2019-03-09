@@ -39,14 +39,6 @@ export const HAPP_DATABASE = {
       hash: 'Qm_UI_Simple_App_TODO'
     },
   },
-  'servicelogger': {
-    dnas: [
-      {
-        location: 'http://localhost:3333/servicelogger/dist/servicelogger.dna.json',
-        hash: 'Qm_Servicelogger'
-      }
-    ]
-  }
   // 'holo-hosting': {
   //   dnas: [
   //     {

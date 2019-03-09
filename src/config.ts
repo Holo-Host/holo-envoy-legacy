@@ -13,8 +13,11 @@ export enum ConductorInterface {
   Internal = 'internal-interface',
 }
 
-export const HASHES = {
-  serviceLogger: 'servicelogger',
+export const DNAS = {
+  serviceLogger: {
+    path: 'src/dnas/servicelogger/dist/servicelogger.dna.json',
+    hash: 'QmXd4ZiX5ESHFnpiKEDge4hbcmeyEcRst77BX4XtCNBgQq',
+  }
 }
 
 export const PORTS = {
@@ -27,3 +30,5 @@ export const PORTS = {
   publicInterface: 4444,
   internalInterface: 2222,
 }
+
+export const serviceLoggerInstanceId = hostedHappId => `servicelogger-${hostedHappId}`

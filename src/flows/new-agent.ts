@@ -1,6 +1,7 @@
 
 import {Instance, HappID} from '../types'
 import {errorResponse, fail, InstanceIds, agentIdFromKey, zomeCallByInstance} from '../common'
+import {ConductorInterface} from '../config'
 import {setupInstances} from './install-happ'
 
 
@@ -17,17 +18,17 @@ export default (adminClient) => async ({
   happId, 
   signature,
 }: NewAgentRequest, _ws): Promise<NewAgentResponse> => {
-  const enabledApps = await zomeCallByInstance(adminClient, {
-    instanceId: 'holo-hosting-instance-TODO-real-id', 
-    func: 'host/get_enabled_app',
-    params: {}
-  })
-  if (enabledApps.find(app => console.log(`TODO check if app is enabled`, app))) {
+  // const enabledApps = await zomeCallByInstance(adminClient, {
+  //   instanceId: 'holo-hosting-instance-TODO-real-id', 
+  //   func: 'host/get_enabled_app',
+  //   params: {}
+  // })
+  // if (enabledApps.find(app => console.log(`TODO check if app is enabled`, app))) {
     await createAgent(adminClient, agentKey)
-    await setupInstances(adminClient, {happId, agentId: agentIdFromKey(agentKey)})
-  } else {
-    throw `App is not enabled for hosting: ${happId}`
-  }
+    await setupInstances(adminClient, {happId, agentId: agentIdFromKey(agentKey), conductorInterface: ConductorInterface.Public})
+  // } else {
+  //   throw `App is not enabled for hosting: ${happId}`
+  // }
 }
 
 
