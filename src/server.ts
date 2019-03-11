@@ -13,6 +13,7 @@ import {InstallHappRequest} from './flows/install-happ'
 import {CallRequest} from './flows/zome-call'
 import {NewAgentRequest} from './flows/new-agent'
 
+const successResponse = { success: true }
 
 export default (port) => new Promise((fulfill, reject) => {
   // clients to the interface served by the Conductor
@@ -50,7 +51,7 @@ export class IntrceptrServer {
   publicClient: any
   internalClient: any
   hostedClients: any[]  // TODO use this if ever we put each client on their own interface
-  sockets: {[k: string]: Array<any>} = {}
+  // sockets: {[k: string]: Array<any>} = {}
   nextCallId = 0
   signingRequests = {}
 
@@ -72,6 +73,7 @@ export class IntrceptrServer {
         verifySignature(entry, signature)
         callback(signature)
         delete this.signingRequests[requestId]
+        return successResponse
       }
     )
 
@@ -83,7 +85,10 @@ export class IntrceptrServer {
     server.register(
       // TODO: something in here to update the agent key associated with this socket connection?
       'holo/agents/new',
-      this.newHostedAgent
+      async (params, ws) => { 
+        await this.newHostedAgent(params, ws)
+        return successResponse
+      }
     )
 
     server.register(
@@ -102,29 +107,31 @@ export class IntrceptrServer {
     this.publicClient = publicClient
     this.internalClient = internalClient
     this.server = server
-    this.sockets = {}
+    // this.sockets = {}
   }
 
-  identifyAgent = ({agentKey}, ws) => {
+  identifyAgent = ({agentId}, ws) => {
     // TODO: also take salt and signature of salt to prove browser owns agent ID
-    const agentId = agentIdFromKey(agentKey)
-    console.log('identified as ', agentId)
-    if (!this.sockets[agentId]) {
-      this.sockets[agentId] = [ws]
-    } else {
-      this.sockets[agentId].push(ws)
-    }
-    ws.on('close', () => {
-      // remove the closed socket
-      this.sockets[agentId] = this.sockets[agentId].filter(socket => socket !== ws)
-    })
+    console.log("adding new event to server", `agent/${agentId}/sign`)
+    this.server.event(`agent/${agentId}/sign`)
 
-    return agentId
+    console.log('identified as ', agentId)
+    // if (!this.sockets[agentId]) {
+    //   this.sockets[agentId] = [ws]
+    // } else {
+    //   this.sockets[agentId].push(ws)
+    // }
+    // ws.on('close', () => {
+    //   // remove the closed socket
+    //   this.sockets[agentId] = this.sockets[agentId].filter(socket => socket !== ws)
+    // })
+
+    return { agentId }
   }
 
-  newHostedAgent = async ({agentKey, happId}, _ws) => {
+  newHostedAgent = async ({agentId, happId}, _ws) => {
     const signature = 'TODO'
-    await newAgent(this.masterClient)({agentKey, happId, signature}, _ws)
+    await newAgent(this.masterClient)({agentId, happId, signature}, _ws)
   }
 
   /**
@@ -141,17 +148,12 @@ export class IntrceptrServer {
    * Function to be called externally, registers a signing request which will be fulfilled
    * by the `holo/clientSignature` JSON-RPC method registered on this server
    */
-  startHoloSigningRequest(agentKey: string, entry: Object, callback: (Object) => void) {
+  startHoloSigningRequest(agentId: string, entry: Object, callback: (Object) => void) {
     const id = this.nextCallId++
-    // Send the signing request to EVERY client identifying with this agentKey
-    if (!(agentKey in this.sockets)) {
-      throw "Unidentified agent: " + agentKey
-    }
-    this.sockets[agentKey].forEach(socket => socket.send(JSON.stringify({
-      jsonrpc: '2.0',
-      notification: 'agent/sign',
-      params: {entry, id}
-    })))
+    // if (!(agentId in this.sockets)) {
+    //   throw "Unidentified agent: " + agentId
+    // }
+    this.server.emit(`agent/${agentId}/sign`, {entry, id})
     this.signingRequests[id] = {entry, callback}
   }
 

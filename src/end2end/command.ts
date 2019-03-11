@@ -12,7 +12,7 @@ process.on('unhandledRejection', (reason, p) => {
 
 const happId = 'simple-app'
 const dnaHash = 'QmSKxN3FGVrf1vVMav6gohJVi7GcF4jFcKVDhDcjiAnveo'
-const agentKey = 'dummy-fake-not-real-agent-public-address'
+const agentId = 'dummy-fake-not-real-agent-id'
 
 export const withInterceptrClient = fn => {
   const client = new Client(`ws://localhost:${C.PORTS.intrceptr}`)
@@ -44,13 +44,13 @@ const install = async (dir, cmd) => {
 }
 
 const newAgent = (dir, cmd) => withInterceptrClient(async client => {
-  await client.call('holo/identify', {agentKey})
-  await client.call('holo/agents/new', {agentKey, happId})
+  await client.call('holo/identify', {agentId})
+  await client.call('holo/agents/new', {agentId, happId})
 })
 
 const zomeCall = (dir, cmd) => withInterceptrClient(async client => {
   const result = await client.call('holo/call', {
-    agentId: agentKey,
+    agentId,
     happId,
     dnaHash: dnaHash,
     function: 'simple/get_links',

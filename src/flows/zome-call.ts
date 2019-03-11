@@ -34,6 +34,7 @@ export default (publicClient, internalClient) => async ({
   const metrics = calcMetrics(requestData, responseData)
   const responseEntryHash = await logServiceResponse(internalClient,
     {happId, requestEntryHash, responseData, metrics})
+
   return result
 }
 
