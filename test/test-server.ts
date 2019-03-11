@@ -5,15 +5,7 @@ import {EventEmitter} from 'events'
 
 import {IntrceptrServer} from '../src/server'
 
-const testClient = () => sinon.stub(new RpcClient())
-
-const testRpcServer = () => sinon.stub(new RpcServer({noServer: true}))
-
-const testServer = () => new IntrceptrServer({
-  server: testRpcServer(), 
-  adminClient: testClient(),
-  happClient: testClient(),
-})
+import {testClient, testServer} from './common'
 
 const amity = {agentId: 'amity'}
 const beatrice = {agentId: 'beatrice'}
