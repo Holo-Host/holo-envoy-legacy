@@ -10,7 +10,7 @@ import {Client, Server as RpcServer} from 'rpc-websockets'
 import {agentIdFromKey} from './common'
 import * as C from './config'
 import {zomeCall, installHapp, newAgent} from './flows'
-import {InstallHappRequest} from './flows/install-happ'
+import {InstallHappRequest, listHoloApps} from './flows/install-happ'
 import {CallRequest} from './flows/zome-call'
 import {NewAgentRequest} from './flows/new-agent'
 
@@ -34,7 +34,6 @@ type SigningRequest = {
 }
 
 const verifySignature = (entry, signature) => true
-
 
 /**
  * A wrapper around a rpc-websockets Server and Client which brokers communication between
@@ -72,13 +71,25 @@ export class IntrceptrServer {
   buildHttpServer = async (adminClient) => {
     const app = express()
 
+    const happs = await listHoloApps()
     const uis = await adminClient.call('admin/ui/list')
+    const uisByHash = {}
 
-    uis.forEach(ui => {
-      const dir = ui.root_dir
-      const hash = ui.id  // TODO: eventually needs to be hApp hash!
-      app.use(`/${hash}`, express.static(dir))
-      console.log(`serving UI '${hash}' from '${dir}'`)
+    for (const ui of uis) {
+      uisByHash[ui.hash] = ui
+    }
+
+    Object.keys(happs).forEach(happId => {
+      const uiHash = happs[happId].ui_hash
+      const ui = uisByHash[uiHash]
+      if (ui) {
+        const dir = ui.root_dir
+        const hash = ui.id  // TODO: eventually needs to be hApp hash!
+        app.use(`/${happId}`, express.static(dir))
+        console.log(`serving UI for '${happId}' from '${dir}'`)
+      } else {
+        console.warn(`App '${happId}' has no ID, skipping...`)
+      }
     })
     
     // TODO: redirect to ports of conductor UI interfaces

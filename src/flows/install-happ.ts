@@ -135,7 +135,7 @@ export const setupInstances = async (client, {happId, agentId}) => {
   console.log("Instance setup successful!")
 }
 
-const lookupHoloApp = ({happId}: LookupHappRequest): Promise<HappEntry> => {
+export const lookupHoloApp = ({happId}: LookupHappRequest): Promise<HappEntry> => {
   // TODO: make actual call to HHA
   // this is a dummy response for now
   // assuming DNAs are served as JSON packages
@@ -145,6 +145,16 @@ const lookupHoloApp = ({happId}: LookupHappRequest): Promise<HappEntry> => {
     throw `happId not found in shim database: ${happId}`
   }
   return Promise.resolve(HAPP_DATABASE[happId])
+}
+
+export const listHoloApps = () => {
+  // TODO: call HHA's `get_my_registered_app` for real data
+  const fakeApps = Object.assign({}, HAPP_DATABASE)
+  for (const id in fakeApps) {
+    fakeApps[id].ui_hash = fakeApps[id].ui
+    fakeApps[id].dna_list = fakeApps[id].dnas
+  }
+  return Promise.resolve(fakeApps)
 }
 
 const downloadAppResources = async (happId): Promise<DownloadResult> => {
