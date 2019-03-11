@@ -9,7 +9,7 @@ const happs = [
     ui: './src/shims/happ-data/simple-app/ui/'
   },
   {
-    dnas: ['./src/shims/happ-data/servicelogger/']
+    dnas: ['./src/dnas/servicelogger/']
   },
   // {
   //   dnas: ['./src/shims/happ-data/Holo-Hosting-App/dna-src/']
