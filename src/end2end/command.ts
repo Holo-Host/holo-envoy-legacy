@@ -11,7 +11,7 @@ process.on('unhandledRejection', (reason, p) => {
 })
 
 const dnaHash = 'Qm_WHATEVER_TODO'
-const agentKey = 'dummy-fake-not-real-agent-public-address'
+const agentId = 'dummy-fake-not-real-agent-public-address'
 
 export const withInterceptrClient = fn => {
   const client = new Client(`ws://localhost:${C.PORTS.intrceptr}`)
@@ -43,8 +43,8 @@ const install = async (dir, cmd) => {
 }
 
 const newAgent = (dir, cmd) => withInterceptrClient(async client => {
-  await client.call('holo/identify', {agentKey})
-  await client.call('holo/agents/new', {agentKey, happId: 'TODO NOT REAL HAPPID'})
+  await client.call('holo/identify', {agentId})
+  await client.call('holo/agents/new', {agentId, happId: 'TODO NOT REAL HAPPID'})
 })
 
 commander.version('0.0.1')

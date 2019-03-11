@@ -24,15 +24,15 @@ export default client => async ({
 }: CallRequest, _ws) => {
   // TODO: add replay attack protection? nonce?
   // TODO: figure out actual payload, especially after conductor RPC call is refactored
-  const requestData = {func, params}
-  const requestEntryHash = await logServiceRequest(client,
-    {happId, dnaHash, requestData})
+  // const requestData = {func, params}
+  // const requestEntryHash = await logServiceRequest(client,
+  //   {happId, dnaHash, requestData})
 
   const result = await zomeCallByDna(client, {agentId, dnaHash, func, params})
-  const responseData = result
-  const metrics = calcMetrics(requestData, responseData)
-  const responseEntryHash = await logServiceResponse(client,
-    {happId, requestEntryHash, responseData, metrics})
+  // const responseData = result
+  // const metrics = calcMetrics(requestData, responseData)
+  // const responseEntryHash = await logServiceResponse(client,
+  //   {happId, requestEntryHash, responseData, metrics})
   return result
 }
 

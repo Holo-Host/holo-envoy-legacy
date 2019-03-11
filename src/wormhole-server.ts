@@ -9,12 +9,12 @@ export default (port, icServer) => {
 
   app.post('/', (req, res) => {
     console.log("WORMHOLE REQUEST: ", req.body)
-    const {agent_id: agentKey, payload: entry} = req.body
+    const {agent_id: agentId, payload: entry} = req.body
     const callback = (signature) => {
-      console.debug("Got signature: ", signature)
-      res.json(signature)
+      console.log("Got signature: ", signature)
+      res.send(signature)
     }
-    icServer.startHoloSigningRequest(agentKey, entry, callback)
+    icServer.startHoloSigningRequest(agentId, entry, callback)
   })
 
   app.listen(port, () => console.log(`Wormhole HTTP server listening on port ${port}`))
