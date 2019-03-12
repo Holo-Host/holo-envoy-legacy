@@ -38,6 +38,7 @@ export const InstanceIds = {
 ///////////////////////////////////////////////////////////////////
 
 export const agentIdFromKey = key => key
+export const uiIdFromHappId = happId => happId + '-ui'
 
 export const removeInstanceFromCallString = callString => {
   return callString.split('/').slice(1).join('/')

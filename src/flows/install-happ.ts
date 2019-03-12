@@ -4,7 +4,7 @@ import * as os from 'os'
 import * as path from 'path'
 
 import {HappID} from '../types'
-import {fail, unbundle} from '../common'
+import {fail, unbundle, uiIdFromHappId} from '../common'
 import * as Config from '../config'
 import {HAPP_DATABASE, HappResource, HappEntry} from '../shims/happ-server'
 
@@ -72,7 +72,7 @@ export const installDnasAndUi = async (client, opts: {happId: string, properties
 
   if (ui) {
     const uiResult = await client.call('admin/ui/install', {
-      id: `${happId}-ui`,
+      id: uiIdFromHappId(happId),
       root_dir: ui.path
     })
     results.concat([uiResult])

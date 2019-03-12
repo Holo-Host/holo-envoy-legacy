@@ -7,7 +7,7 @@
 import * as express from 'express'
 import {Client, Server as RpcServer} from 'rpc-websockets'
 
-import {agentIdFromKey} from './common'
+import {agentIdFromKey, uiIdFromHappId} from './common'
 import * as C from './config'
 import {zomeCall, installHapp, newAgent} from './flows'
 import {InstallHappRequest, listHoloApps} from './flows/install-happ'
@@ -79,15 +79,13 @@ export class IntrceptrServer {
 
     const happs = await listHoloApps()
     const uis = await masterClient.call('admin/ui/list')
-    const uisByHash = {}
+    const uisById = {}
 
     for (const ui of uis) {
-      uisByHash[ui.hash] = ui
+      uisById[ui.id] = ui
     }
-
     Object.keys(happs).forEach(happId => {
-      const uiHash = happs[happId].ui_hash
-      const ui = uisByHash[uiHash]
+      const ui = uisById[uiIdFromHappId(happId)]
       if (ui) {
         const dir = ui.root_dir
         const hash = ui.id  // TODO: eventually needs to be hApp hash!
