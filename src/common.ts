@@ -67,8 +67,9 @@ export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName
   }
 
   try {
-    console.debug("Calling zome...", params)
-    return JSON.parse(await client.call('call', payload))
+    console.info("Calling zome...", payload, client.call)
+    const response = await client.call('call', payload)
+    return response
   } catch(e) {
     console.error("Zome call failed: ", payload, e)
     throw e

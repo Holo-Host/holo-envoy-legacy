@@ -39,6 +39,11 @@ type SigningRequest = {
 
 const verifySignature = (entry, signature) => true
 
+const fail = (e) => {
+  console.error("intrceptr request failure:", e)
+  return e
+}
+
 /**
  * A wrapper around a rpc-websockets Server and Client which brokers communication between
  * the browser user and the Conductor. The browser communicates with the Server, and the Client
@@ -148,7 +153,9 @@ export class IntrceptrServer {
     return successResponse
   }
 
-  zomeCall = (params: CallRequest) => zomeCall(this.publicClient, this.internalClient)(params)
+  zomeCall = (params: CallRequest) => {
+    return zomeCall(this.publicClient, this.internalClient)(params).catch(fail)
+  }
 
 
   /**

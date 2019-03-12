@@ -166,7 +166,7 @@ export const setupInstances = async (client, opts: {happId: string, agentId: str
 
 const setupServiceLogger = async (adminClient, {hostedHappId}) => {
   const {hash, path} = Config.DNAS.serviceLogger
-  const instanceId = Config.serviceLoggerInstanceId(hostedHappId)
+  const instanceId = Config.serviceLoggerInstanceIdFromHappId(hostedHappId)
   const agentId = Config.hostAgentId
   const properties = {
     forApp: hostedHappId

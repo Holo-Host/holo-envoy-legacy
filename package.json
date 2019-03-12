@@ -11,7 +11,7 @@
     "clean": "rm -fr lib",
     "init": "ts-node -T init-conductor.ts",
     "conductor": "holochain -c ~/.holochain/holo/conductor-config.toml",
-    "test": "ts-node test/*",
+    "test": "ts-node test/test-* | faucet",
     "e2e": "ts-node src/end2end/one.ts"
   },
   "dependencies": {
@@ -24,6 +24,7 @@
   "devDependencies": {
     "@types/node": "^11.9.4",
     "commander": "^2.19.0",
+    "faucet": "^0.0.1",
     "rimraf": "^2.6.3",
     "sinon": "^7.2.4",
     "static-server": "^2.2.1",
