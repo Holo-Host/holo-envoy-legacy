@@ -4,6 +4,7 @@ import {Client} from 'rpc-websockets'
 
 import * as C from '../config'
 import {fail} from '../common'
+import {HAPP_DATABASE} from '../shims/happ-server'
 
 process.on('unhandledRejection', (reason, p) => {
   console.log("UNHANDLED REJECTION:")
@@ -11,7 +12,7 @@ process.on('unhandledRejection', (reason, p) => {
 })
 
 const happId = 'simple-app'
-const dnaHash = 'QmSKxN3FGVrf1vVMav6gohJVi7GcF4jFcKVDhDcjiAnveo'
+const dnaHash = HAPP_DATABASE['simple-app'].dnas[0].hash
 const agentId = 'dummy-fake-not-real-agent-id'
 
 export const withInterceptrClient = fn => {
@@ -48,12 +49,26 @@ const newAgent = (dir, cmd) => withInterceptrClient(async client => {
   await client.call('holo/agents/new', {agentId, happId})
 })
 
-const zomeCall = (dir, cmd) => withInterceptrClient(async client => {
+const zomeCallPublic = (dir, cmd) => withInterceptrClient(async client => {
+  const result = await client.call('holo/call', {
+    agentId: C.hostAgentId,
+    happId,
+    dnaHash: dnaHash,
+    zome: 'simple',
+    function: 'get_links',
+    params: {base: 'TODO'},
+    signature: 'TODO',
+  })
+  console.log("how about that! ", result)
+})
+
+const zomeCallHosted = (dir, cmd) => withInterceptrClient(async client => {
   const result = await client.call('holo/call', {
     agentId,
     happId,
     dnaHash: dnaHash,
-    function: 'simple/get_links',
+    zome: 'simple',
+    function: 'get_links',
     params: {base: 'TODO'},
     signature: 'TODO',
   })
@@ -63,6 +78,7 @@ const zomeCall = (dir, cmd) => withInterceptrClient(async client => {
 commander.version('0.0.1')
 commander.command('install').action(install)
 commander.command('new-agent').action(newAgent)
-commander.command('zome-call').action(zomeCall)
+commander.command('zome-call-public').action(zomeCallPublic)
+commander.command('zome-call-hosted').action(zomeCallHosted)
 
 commander.parse(process.argv)

@@ -31,7 +31,7 @@ export const HAPP_DATABASE = {
     dnas: [
       {
         location: 'http://localhost:3333/simple-app/dist/simple-app.dna.json',
-        hash: 'QmSKxN3FGVrf1vVMav6gohJVi7GcF4jFcKVDhDcjiAnveo'
+        hash: 'QmcnAdZJyDpJewK2sJPXTc5YUVg6ym6kink2n6MtJxVEze'
       }
     ],
     ui: {

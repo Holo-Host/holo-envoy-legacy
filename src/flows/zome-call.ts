@@ -7,6 +7,7 @@ export type CallRequest = {
   agentId: string,
   happId: HappID,
   dnaHash: string,
+  zome: string,
   function: string,
   params: any,
   signature: string,
@@ -15,9 +16,10 @@ export type CallRequest = {
 export type CallResponse = any
 
 export default (publicClient, internalClient) => async ({
-  agentId, 
-  happId, 
-  dnaHash, 
+  agentId,
+  happId,
+  dnaHash,
+  zome,
   function: func, 
   params,
   signature,
@@ -29,7 +31,7 @@ export default (publicClient, internalClient) => async ({
   const requestEntryHash = await logServiceRequest(internalClient,
     {happId, dnaHash, requestData})
 
-  const result = await zomeCallByDna(publicClient, {agentId, dnaHash, func, params})
+  const result = await zomeCallByDna(publicClient, {agentId, dnaHash, zomeName: zome, funcName: func, params})
   const responseData = result
   const metrics = calcMetrics(requestData, responseData)
   const responseEntryHash = await logServiceResponse(internalClient,
