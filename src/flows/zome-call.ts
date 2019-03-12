@@ -23,7 +23,7 @@ export default (publicClient, internalClient) => async ({
   function: func, 
   params,
   signature,
-}: CallRequest, _ws) => {
+}: CallRequest) => {
   console.log('starting zome call...')
   // TODO: add replay attack protection? nonce?
   // TODO: figure out actual payload, especially after conductor RPC call is refactored

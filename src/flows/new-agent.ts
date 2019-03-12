@@ -17,7 +17,7 @@ export default (adminClient) => async ({
   agentId, 
   happId, 
   signature,
-}: NewAgentRequest, _ws): Promise<NewAgentResponse> => {
+}: NewAgentRequest): Promise<NewAgentResponse> => {
   // const enabledApps = await zomeCallByInstance(adminClient, {
   //   instanceId: 'holo-hosting-instance-TODO-real-id', 
   //   func: 'host/get_enabled_app',

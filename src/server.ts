@@ -50,11 +50,8 @@ export class IntrceptrServer {
   publicClient: any
   internalClient: any
   hostedClients: any[]  // TODO use this if ever we put each client on their own interface
-  // sockets: {[k: string]: Array<any>} = {}
   nextCallId = 0
   signingRequests = {}
-
-  zomeCall: (r: CallRequest, ws: any) => Promise<any>
 
   constructor({masterClient, publicClient, internalClient}) {
     this.masterClient = masterClient
@@ -102,47 +99,21 @@ export class IntrceptrServer {
   buildWebsocketServer = async (httpServer) => {
     const wss = new RpcServer({server: httpServer})
 
-    wss.register(
-      'holo/identify',
-      this.identifyAgent
-    )
+    wss.register('holo/identify', this.identifyAgent)
 
-    wss.register(
-      'holo/clientSignature',
-      ({signature, requestId}) => {
-        const {entry, callback} = this.signingRequests[requestId]
-        verifySignature(entry, signature)
-        callback(signature)
-        delete this.signingRequests[requestId]
-        return successResponse
-      }
-    )
+    wss.register('holo/clientSignature', this.clientSignature)
 
-    wss.register(
-      'holo/call',
-      zomeCall(this.publicClient, this.internalClient)
-    )
+    wss.register('holo/call', this.zomeCall)
 
-    wss.register(
-      // TODO: something in here to update the agent key associated with this socket connection?
-      'holo/agents/new',
-      async (params, ws) => { 
-        await this.newHostedAgent(params, ws)
-        return successResponse
-      }
-    )
-
-    wss.register(
-      'holo/debug',
-      params => {
-        const entry = "Sign this."
-        this.startHoloSigningRequest('marmot', entry, (signature) => console.log("DEBUG: got signature", signature))
-        return 'OK'
-      }
-    )
+    // TODO: something in here to update the agent key subscription? i.e. re-identify?
+    wss.register('holo/agents/new', this.newHostedAgent)
 
     return wss
   }
+
+  
+  // TODO: service log signature endpoint
+
 
   identifyAgent = ({agentId}, ws) => {
     // TODO: also take salt and signature of salt to prove browser owns agent ID
@@ -163,20 +134,22 @@ export class IntrceptrServer {
     return { agentId }
   }
 
-  newHostedAgent = async ({agentId, happId}, _ws) => {
-    const signature = 'TODO'
-    await newAgent(this.masterClient)({agentId, happId, signature}, _ws)
+  clientSignature = ({signature, requestId}) => {
+    const {entry, callback} = this.signingRequests[requestId]
+    verifySignature(entry, signature)
+    callback(signature)
+    delete this.signingRequests[requestId]
+    return successResponse
   }
 
-  /**
-   * Close both the server and client connections
-   */
-  close() {
-    this.masterClient!.close()
-    this.publicClient!.close()
-    this.internalClient!.close()
-    this.server!.close()
+  newHostedAgent = async ({agentId, happId}) => {
+    const signature = 'TODO'
+    await newAgent(this.masterClient)({agentId, happId, signature})
+    return successResponse
   }
+
+  zomeCall = (params: CallRequest) => zomeCall(this.publicClient, this.internalClient)(params)
+
 
   /**
    * Function to be called externally, registers a signing request which will be fulfilled
@@ -190,5 +163,16 @@ export class IntrceptrServer {
     this.server.emit(`agent/${agentId}/sign`, {entry, id})
     this.signingRequests[id] = {entry, callback}
   }
+
+  /**
+   * Close both the server and client connections
+   */
+  close() {
+    this.masterClient!.close()
+    this.publicClient!.close()
+    this.internalClient!.close()
+    this.server!.close()
+  }
+
 
 }
