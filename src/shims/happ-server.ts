@@ -31,7 +31,7 @@ export const HAPP_DATABASE = {
     dnas: [
       {
         location: 'http://localhost:3333/simple-app/dist/simple-app.dna.json',
-        hash: 'QmSKxN3FGVrf1vVMav6gohJVi7GcF4jFcKVDhDcjiAnveo'
+        hash: 'QmcnAdZJyDpJewK2sJPXTc5YUVg6ym6kink2n6MtJxVEze'
       }
     ],
     ui: {
@@ -39,12 +39,12 @@ export const HAPP_DATABASE = {
       hash: 'Qm_UI_Simple_App_TODO'
     },
   },
-  'holo-hosting': {
-    dnas: [
-      {
-        location: 'http://localhost:3333/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
-        hash: 'Qm_DNA_Holo_Hosting_App'
-      }
-    ]
-  }
+  // 'holo-hosting': {
+  //   dnas: [
+  //     {
+  //       location: 'http://localhost:3333/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
+  //       hash: 'Qm_DNA_Holo_Hosting_App'
+  //     }
+  //   ]
+  // }
 }

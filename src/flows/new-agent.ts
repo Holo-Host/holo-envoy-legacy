@@ -1,6 +1,7 @@
 
 import {Instance, HappID} from '../types'
 import {errorResponse, fail, InstanceIds, agentIdFromKey, zomeCallByInstance} from '../common'
+import {ConductorInterface} from '../config'
 import {setupInstances} from './install-happ'
 
 
@@ -23,8 +24,8 @@ export default (adminClient) => async ({
   //   params: {}
   // })
   // if (enabledApps.find(app => console.log(`TODO check if app is enabled`, app))) {
-  await createAgent(adminClient, agentId)
-  await setupInstances(adminClient, {happId, agentId: agentIdFromKey(agentId)})
+    await createAgent(adminClient, agentId)
+    await setupInstances(adminClient, {happId, agentId: agentIdFromKey(agentId), conductorInterface: ConductorInterface.Public})
   // } else {
   //   throw `App is not enabled for hosting: ${happId}`
   // }

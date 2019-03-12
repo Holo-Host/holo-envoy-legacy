@@ -20,9 +20,9 @@ Now, install NPM dependencies:
 
 	yarn install
 
-To get the shims ready, run this script:
+To get the necessary DNAs and UIs ready, including shims, run this script:
 
-	yarn run build-shims
+	yarn run build-happs
 
 To enable the intrceptr to generate the initial Conductor configuration including host keys, you need to create some keys and let intrceptr know about them:
 

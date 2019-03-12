@@ -52,18 +52,25 @@ key_file = "${keyFile}"  # ignored due to holo_remote_key
 public_address = "${publicAddress}"
 
 [[interfaces]]
-id = "${C.adminInterfaceId}"
+id = "${C.ConductorInterface.Master}"
 admin = true
 
 [interfaces.driver]
-port = ${C.PORTS.adminInterface}
+port = ${C.PORTS.masterInterface}
 type = "websocket"
 
 [[interfaces]]
-id = "${C.happInterfaceId}"
+id = "${C.ConductorInterface.Public}"
 
 [interfaces.driver]
-port = ${C.PORTS.happInterface}
+port = ${C.PORTS.publicInterface}
+type = "websocket"
+
+[[interfaces]]
+id = "${C.ConductorInterface.Internal}"
+
+[interfaces.driver]
+port = ${C.PORTS.internalInterface}
 type = "websocket"
 
 [logger]

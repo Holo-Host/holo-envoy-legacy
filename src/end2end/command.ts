@@ -4,14 +4,16 @@ import {Client} from 'rpc-websockets'
 
 import * as C from '../config'
 import {fail} from '../common'
+import {HAPP_DATABASE} from '../shims/happ-server'
 
 process.on('unhandledRejection', (reason, p) => {
   console.log("UNHANDLED REJECTION:")
   console.log("reason: ", reason)
 })
 
-const dnaHash = 'Qm_WHATEVER_TODO'
-const agentId = 'dummy-fake-not-real-agent-public-address'
+const happId = 'simple-app'
+const dnaHash = HAPP_DATABASE['simple-app'].dnas[0].hash
+const agentId = 'dummy-fake-not-real-agent-id'
 
 export const withInterceptrClient = fn => {
   const client = new Client(`ws://localhost:${C.PORTS.intrceptr}`)
@@ -36,19 +38,47 @@ const adminCall = (uri, data) => axios.post(`http://localhost:${C.PORTS.admin}/$
 //////////////////////////////////////////////////
 
 const install = async (dir, cmd) => {
-  const installSimple = await adminCall('holo/happs/install', {happId: 'simple-app', agentId: C.hostAgentId})
+  const installSimple = await adminCall('holo/happs/install', {happId, agentId: C.hostAgentId})
   console.log('install simple-app: ', installSimple.statusText, installSimple.status)
-  const installHHA = await adminCall('holo/happs/install', {happId: 'holo-hosting', agentId: C.hostAgentId})
-  console.log('install holo-hosting-app: ', installHHA.statusText, installHHA.status)
+  // const installHHA = await adminCall('holo/happs/install', {happId: 'holo-hosting', agentId: C.hostAgentId})
+  // console.log('install holo-hosting-app: ', installHHA.statusText, installHHA.status)
 }
 
 const newAgent = (dir, cmd) => withInterceptrClient(async client => {
   await client.call('holo/identify', {agentId})
-  await client.call('holo/agents/new', {agentId, happId: 'TODO NOT REAL HAPPID'})
+  await client.call('holo/agents/new', {agentId, happId})
+})
+
+const zomeCallPublic = (dir, cmd) => withInterceptrClient(async client => {
+  const result = await client.call('holo/call', {
+    agentId: C.hostAgentId,
+    happId,
+    dnaHash: dnaHash,
+    zome: 'simple',
+    function: 'get_links',
+    params: {base: 'TODO'},
+    signature: 'TODO',
+  })
+  console.log("how about that! ", result)
+})
+
+const zomeCallHosted = (dir, cmd) => withInterceptrClient(async client => {
+  const result = await client.call('holo/call', {
+    agentId,
+    happId,
+    dnaHash: dnaHash,
+    zome: 'simple',
+    function: 'get_links',
+    params: {base: 'TODO'},
+    signature: 'TODO',
+  })
+  console.log("how about that! ", result)
 })
 
 commander.version('0.0.1')
 commander.command('install').action(install)
 commander.command('new-agent').action(newAgent)
+commander.command('zome-call-public').action(zomeCallPublic)
+commander.command('zome-call-hosted').action(zomeCallHosted)
 
 commander.parse(process.argv)

@@ -7,7 +7,7 @@ import {installHapp} from './flows'
 import {InstallHappRequest} from './flows/install-happ'
 
 export default (port) => {
-  const adminClient = new Client(`ws://localhost:${C.PORTS.adminInterface}`)
+  const adminClient = new Client(`ws://localhost:${C.PORTS.masterInterface}`)
 
   const app = express()
   app.use(bodyParser.json())
