@@ -38,8 +38,8 @@ sinonTest('can call public zome function', async T => {
   const serviceLoggerInstanceId = serviceLoggerInstanceIdFromHappId('happId')
   const request = {params: 'params'}
   const call = {
-    agentId: 'agentId',
     happId: 'happId',
+    agentId: 'agentId',
     dnaHash: 'dnaHash',
     zome: 'zome',
     function: 'function',
@@ -77,6 +77,13 @@ sinonTest('can call public zome function', async T => {
       response_log: mockResponse,
       host_signature: 'TODO, probably should be signed by servicelogger, not externally',
     }
+  })
+
+  T.calledWith(publicClient.call, 'call', {
+    instance_id: 'agentId::dnaHash',
+    params: request,
+    function: 'function',
+    zome: 'zome',
   })
 })
 
