@@ -15,7 +15,7 @@ const happId = 'simple-app'
 const dnaHash = HAPP_DATABASE['simple-app'].dnas[0].hash
 const agentId = 'dummy-fake-not-real-agent-id'
 
-export const withInterceptrClient = fn => {
+export const withIntrceptrClient = fn => {
   const client = new Client(`ws://localhost:${C.PORTS.intrceptr}`)
   client.on('error', msg => console.error("WS Client error: ", msg))
   client.once('open', async () => {
@@ -44,12 +44,12 @@ const install = async (dir, cmd) => {
   // console.log('install holo-hosting-app: ', installHHA.statusText, installHHA.status)
 }
 
-const newAgent = (dir, cmd) => withInterceptrClient(async client => {
+const newAgent = (dir, cmd) => withIntrceptrClient(async client => {
   await client.call('holo/identify', {agentId})
   await client.call('holo/agents/new', {agentId, happId})
 })
 
-const zomeCallPublic = (dir, cmd) => withInterceptrClient(async client => {
+const zomeCallPublic = (dir, cmd) => withIntrceptrClient(async client => {
   const result = await client.call('holo/call', {
     agentId: C.hostAgentId,
     happId,
@@ -62,7 +62,7 @@ const zomeCallPublic = (dir, cmd) => withInterceptrClient(async client => {
   console.log("how about that! ", result)
 })
 
-const zomeCallHosted = (dir, cmd) => withInterceptrClient(async client => {
+const zomeCallHosted = (dir, cmd) => withIntrceptrClient(async client => {
   const result = await client.call('holo/call', {
     agentId,
     happId,

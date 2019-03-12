@@ -3,7 +3,7 @@ import {Client} from 'rpc-websockets'
 
 import * as C from '../config'
 import {fail} from '../common'
-import {withClient} from './command'
+import {withIntrceptrClient} from './command'
 
 process.on('unhandledRejection', (reason, p) => {
   console.log("UNHANDLED REJECTION:")
@@ -15,7 +15,7 @@ const agentId = 'total-dummy-fake-not-real-agent-public-address'
 
 
 test('can install app', async t => {
-  withClient(async client => {
+  withIntrceptrClient(async client => {
     // TODO: conductor panics if installing the same app twice!
     console.log('installing happ...')
     await client.call('holo/happs/install', {happId: 'TODO', agentId: C.hostAgentId})
@@ -27,7 +27,7 @@ test('can install app', async t => {
 })
 
 test('end to end test (assuming app is installed)', async t => {
-  withClient(async (client) => {
+  withIntrceptrClient(async (client) => {
     console.log('identifying...')
     const agentName = C.hostAgentId
     const agentId = await client.call('holo/identify', {agentId: agentName})
@@ -50,12 +50,12 @@ test('end to end test (assuming app is installed)', async t => {
 })
 
 test('end to end hosted agent test (assuming app is installed)', async t => {
-  withClient(async (client) => {
+  withIntrceptrClient(async (client) => {
     console.log('identifying...')
     // const num = Math.floor(Math.random() * 10000)
     // const num = '5079'
-    const agentId = await client.call('holo/identify', {agentId})
-    t.equal(agentId, agentId)
+    const returnedAgentId = await client.call('holo/identify', {agentId})
+    t.equal(agentId, returnedAgentId)
 
     const happId = 'TODO'
     const func = 'simple/get_links'

@@ -3,8 +3,7 @@ import * as bodyParser from 'body-parser'
 import {Client} from 'rpc-websockets'
 
 import * as C from './config'
-import {installHapp} from './flows'
-import {InstallHappRequest} from './flows/install-happ'
+import installHapp, {InstallHappRequest} from './flows/install-happ'
 
 export default (port) => {
   const adminClient = new Client(`ws://localhost:${C.PORTS.masterInterface}`)
