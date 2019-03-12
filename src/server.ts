@@ -4,12 +4,13 @@
  * Accepts requests similar to what the Conductor
  */
 
+import * as express from 'express'
 import {Client, Server as RpcServer} from 'rpc-websockets'
 
-import {agentIdFromKey} from './common'
+import {agentIdFromKey, uiIdFromHappId} from './common'
 import * as C from './config'
 import {zomeCall, installHapp, newAgent} from './flows'
-import {InstallHappRequest} from './flows/install-happ'
+import {InstallHappRequest, listHoloApps} from './flows/install-happ'
 import {CallRequest} from './flows/zome-call'
 import {NewAgentRequest} from './flows/new-agent'
 
@@ -24,10 +25,9 @@ export default (port) => new Promise((fulfill, reject) => {
   masterClient.once('open', () => {
     publicClient.once('open', () => {
       internalClient.once('open', () => {
-        const server = new RpcServer({port, host: 'localhost'})
-        const intrceptr = new IntrceptrServer({server, masterClient, publicClient, internalClient})
+        const intrceptr = new IntrceptrServer({masterClient, publicClient, internalClient})
         console.log('Websocket server running on port', port)
-        fulfill(intrceptr)
+        intrceptr.start(port).then(() => fulfill(intrceptr))
       })
     })
   })
@@ -57,16 +57,58 @@ export class IntrceptrServer {
 
   zomeCall: (r: CallRequest, ws: any) => Promise<any>
 
-  constructor({server, masterClient, publicClient, internalClient}) {
+  constructor({masterClient, publicClient, internalClient}) {
+    this.masterClient = masterClient
+    this.publicClient = publicClient
+    this.internalClient = internalClient
+  }
 
-    this.zomeCall = zomeCall(publicClient, internalClient)
+  start = async (port) => {
+    const httpServer = await this.buildHttpServer(this.masterClient)
+    const wss = await this.buildWebsocketServer(httpServer)
 
-    server.register(
+    httpServer.listen(port, () => console.log('HTTP server running on port', port))
+    wss.on('listening', () => console.log("Websocket server listening on port", port))
+    wss.on('error', data => console.log("<C> error: ", data))
+    
+    this.server = wss
+  }
+
+  buildHttpServer = async (masterClient) => {
+    const app = express()
+
+    const happs = await listHoloApps()
+    const uis = await masterClient.call('admin/ui/list')
+    const uisById = {}
+
+    for (const ui of uis) {
+      uisById[ui.id] = ui
+    }
+    Object.keys(happs).forEach(happId => {
+      const ui = uisById[uiIdFromHappId(happId)]
+      if (ui) {
+        const dir = ui.root_dir
+        const hash = ui.id  // TODO: eventually needs to be hApp hash!
+        app.use(`/${happId}`, express.static(dir))
+        console.log(`serving UI for '${happId}' from '${dir}'`)
+      } else {
+        console.warn(`App '${happId}' has no UI, skipping...`)
+      }
+    })
+    
+    // TODO: redirect to ports of conductor UI interfaces
+    return require('http').createServer(app)
+  }
+
+  buildWebsocketServer = async (httpServer) => {
+    const wss = new RpcServer({server: httpServer})
+
+    wss.register(
       'holo/identify',
       this.identifyAgent
     )
 
-    server.register(
+    wss.register(
       'holo/clientSignature',
       ({signature, requestId}) => {
         const {entry, callback} = this.signingRequests[requestId]
@@ -77,12 +119,12 @@ export class IntrceptrServer {
       }
     )
 
-    server.register(
+    wss.register(
       'holo/call',
-      this.zomeCall
+      zomeCall(this.publicClient, this.internalClient)
     )
 
-    server.register(
+    wss.register(
       // TODO: something in here to update the agent key associated with this socket connection?
       'holo/agents/new',
       async (params, ws) => { 
@@ -91,7 +133,7 @@ export class IntrceptrServer {
       }
     )
 
-    server.register(
+    wss.register(
       'holo/debug',
       params => {
         const entry = "Sign this."
@@ -100,14 +142,7 @@ export class IntrceptrServer {
       }
     )
 
-    server.on('listening', () => console.log("<C> listening"))
-    server.on('error', data => console.log("<C> error: ", data))
-
-    this.masterClient = masterClient
-    this.publicClient = publicClient
-    this.internalClient = internalClient
-    this.server = server
-    // this.sockets = {}
+    return wss
   }
 
   identifyAgent = ({agentId}, ws) => {

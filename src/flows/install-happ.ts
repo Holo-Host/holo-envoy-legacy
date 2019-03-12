@@ -4,7 +4,7 @@ import * as os from 'os'
 import * as path from 'path'
 
 import {HappID} from '../types'
-import {fail, unbundle} from '../common'
+import {fail, unbundle, uiIdFromHappId} from '../common'
 import * as Config from '../config'
 import {HAPP_DATABASE, HappResource, HappEntry} from '../shims/happ-server'
 
@@ -72,7 +72,7 @@ export const installDnasAndUi = async (client, opts: {happId: string, properties
 
   if (ui) {
     const uiResult = await client.call('admin/ui/install', {
-      id: `${happId}-ui`,
+      id: uiIdFromHappId(happId),
       root_dir: ui.path
     })
     results.concat([uiResult])
@@ -179,7 +179,7 @@ const setupServiceLogger = async (adminClient, {hostedHappId}) => {
   // - Make initial call to serviceLogger
 }
 
-const lookupHoloApp = ({happId}: LookupHappRequest): Promise<HappEntry> => {
+export const lookupHoloApp = ({happId}: LookupHappRequest): Promise<HappEntry> => {
   // TODO: make actual call to HHA
   // this is a dummy response for now
   // assuming DNAs are served as JSON packages
@@ -189,6 +189,16 @@ const lookupHoloApp = ({happId}: LookupHappRequest): Promise<HappEntry> => {
     throw `happId not found in shim database: ${happId}`
   }
   return Promise.resolve(HAPP_DATABASE[happId])
+}
+
+export const listHoloApps = () => {
+  // TODO: call HHA's `get_my_registered_app` for real data
+  const fakeApps = Object.assign({}, HAPP_DATABASE)
+  for (const id in fakeApps) {
+    fakeApps[id].ui_hash = fakeApps[id].ui
+    fakeApps[id].dna_list = fakeApps[id].dnas
+  }
+  return Promise.resolve(fakeApps)
 }
 
 const downloadAppResources = async (happId): Promise<DownloadResult> => {
