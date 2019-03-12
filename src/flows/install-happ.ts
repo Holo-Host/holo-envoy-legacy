@@ -4,7 +4,7 @@ import * as os from 'os'
 import * as path from 'path'
 
 import {HappID} from '../types'
-import {fail, unbundle, uiIdFromHappId} from '../common'
+import {fail, unbundle, uiIdFromHappId, zomeCallByInstance} from '../common'
 import * as Config from '../config'
 import {HAPP_DATABASE, HappResource, HappEntry} from '../shims/happ-server'
 
@@ -46,9 +46,9 @@ export const installDnasAndUi = async (client, opts: {happId: string, properties
   // TODO: fetch data from somewhere, write fetched files to temp dir and extract
   // TODO: used cached version if possible
   const {happId, properties} = opts
-  const {ui, dnas} = await downloadAppResources(happId)
-
   console.log('Installing hApp (TODO real happId)', happId)
+  const {ui, dnas} = await downloadAppResources(client, happId)
+
   console.log('  DNAs: ', dnas.map(dna => dna.path))
   if (ui) {
     console.log('  UI:   ', ui.path)
@@ -96,7 +96,7 @@ const isDnaInstalled = async (client, dnaId) => {
   return (installedDnas.find(({id}) => id === dnaId))
 }
 
-const installDna = async (client, {hash, path, properties}) => {
+export const installDna = async (client, {hash, path, properties}) => {
   return client.call('admin/dna/install_from_file', {
     id: hash,
     path: path,
@@ -137,7 +137,7 @@ const setupInstance = async (client, {instanceId, agentId, dnaId, conductorInter
 
 export const setupInstances = async (client, opts: {happId: string, agentId: string, conductorInterface: Config.ConductorInterface}) => {
   const {happId, agentId, conductorInterface} = opts
-  const {dnas, ui} = await lookupHoloApp({happId})
+  const {dnas, ui} = await lookupHoloApp(client, {happId})
 
   const dnaPromises = dnas.map(async (dna) => {
     const dnaId = dna.hash
@@ -179,16 +179,22 @@ const setupServiceLogger = async (adminClient, {hostedHappId}) => {
   // - Make initial call to serviceLogger
 }
 
-export const lookupHoloApp = ({happId}: LookupHappRequest): Promise<HappEntry> => {
+export const lookupHoloApp = async (client, {happId}: LookupHappRequest): Promise<HappEntry> => {
   // TODO: make actual call to HHA
   // this is a dummy response for now
   // assuming DNAs are served as JSON packages
   // and UIs are served as ZIP archives
 
+  const _info = await zomeCallByInstance(client, {
+    instanceId: Config.holoHostingAppId, 
+    zomeName: 'hosts',
+    funcName: 'TODO',
+    params: {happId}
+  })
   if (!(happId in HAPP_DATABASE)) {
     throw `happId not found in shim database: ${happId}`
   }
-  return Promise.resolve(HAPP_DATABASE[happId])
+  return HAPP_DATABASE[happId]
 }
 
 export const listHoloApps = () => {
@@ -201,8 +207,8 @@ export const listHoloApps = () => {
   return Promise.resolve(fakeApps)
 }
 
-const downloadAppResources = async (happId): Promise<DownloadResult> => {
-  const {dnas, ui} = await lookupHoloApp({happId})
+const downloadAppResources = async (_client, happId): Promise<DownloadResult> => {
+  const {dnas, ui} = await lookupHoloApp(_client, {happId})
 
   const baseDir = fs.mkdtempSync(path.join(os.tmpdir(), 'happ-bundle-'))
   console.debug('using tempdir ', baseDir)
@@ -226,12 +232,15 @@ const downloadAppResources = async (happId): Promise<DownloadResult> => {
 const downloadResource = async (baseDir: string, res: HappResource, type: ResourceType): Promise<string> => {
   const suffix = type === ResourceType.HappDna ? '.dna.json' : ''
   const resourcePath = path.join(baseDir, res.hash + suffix)
-  const response: any = await axios({
+  const response: any = await axios.request({
     url: res.location,
     method: 'GET',
     responseType: 'stream',
     maxContentLength: 999999999999,
-  }).catch(e => e.response)
+  }).catch(e => {
+    console.warn('axios error: ', e)
+    return e.response
+  })
   return new Promise((fulfill, reject) => {
     if (response.status != 200) {
       reject(`Could not fetch ${res.location}: ${response.statusText} ${response.status}`)

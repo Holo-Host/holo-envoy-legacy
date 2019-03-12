@@ -1,22 +1,10 @@
 import * as test from 'tape'
 import * as sinon from 'sinon'
 
-import * as Common from './common'
-import {mockResponse, sinonTest} from './common'
+import {mockResponse, sinonTest, testIntrceptr} from './common'
 import {serviceLoggerInstanceIdFromHappId} from '../src/config'
 import {IntrceptrServer} from '../src/server'
 import * as Z from '../src/flows/zome-call'
-
-const S = sinon.assert
-
-const setup = () => {
-  const masterClient = Common.testMasterClient()
-  const publicClient = Common.testPublicClient()
-  const internalClient = Common.testInternalClient()
-  const intrceptr = new IntrceptrServer({masterClient, publicClient, internalClient})
-  intrceptr.server = Common.testRpcServer()
-  return {intrceptr, masterClient, publicClient, internalClient}
-}
 
 test('can calculate metrics', t => {
   const request = {giveMe: 'what i want'}
@@ -30,7 +18,7 @@ test('can calculate metrics', t => {
 })
 
 sinonTest('can call public zome function', async T => {
-  const {intrceptr, masterClient, publicClient, internalClient} = setup()
+  const {intrceptr, masterClient, publicClient, internalClient} = testIntrceptr()
 
   internalClient.call.withArgs('call').onFirstCall().returns('requestHash')
   internalClient.call.withArgs('call').onSecondCall().returns('responseHash')
@@ -88,7 +76,7 @@ sinonTest('can call public zome function', async T => {
 })
 
 sinonTest('can sign things across the wormhole', async T => {
-  const {intrceptr} = setup()
+  const {intrceptr} = testIntrceptr()
   const agentId = 'agentId'
   const entry = {entry: 'whatever'}
   const spy0 = sinon.spy()
