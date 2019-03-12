@@ -5,9 +5,9 @@
   "license": "MIT",
   "scripts": {
     "start": "ts-node src/index.ts",
-    "build": "tsc",
     "prod": "tsc && node lib/index.js",
-    "build-shims": "ts-node src/shims/build.ts",
+    "build-happs": "ts-node src/scripts/build.ts",
+    "build": "yarn run build-happs & tsc",
     "clean": "rm -fr lib",
     "init": "ts-node -T init-conductor.ts",
     "conductor": "holochain -c ~/.holochain/holo/conductor-config.toml",

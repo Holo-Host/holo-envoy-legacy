@@ -5,9 +5,20 @@ export const conductorConfigDir = path.join(homedir(), '.holochain/holo')
 export const conductorConfigPath = path.join(conductorConfigDir, 'conductor-config.toml')
 
 export const hostAgentId = 'host-agent'
-export const happInterfaceId = 'happ-interface'
-export const adminInterfaceId = 'admin-interface'
 export const keyConfigFile = 'src/shims/intrceptr-host-key.json'
+
+export enum ConductorInterface {
+  Master = 'master-interface',
+  Public = 'public-interface',
+  Internal = 'internal-interface',
+}
+
+export const DNAS = {
+  serviceLogger: {
+    path: 'src/dnas/servicelogger/dist/servicelogger.dna.json',
+    hash: 'QmSfVCAibdfEAACx7UZ7kgTBKrDSKmBUrbKgTYMweN8frQ',
+  }
+}
 
 export const PORTS = {
   wormhole: 8888,
@@ -15,6 +26,9 @@ export const PORTS = {
   shim: 3333,
   ui: 7000,
   intrceptr: 3000,
-  adminInterface: 7777,
-  happInterface: 4444,
+  masterInterface: 7777,
+  publicInterface: 4444,
+  internalInterface: 2222,
 }
+
+export const serviceLoggerInstanceId = hostedHappId => `servicelogger-${hostedHappId}`
