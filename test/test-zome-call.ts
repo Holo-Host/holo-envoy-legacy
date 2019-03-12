@@ -78,5 +78,26 @@ sinonTest('can call public zome function', async T => {
       host_signature: 'TODO, probably should be signed by servicelogger, not externally',
     }
   })
+})
 
+sinonTest('can sign things across the wormhole', async T => {
+  const {intrceptr} = setup()
+  const agentId = 'agentId'
+  const entry = {entry: 'whatever'}
+  const spy0 = sinon.spy()
+  const spy1 = sinon.spy()
+  intrceptr.startHoloSigningRequest(agentId, entry, spy0)
+  intrceptr.startHoloSigningRequest(agentId, entry, spy1)
+  T.callCount(spy0, 0)
+  T.callCount(spy1, 0)
+  T.deepEqual(Object.keys(intrceptr.signingRequests), ['0', '1'])
+
+  intrceptr.clientSignature({signature: 'sig 1', requestId: 0})
+  T.calledWith(spy0, 'sig 1')
+  T.callCount(spy1, 0)
+  T.deepEqual(Object.keys(intrceptr.signingRequests), ['1'])
+  
+  intrceptr.clientSignature({signature: 'sig 2', requestId: 1})
+  T.calledWith(spy1, 'sig 2')
+  T.deepEqual(Object.keys(intrceptr.signingRequests), [])
 })
