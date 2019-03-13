@@ -5,6 +5,7 @@ export const conductorConfigDir = path.join(homedir(), '.holochain/holo')
 export const conductorConfigPath = path.join(conductorConfigDir, 'conductor-config.toml')
 
 export const hostAgentId = 'host-agent'
+export const holoHostingAppId = 'holo-hosting-app'
 export const keyConfigFile = 'src/shims/intrceptr-host-key.json'
 
 export enum ConductorInterface {
@@ -31,4 +32,4 @@ export const PORTS = {
   internalInterface: 2222,
 }
 
-export const serviceLoggerInstanceId = hostedHappId => `servicelogger-${hostedHappId}`
+export const serviceLoggerInstanceIdFromHappId = hostedHappId => `servicelogger-${hostedHappId}`
