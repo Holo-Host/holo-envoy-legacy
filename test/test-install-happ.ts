@@ -23,6 +23,7 @@ sinon.stub(unbundle)
 const axiosResponse = (status) => {
   return {
     status,
+    statusText: 'mocked statusText',
     data: {
       pipe: writer => writer.emit('finish')
     }
@@ -57,11 +58,28 @@ sinonTest('throws error for invalid happId', async T => {
   T.callCount(masterClient.call, 1)
 })
 
+sinonTest('throws error for unreachable resources', async T => {
+  const {masterClient} = testIntrceptr()
+
+  const axiosStub = sinon.stub(axios, 'request')
+    .resolves(axiosResponse(404))
+  const happId = 'simple-app'
+
+  await T.rejects(
+    M.installDnasAndUi(masterClient, {happId}),
+    /Could not fetch.*404/
+  )
+  T.callCount(masterClient.call, 1)
+
+  axiosStub.restore()
+})
+
 sinonTest('can install dnas and ui for hApp', async T => {
   const {masterClient} = testIntrceptr()
   T.comment('TODO: needs stub for HHA-enabled apps')
 
-  const axiosStub = sinon.stub(axios, 'request').resolves(axiosResponse(200))
+  const axiosStub = sinon.stub(axios, 'request')
+    .resolves(axiosResponse(200))
   const happId = 'simple-app'
   const dnaHash = HAPP_DATABASE['simple-app'].dnas[0].hash
   const uiHash = HAPP_DATABASE['simple-app'].ui.hash
