@@ -43,7 +43,7 @@ sinonTest('can call public zome function', async T => {
 
   T.callCount(internalClient.call, 2)
 
-  T.calledWith(internalClient.call, 'call', {
+  T.calledWith(internalClient.call.getCall(0), 'call', {
     instance_id: serviceLoggerInstanceId,
     zome: 'service',
     function: 'log_request', 
@@ -55,7 +55,7 @@ sinonTest('can call public zome function', async T => {
     }
   })
 
-  T.calledWith(internalClient.call, 'call', {
+  T.calledWith(internalClient.call.getCall(1), 'call', {
     instance_id: serviceLoggerInstanceId,
     zome: 'service',
     function: 'log_response', 
