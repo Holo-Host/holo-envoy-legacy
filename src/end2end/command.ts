@@ -37,9 +37,9 @@ const adminCall = (uri, data) => axios.post(`http://localhost:${C.PORTS.admin}/$
 
 //////////////////////////////////////////////////
 
-const install = async (dir, cmd) => {
-  const result = await adminCall('holo/happs/install', {happId: cmd.happId, agentId: C.hostAgentId})
-  console.log(`install ${cmd.happId}: `, result.statusText, result.status)
+const install = async (happId) => {
+  const result = await adminCall('holo/happs/install', {happId: happId, agentId: C.hostAgentId})
+  console.log(`install ${happId}: `, result.statusText, result.status)
   // const installHHA = await adminCall('holo/happs/install', {happId: 'holo-hosting', agentId: C.hostAgentId})
   // console.log('install holo-hosting-app: ', installHHA.statusText, installHHA.status)
 }

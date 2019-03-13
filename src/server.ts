@@ -7,7 +7,7 @@
 import * as express from 'express'
 import {Client, Server as RpcServer} from 'rpc-websockets'
 
-import {agentIdFromKey, uiIdFromHappId} from './common'
+import {uiIdFromHappId} from './common'
 import * as C from './config'
 import installHapp, {InstallHappRequest, listHoloApps} from './flows/install-happ'
 import zomeCall, {CallRequest} from './flows/zome-call'

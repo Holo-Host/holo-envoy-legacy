@@ -37,7 +37,6 @@ export const InstanceIds = {
 ///////////////////////      UTIL      ////////////////////////////
 ///////////////////////////////////////////////////////////////////
 
-export const agentIdFromKey = key => key
 export const uiIdFromHappId = happId => happId + '-ui'
 
 export const removeInstanceFromCallString = callString => {
@@ -65,6 +64,9 @@ export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName
     function: funcName,
     params
   }
+
+  // use old style call format for
+  console.log('calling with payload', payload)
 
   try {
     console.debug("Calling zome...", params)
