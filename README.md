@@ -1,5 +1,7 @@
 # INTR)-(CEPTR
 
+[![CircleCI](https://circleci.com/gh/Holo-Host/intrceptr.svg?style=svg)](https://circleci.com/gh/Holo-Host/intrceptr)
+
 intrceptr is a nodejs program which provides publicly-exposed ports for browser users to connect to Holo Hosts. It also provides much of the "connective tissue" between various Holo core components: the Holo Hosting App, Signed Service Logs, DeepKey, and the Holochain Conductor itself.
 
 Its primary function is as a websocket server which allows browser users to connect to a Holo Host's machine (HoloPort or otherwise). intrceptr connects directly to a Holochain Conductor running on the same machine, serving as the intermediary between the Holo-hosted user in the browser and the Holo-agnostic DNA instances running in the Holochain Conductor.
