@@ -17,6 +17,8 @@ test('can calculate metrics', t => {
   t.end()
 })
 
+// TODO: add tests for failure cases
+
 sinonTest('can call public zome function', async T => {
   const {intrceptr, masterClient, publicClient, internalClient} = testIntrceptr()
 
