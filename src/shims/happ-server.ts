@@ -36,7 +36,19 @@ export const HAPP_DATABASE = {
     ],
     ui: {
       location: 'http://localhost:3333/simple-app/ui.tar',
-      hash: 'Qm_UI_Simple_App_TODO'
+      hash: 'Qm_UI_Simple_App_simple'
+    },
+  },
+  'basic-chat': {
+    dnas: [
+      {
+        location: 'http://localhost:3333/holochain-basic-chat/dna/holo-chat.hcpkg',
+        hash: 'Qmglibglop'
+      }
+    ],
+    ui: {
+      location: 'http://localhost:3333/holochain-basic-chat/ui.tar',
+      hash: 'Qm_UI_Simple_App_chat'
     },
   },
   // 'holo-hosting': {
