@@ -17,9 +17,9 @@ const successResponse = { success: true }
 
 export default (port) => new Promise((fulfill, reject) => {
   // clients to the interface served by the Conductor
-  const masterClient = new Client(`ws://localhost:${C.PORTS.masterInterface}`)
-  const publicClient = new Client(`ws://localhost:${C.PORTS.publicInterface}`)
-  const internalClient = new Client(`ws://localhost:${C.PORTS.internalInterface}`)
+  const masterClient = new Client(`ws://localhost:${C.PORTS.masterInterface}`, { max_reconnects: 0 }) // zero reconnects means unlimited
+  const publicClient = new Client(`ws://localhost:${C.PORTS.publicInterface}`, { max_reconnects: 0 })
+  const internalClient = new Client(`ws://localhost:${C.PORTS.internalInterface}`, { max_reconnects: 0 })
   console.debug("Connecting to admin and happ interfaces...")
   masterClient.once('open', () => {
     publicClient.once('open', () => {
@@ -108,7 +108,7 @@ export class IntrceptrServer {
 
     wss.register('holo/clientSignature', this.clientSignature)
 
-    wss.register('holo/call', (callParams) => this.zomeCall)
+    wss.register('holo/call', this.zomeCall)
 
     // TODO: something in here to update the agent key subscription? i.e. re-identify?
     wss.register('holo/agents/new', this.newHostedAgent)

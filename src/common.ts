@@ -65,13 +65,20 @@ export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName
     params
   }
 
-  // use old style call format for
-  console.log('calling with payload', payload)
-
   try {
     console.info("Calling zome...", payload, client.call)
-    const response = await client.call('call', payload)
-    return response
+
+    if(client.ready) {
+      return await client.call('call', payload)
+    } else {
+      return new Promise((resolve) => {
+        console.log('inside promise for call')
+        client.once('open', () => {
+          console.log('inside callback for connect')
+          resolve(client.call('call', payload))
+        })
+      })
+    }
   } catch(e) {
     console.error("Zome call failed: ", payload, e)
     throw e
