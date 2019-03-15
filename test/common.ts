@@ -4,6 +4,7 @@ import * as sinon from 'sinon'
 import {Client as RpcClient, Server as RpcServer} from 'rpc-websockets'
 
 import {IntrceptrServer} from '../src/server'
+import {instanceIdFromAgentAndDna} from '../src/common'
 
 const tape = tapePromise(_tape)
 
@@ -17,9 +18,16 @@ const baseClient = () => {
 
 export const testMasterClient = () => {
   const client = baseClient()
+  const success = {success: true}
   client.call.withArgs('admin/dna/list').returns([])
-  client.call.withArgs('admin/ui/install').returns({success: true})
-  client.call.withArgs('admin/dna/install_from_file').returns({success: true})
+  client.call.withArgs('admin/dna/install_from_file').returns(success)
+  client.call.withArgs('admin/ui/install').returns(success)
+  client.call.withArgs('admin/instance/list').resolves([{
+    id: instanceIdFromAgentAndDna('fake-agent', 'simple-app')
+  }])
+  client.call.withArgs('admin/instance/add').resolves(success)
+  client.call.withArgs('admin/interface/add_instance').resolves(success)
+  client.call.withArgs('admin/instance/start').resolves(success)
   return client
 }
 
