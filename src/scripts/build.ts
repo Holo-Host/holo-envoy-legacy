@@ -13,7 +13,7 @@ const happs = [
   },
   {
     dnas: ['./src/shims/happ-data/holochain-basic-chat/dna-src/'],
-    ui: './src/shims/happ-data/holochain-basic-chat/ui-src/'
+    ui: './src/shims/happ-data/holochain-basic-chat/ui/'
   },
   // {
   //   dnas: ['./src/shims/happ-data/Holo-Hosting-App/dna-src/']
