@@ -1,7 +1,12 @@
 import * as test from 'tape'
 import * as sinon from 'sinon'
 
-import {mockResponse, sinonTest, testIntrceptr} from './common'
+import {
+  mockResponse, 
+  sinonTest, 
+  testIntrceptr,
+} from './common'
+import {instanceIdFromAgentAndDna} from '../src/common'
 import {serviceLoggerInstanceIdFromHappId} from '../src/config'
 import {IntrceptrServer} from '../src/server'
 import * as Z from '../src/flows/zome-call'
@@ -70,7 +75,7 @@ sinonTest('can call public zome function', async T => {
   })
 
   T.calledWith(publicClient.call, 'call', {
-    instance_id: 'agentId::dnaHash',
+    instance_id: instanceIdFromAgentAndDna('agentId', 'dnaHash'),
     params: request,
     function: 'function',
     zome: 'zome',

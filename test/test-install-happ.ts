@@ -4,7 +4,7 @@ import * as sinon from 'sinon'
 import {EventEmitter} from 'events'
 
 import {mockResponse, sinonTest, testIntrceptr} from './common'
-import {bundle, unbundle} from '../src/common'
+import {bundle, unbundle, instanceIdFromAgentAndDna} from '../src/common'
 import * as Config from '../src/config'
 import {HAPP_DATABASE} from '../src/shims/happ-server'
 import {serviceLoggerInstanceIdFromHappId} from '../src/config'
@@ -107,4 +107,37 @@ sinonTest('can install dnas and ui for hApp', async T => {
   })
 
   axiosStub.restore()
+})
+
+sinonTest('can setup instances', async T => {
+  const {masterClient} = testIntrceptr()
+
+  const happId = 'simple-app'
+  const dnaHash = HAPP_DATABASE['simple-app'].dnas[0].hash
+  const uiHash = HAPP_DATABASE['simple-app'].ui.hash
+  const agentId = 'fake-agent-id'
+  const instanceId = instanceIdFromAgentAndDna(agentId, dnaHash)
+  const result = M.setupInstances(masterClient, {happId, agentId, conductorInterface: Config.ConductorInterface.Public})
+  await T.doesNotReject(result)
+  T.callCount(masterClient.call, 5)
+
+  T.calledWith(masterClient.call.getCall(0), 'call', {
+    function: "TODO",
+    instance_id: Config.holoHostingAppId,
+    params: { happId },
+    zome: "hosts"
+  })
+  T.calledWith(masterClient.call.getCall(1), 'admin/instance/list')
+  T.calledWith(masterClient.call.getCall(2), 'admin/instance/add', { 
+    agent_id: agentId,
+    dna_id: dnaHash,
+    id: instanceId,
+  })
+  T.calledWith(masterClient.call.getCall(3), 'admin/interface/add_instance', { 
+    instance_id: instanceId, 
+    interface_id: Config.ConductorInterface.Public, 
+  })
+  T.calledWith(masterClient.call.getCall(4), 'admin/instance/start', { 
+    id: instanceId, 
+  })
 })

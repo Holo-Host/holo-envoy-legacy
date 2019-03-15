@@ -4,7 +4,13 @@ import * as os from 'os'
 import * as path from 'path'
 
 import {HappID} from '../types'
-import {fail, unbundle, uiIdFromHappId, zomeCallByInstance} from '../common'
+import {
+  fail, 
+  unbundle, 
+  uiIdFromHappId, 
+  zomeCallByInstance, 
+  instanceIdFromAgentAndDna
+} from '../common'
 import * as Config from '../config'
 import {HAPP_DATABASE, HappResource, HappEntry} from '../shims/happ-server'
 
@@ -141,7 +147,7 @@ export const setupInstances = async (client, opts: {happId: string, agentId: str
 
   const dnaPromises = dnas.map(async (dna) => {
     const dnaId = dna.hash
-    const instanceId = `${agentId}::${dnaId}`
+    const instanceId = instanceIdFromAgentAndDna(agentId, dnaId)
     return setupInstance(client, {
       dnaId, 
       agentId,
