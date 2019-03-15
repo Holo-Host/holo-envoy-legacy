@@ -5,6 +5,7 @@ import * as path from 'path'
 
 import {HappID} from '../types'
 import {
+  callWhenConnected,
   fail, 
   unbundle, 
   uiIdFromHappId, 
@@ -77,7 +78,7 @@ export const installDnasAndUi = async (client, opts: {happId: string, properties
   const results = ([] as any[]).concat(dnaResults)
 
   if (ui) {
-    const uiResult = await client.call('admin/ui/install', {
+    const uiResult = await callWhenConnected(client, 'admin/ui/install', {
       id: uiIdFromHappId(happId),
       root_dir: ui.path
     })
@@ -96,14 +97,14 @@ export const installDnasAndUi = async (client, opts: {happId: string, properties
 }
 
 const isDnaInstalled = async (client, dnaId) => {
-  const installedDnas = await client.call('admin/dna/list')
+  const installedDnas = await callWhenConnected(client, 'admin/dna/list', {})
   // TODO: make sure the true DNA hash and ID really match here.
   // for now this is checking with ID since for testing I'm not using real DNA hashes
   return (installedDnas.find(({id}) => id === dnaId))
 }
 
-export const installDna = async (client, {hash, path, properties}) => {
-  return client.call('admin/dna/install_from_file', {
+export const installDna = (client, {hash, path, properties}) => {
+  return callWhenConnected(client, 'admin/dna/install_from_file', {
     id: hash,
     path: path,
     expected_hash: hash,
@@ -114,25 +115,25 @@ export const installDna = async (client, {hash, path, properties}) => {
 
 const setupInstance = async (client, {instanceId, agentId, dnaId, conductorInterface}) => {
 
-  const instanceList = await client.call('admin/instance/list')
+  const instanceList = await callWhenConnected(client, 'admin/instance/list', {})
   if (instanceList.find(({id}) => id === instanceId)) {
     console.log(`Instance with ID ${instanceId} already set up; skipping.`)
     return {success: true}
   }
 
   // TODO handle case where instance exists
-  const addInstance = await client.call('admin/instance/add', {
+  const addInstance = await callWhenConnected(client, 'admin/instance/add', {
     id: instanceId,
     agent_id: agentId,
     dna_id: dnaId,
   })
 
-  const addToInterface = await client.call('admin/interface/add_instance', {
+  const addToInterface = await callWhenConnected(client, 'admin/interface/add_instance', {
     instance_id: instanceId,
     interface_id: conductorInterface,
   })
 
-  const startInstance = await client.call('admin/instance/start', {
+  const startInstance = await callWhenConnected(client, 'admin/instance/start', {
     id: instanceId
   })
 

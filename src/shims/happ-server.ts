@@ -31,12 +31,24 @@ export const HAPP_DATABASE = {
     dnas: [
       {
         location: 'http://localhost:3333/simple-app/dist/simple-app.dna.json',
-        hash: 'QmcnAdZJyDpJewK2sJPXTc5YUVg6ym6kink2n6MtJxVEze'
+        hash: 'QmUzZJmfXpxrwUcCeDV16DxeDF59PW2wSaFXzDpZZ33nVx'
       }
     ],
     ui: {
       location: 'http://localhost:3333/simple-app/ui.tar',
-      hash: 'Qm_UI_Simple_App_TODO'
+      hash: 'Qm_UI_Simple_App_simple'
+    },
+  },
+  'basic-chat': {
+    dnas: [
+      {
+        location: 'http://localhost:3333/holochain-basic-chat/dna/holo-chat.hcpkg',
+        hash: 'Qmd3zeMA5S5YWQ4QAZ6JTBPEEAEJwGmoSxkYn6y2Pm4PNV'
+      }
+    ],
+    ui: {
+      location: 'http://localhost:3333/holochain-basic-chat/ui.tar',
+      hash: 'Qm_UI_Simple_App_chat'
     },
   },
   // 'holo-hosting': {

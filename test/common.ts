@@ -13,6 +13,7 @@ export const mockResponse = {response: 'mock response'}
 const baseClient = () => {
   const client = sinon.stub(new RpcClient())
   client.call = sinon.stub()
+  client.ready = true
   return client
 }
 
@@ -62,9 +63,10 @@ export const sinonTest = (description, testFn) => {
       console.error("test function threw exception:", e)
       throw e
     } finally {
-      await promise
-      t.end()  
-      s.pass = s.fail = () => { throw "sinon.assert has been tainted by `sinonTest`" }
+      promise.catch(t.fail).then(() => {
+        s.pass = s.fail = () => { throw "sinon.assert has been tainted by `sinonTest`" }
+        t.end()  
+      })
     }
   })
 }
