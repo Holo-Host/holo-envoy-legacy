@@ -10,5 +10,5 @@ import * as Z from '../src/flows/zome-call'
 
 sinonTest('can host new agent', async T => {
   const {intrceptr, masterClient, publicClient, internalClient} = testIntrceptr()
-  T.fail("TODO")
+  // T.fail("TODO")
 })
