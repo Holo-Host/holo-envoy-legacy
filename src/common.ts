@@ -67,18 +67,7 @@ export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName
 
   try {
     console.info("Calling zome...", payload, client.call)
-
-    if(client.ready) {
-      return await client.call('call', payload)
-    } else {
-      return new Promise((resolve) => {
-        console.log('inside promise for call')
-        client.once('open', () => {
-          console.log('inside callback for connect')
-          resolve(client.call('call', payload))
-        })
-      })
-    }
+    return callWhenConnected(client, 'call', payload)
   } catch(e) {
     console.error("Zome call failed: ", payload, e)
     throw e
@@ -86,7 +75,19 @@ export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName
 }
 
 export const lookupInstance = async (client, {dnaHash, agentId}): Promise<Instance | null> => {
-  const instances = await client.call('info/instances').catch(fail)
+  const instances = await callWhenConnected(client, 'info/instances', {}).catch(fail)
   console.log('all instances: ', instances)
   return instances.find(inst => inst.dna === dnaHash && inst.agent === agentId) || null
+}
+
+export const callWhenConnected = async (client, method, payload) => {
+  if(client.ready) {
+    return await client.call(method, payload)
+  } else {
+    return new Promise((resolve) => {
+      client.once('open', () => {
+        resolve(client.call(method, payload))
+      })
+    })
+  }
 }
