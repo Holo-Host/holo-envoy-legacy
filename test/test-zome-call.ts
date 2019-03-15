@@ -1,7 +1,12 @@
 import * as test from 'tape'
 import * as sinon from 'sinon'
 
-import {mockResponse, sinonTest, testIntrceptr} from './common'
+import {
+  mockResponse, 
+  sinonTest, 
+  testIntrceptr,
+} from './common'
+import {instanceIdFromAgentAndDna} from '../src/common'
 import {serviceLoggerInstanceIdFromHappId} from '../src/config'
 import {IntrceptrServer} from '../src/server'
 import * as Z from '../src/flows/zome-call'
@@ -16,6 +21,8 @@ test('can calculate metrics', t => {
   })
   t.end()
 })
+
+// TODO: add tests for failure cases
 
 sinonTest('can call public zome function', async T => {
   const {intrceptr, masterClient, publicClient, internalClient} = testIntrceptr()
@@ -43,7 +50,7 @@ sinonTest('can call public zome function', async T => {
 
   T.callCount(internalClient.call, 2)
 
-  T.calledWith(internalClient.call, 'call', {
+  T.calledWith(internalClient.call.getCall(0), 'call', {
     instance_id: serviceLoggerInstanceId,
     zome: 'service',
     function: 'log_request', 
@@ -55,7 +62,7 @@ sinonTest('can call public zome function', async T => {
     }
   })
 
-  T.calledWith(internalClient.call, 'call', {
+  T.calledWith(internalClient.call.getCall(1), 'call', {
     instance_id: serviceLoggerInstanceId,
     zome: 'service',
     function: 'log_response', 
@@ -68,7 +75,7 @@ sinonTest('can call public zome function', async T => {
   })
 
   T.calledWith(publicClient.call, 'call', {
-    instance_id: 'agentId::dnaHash',
+    instance_id: instanceIdFromAgentAndDna('agentId', 'dnaHash'),
     params: request,
     function: 'function',
     zome: 'zome',

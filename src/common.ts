@@ -38,6 +38,7 @@ export const InstanceIds = {
 ///////////////////////////////////////////////////////////////////
 
 export const uiIdFromHappId = happId => happId + '-ui'
+export const instanceIdFromAgentAndDna = (agentId, dnaId) => `${agentId}::${dnaId}`
 
 export const removeInstanceFromCallString = callString => {
   return callString.split('/').slice(1).join('/')
@@ -45,7 +46,7 @@ export const removeInstanceFromCallString = callString => {
 
 export const zomeCallByDna = async (client, {agentId, dnaHash, zomeName, funcName, params}) => {
   // let instance = await lookupInstance(client, {dnaHash, agentId})
-  const instanceId = `${agentId}::${dnaHash}`
+  const instanceId = instanceIdFromAgentAndDna(agentId, dnaHash)
   console.log('instance found: ', instanceId)
   if (instanceId) {
     return await zomeCallByInstance(client, {instanceId, zomeName, funcName, params})
