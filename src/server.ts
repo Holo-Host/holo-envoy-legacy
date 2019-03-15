@@ -90,7 +90,10 @@ export class IntrceptrServer {
       if (ui) {
         const dir = ui.root_dir
         const hash = ui.id  // TODO: eventually needs to be hApp hash!
-        app.use(`/${happId}`, express.static(dir))
+        // This is a problem for webpages withs static assets!!!
+        // They are expecting to retrieve from / not /{happId}
+        // app.use(`/${happId}`, express.static(dir))
+        app.use(`/`, express.static(dir)) // will error if multiple apps are hosted
         console.log(`serving UI for '${happId}' from '${dir}'`)
       } else {
         console.warn(`App '${happId}' has no UI, skipping...`)
