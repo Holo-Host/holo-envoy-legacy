@@ -2,7 +2,7 @@
 	path = src/shims/happ-data/simple-app
 	url = git@github.com:holochain/simple-app.git
 [submodule "src/shims/happ-data/Holo-Hosting-App"]
-	path = src/shims/happ-data/Holo-Hosting-App
+	path = src/dnas/Holo-Hosting-App
 	url = git@github.com:Holo-Host/Holo-Hosting-App.git
 [submodule "src/shims/happ-data/servicelogger"]
 	path = src/dnas/servicelogger
