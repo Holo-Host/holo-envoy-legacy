@@ -37,9 +37,9 @@ const adminCall = (uri, data) => axios.post(`http://localhost:${C.PORTS.admin}/$
 
 //////////////////////////////////////////////////
 
-const install = async (dir, cmd) => {
-  const installSimple = await adminCall('holo/happs/install', {happId, agentId: C.hostAgentId})
-  console.log('install simple-app: ', installSimple.statusText, installSimple.status)
+const install = async (happId) => {
+  const result = await adminCall('holo/happs/install', {happId: happId, agentId: C.hostAgentId})
+  console.log(`install ${happId}: `, result.statusText, result.status)
   // const installHHA = await adminCall('holo/happs/install', {happId: 'holo-hosting', agentId: C.hostAgentId})
   // console.log('install holo-hosting-app: ', installHHA.statusText, installHHA.status)
 }
@@ -76,7 +76,7 @@ const zomeCallHosted = (dir, cmd) => withIntrceptrClient(async client => {
 })
 
 commander.version('0.0.1')
-commander.command('install').action(install)
+commander.command('install <happId>').action(install)
 commander.command('new-agent').action(newAgent)
 commander.command('zome-call-public').action(zomeCallPublic)
 commander.command('zome-call-hosted').action(zomeCallHosted)

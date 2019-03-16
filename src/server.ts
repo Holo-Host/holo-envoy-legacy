@@ -7,7 +7,7 @@
 import * as express from 'express'
 import {Client, Server as RpcServer} from 'rpc-websockets'
 
-import {agentIdFromKey, uiIdFromHappId} from './common'
+import {uiIdFromHappId} from './common'
 import * as C from './config'
 import installHapp, {InstallHappRequest, listHoloApps} from './flows/install-happ'
 import zomeCall, {CallRequest} from './flows/zome-call'
@@ -17,9 +17,9 @@ const successResponse = { success: true }
 
 export default (port) => new Promise((fulfill, reject) => {
   // clients to the interface served by the Conductor
-  const masterClient = new Client(`ws://localhost:${C.PORTS.masterInterface}`)
-  const publicClient = new Client(`ws://localhost:${C.PORTS.publicInterface}`)
-  const internalClient = new Client(`ws://localhost:${C.PORTS.internalInterface}`)
+  const masterClient = new Client(`ws://localhost:${C.PORTS.masterInterface}`, { max_reconnects: 0 }) // zero reconnects means unlimited
+  const publicClient = new Client(`ws://localhost:${C.PORTS.publicInterface}`, { max_reconnects: 0 })
+  const internalClient = new Client(`ws://localhost:${C.PORTS.internalInterface}`, { max_reconnects: 0 })
   console.debug("Connecting to admin and happ interfaces...")
   masterClient.once('open', () => {
     publicClient.once('open', () => {
@@ -90,7 +90,10 @@ export class IntrceptrServer {
       if (ui) {
         const dir = ui.root_dir
         const hash = ui.id  // TODO: eventually needs to be hApp hash!
-        app.use(`/${happId}`, express.static(dir))
+        // This is a problem for webpages withs static assets!!!
+        // They are expecting to retrieve from / not /{happId}
+        // app.use(`/${happId}`, express.static(dir))
+        app.use(`/`, express.static(dir)) // will error if multiple apps are hosted
         console.log(`serving UI for '${happId}' from '${dir}'`)
       } else {
         console.warn(`App '${happId}' has no UI, skipping...`)

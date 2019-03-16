@@ -30,10 +30,11 @@ sinonTest('can call public zome function', async T => {
   internalClient.call.withArgs('call').onFirstCall().returns('requestHash')
   internalClient.call.withArgs('call').onSecondCall().returns('responseHash')
   
-  const serviceLoggerInstanceId = serviceLoggerInstanceIdFromHappId('happId')
+  const happId = 'test-app-1'
+  const serviceLoggerInstanceId = serviceLoggerInstanceIdFromHappId(happId)
   const request = {params: 'params'}
   const call = {
-    happId: 'happId',
+    happId,
     agentId: 'agentId',
     dnaHash: 'dnaHash',
     zome: 'zome',

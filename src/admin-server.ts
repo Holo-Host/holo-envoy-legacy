@@ -6,14 +6,14 @@ import * as C from './config'
 import installHapp, {InstallHappRequest} from './flows/install-happ'
 
 export default (port) => {
-  const adminClient = new Client(`ws://localhost:${C.PORTS.masterInterface}`)
+  const masterClient = new Client(`ws://localhost:${C.PORTS.masterInterface}`)
 
   const app = express()
   app.use(bodyParser.json())
 
   app.post('/holo/happs/install', async (req, res, next) => {
     const {happId}: InstallHappRequest = req.body
-    installHapp(adminClient)({happId})
+    installHapp(masterClient)({happId})
       .then(() => res.send("Installation successful"))
       .catch(e => next(JSON.stringify(e)))
   })
