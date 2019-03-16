@@ -51,8 +51,8 @@ export const zomeCallByDna = async (client, {agentId, dnaHash, zomeName, funcNam
   if (instanceId) {
     return await zomeCallByInstance(client, {instanceId, zomeName, funcName, params})
   } else {
-    return errorResponse(`No instance found 
-      where agentId == '${agentId}' 
+    return errorResponse(`No instance found
+      where agentId == '${agentId}'
       and   dnaHash == '${dnaHash}'
     `)
   }
@@ -61,13 +61,13 @@ export const zomeCallByDna = async (client, {agentId, dnaHash, zomeName, funcNam
 export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName, params}) => {
   const payload = {
     instance_id: instanceId,
-    zome: zomeName, 
+    zome: zomeName,
     function: funcName,
     params
   }
 
   try {
-    console.info("Calling zome...", payload, client.call)
+    console.info("Calling zome...", payload)
     return callWhenConnected(client, 'call', payload)
   } catch(e) {
     console.error("Zome call failed: ", payload, e)
@@ -88,8 +88,8 @@ export const callWhenConnected = async (client, method, payload) => {
   } else {
     console.info("waiting to connect, so as to call...")
     return new Promise((resolve) => {
-      console.info("connected, calling...")
       client.once('open', () => {
+        console.info("connected, calling...")
         resolve(client.call(method, payload))
       })
     })

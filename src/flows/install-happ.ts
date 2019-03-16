@@ -6,10 +6,10 @@ import * as path from 'path'
 import {HappID} from '../types'
 import {
   callWhenConnected,
-  fail, 
-  unbundle, 
-  uiIdFromHappId, 
-  zomeCallByInstance, 
+  fail,
+  unbundle,
+  uiIdFromHappId,
+  zomeCallByInstance,
   instanceIdFromAgentAndDna
 } from '../common'
 import * as Config from '../config'
@@ -113,7 +113,7 @@ export const installDna = (client, {hash, path, properties}) => {
   })
 }
 
-const setupInstance = async (client, {instanceId, agentId, dnaId, conductorInterface}) => {
+export const setupInstance = async (client, {instanceId, agentId, dnaId, conductorInterface}) => {
 
   const instanceList = await callWhenConnected(client, 'admin/instance/list', {})
   if (instanceList.find(({id}) => id === instanceId)) {
@@ -151,7 +151,7 @@ export const setupInstances = async (client, opts: {happId: string, agentId: str
     const dnaId = dna.hash
     const instanceId = instanceIdFromAgentAndDna(agentId, dnaId)
     return setupInstance(client, {
-      dnaId, 
+      dnaId,
       agentId,
       instanceId,
       conductorInterface
@@ -182,7 +182,7 @@ const setupServiceLogger = async (masterClient, {hostedHappId}) => {
   await installDna(masterClient, {hash, path, properties})
   await setupInstance(masterClient, {instanceId, dnaId: hash, agentId, conductorInterface: Config.ConductorInterface.Internal })
 
-  // TODO NEXT: 
+  // TODO NEXT:
   // - Open client to Internal interface
   // - Make initial call to serviceLogger
 }
@@ -194,7 +194,7 @@ export const lookupHoloApp = async (client, {happId}: LookupHappRequest): Promis
   // and UIs are served as ZIP archives
 
   const _info = await zomeCallByInstance(client, {
-    instanceId: Config.holoHostingAppId, 
+    instanceId: Config.holoHostingAppId,
     zomeName: 'hosts',
     funcName: 'TODO',
     params: {happId}

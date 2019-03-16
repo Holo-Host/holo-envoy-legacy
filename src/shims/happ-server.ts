@@ -51,15 +51,17 @@ export const HAPP_DATABASE = {
       hash: 'Qm_UI_Simple_App_chat'
     },
   },
-  // 'holo-hosting': {
-  //   dnas: [
-  //     {
-  //       location: 'http://localhost:3333/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
-  //       hash: 'Qm_DNA_Holo_Hosting_App'
-  //     }
-  //   ]
-  // }
-  'test-app-1': {  // for testing only
+  'holo-hosting': {
+    dnas: [
+      {
+        location: 'http://localhost:3333/Holo-Hosting-App/dist/Holo-Hosting-App.dna.json',
+        hash: 'Qm_DNA_Holo_Hosting_App'
+      }
+    ]
+  },
+
+  // The following are for testing only
+  'test-app-1': {
     dnas: [
       {location: 'nowhere', hash: 'hash'},
     ],

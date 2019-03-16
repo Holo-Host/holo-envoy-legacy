@@ -1,13 +1,13 @@
-[submodule "shims/happ-data/simple-app"]
+[submodule "simple-app"]
 	path = src/shims/happ-data/simple-app
 	url = git@github.com:holochain/simple-app.git
-[submodule "src/shims/happ-data/Holo-Hosting-App"]
+[submodule "Holo-Hosting-App"]
 	path = src/dnas/Holo-Hosting-App
 	url = git@github.com:Holo-Host/Holo-Hosting-App.git
-[submodule "src/shims/happ-data/servicelogger"]
+[submodule "servicelogger"]
 	path = src/dnas/servicelogger
 	url = git@github.com:Holo-Host/servicelogger.git
-[submodule "src/shims/happ-data/holochain-basic-chat"]
+[submodule "holochain-basic-chat"]
 	path = src/shims/happ-data/holochain-basic-chat
 	url = https://github.com/holochain/holochain-basic-chat
 	branch = holofy

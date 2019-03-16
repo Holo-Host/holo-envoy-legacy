@@ -12,7 +12,8 @@
     "init": "ts-node -T init-conductor.ts",
     "conductor": "holochain -c ~/.holochain/holo/conductor-config.toml",
     "test": "ts-node test/index.ts | faucet",
-    "e2e": "ts-node src/end2end/one.ts"
+    "e2e": "ts-node src/end2end/one.ts",
+    "cmd": "ts-node src/end2end/command.ts"
   },
   "dependencies": {
     "axios": "^0.18.0",

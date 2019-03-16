@@ -4,11 +4,13 @@ import {Client} from 'rpc-websockets'
 
 import * as C from '../config'
 import {fail} from '../common'
+import {installHoloHostingApp} from '../conductor'
+import {getMasterClient} from '../server'
 import {HAPP_DATABASE} from '../shims/happ-server'
 
 process.on('unhandledRejection', (reason, p) => {
-  console.log("UNHANDLED REJECTION:")
-  console.log("reason: ", reason)
+  console.log("UNHANDLED REJECTION:", reason)
+  throw ("Command threw exception, see reason above ^^")
 })
 
 const happId = 'simple-app'
@@ -36,6 +38,18 @@ export const withIntrceptrClient = fn => {
 const adminCall = (uri, data) => axios.post(`http://localhost:${C.PORTS.admin}/${uri}`, data)
 
 //////////////////////////////////////////////////
+
+const init = async () => {
+  const client = getMasterClient()
+  return new Promise(resolve => {
+    client.once('open', () => {
+      installHoloHostingApp(client).then(() => {
+        client.close()
+        resolve()
+      })
+    })
+  })
+}
 
 const install = async (happId) => {
   const result = await adminCall('holo/happs/install', {happId: happId, agentId: C.hostAgentId})
@@ -76,6 +90,7 @@ const zomeCallHosted = (dir, cmd) => withIntrceptrClient(async client => {
 })
 
 commander.version('0.0.1')
+commander.command('init').action(init)
 commander.command('install <happId>').action(install)
 commander.command('new-agent').action(newAgent)
 commander.command('zome-call-public').action(zomeCallPublic)

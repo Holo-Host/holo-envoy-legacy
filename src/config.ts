@@ -18,6 +18,10 @@ export const DNAS = {
   serviceLogger: {
     path: 'src/dnas/servicelogger/dist/servicelogger.dna.json',
     hash: 'QmSfVCAibdfEAACx7UZ7kgTBKrDSKmBUrbKgTYMweN8frQ',
+  },
+  holoHosting: {
+    path: 'src/dnas/Holo-Hosting-App/dist/Holo-Hosting-App.dna.json',
+    hash: 'QmTODO',
   }
 }
 

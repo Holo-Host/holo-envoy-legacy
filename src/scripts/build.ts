@@ -12,6 +12,9 @@ const happs = [
     dnas: ['./src/dnas/servicelogger/']
   },
   {
+    dnas: ['./src/dnas/Holo-Hosting-App/']
+  },
+  {
     dnas: ['./src/shims/happ-data/holochain-basic-chat/dna-src/'],
     ui: './src/shims/happ-data/holochain-basic-chat/ui/'
   },
@@ -24,7 +27,7 @@ happs.forEach(happ => {
   if (happ.ui) {
     const dir = happ.ui
     execSync(`cd ${dir} && hc package --strip-meta`)
-    
+
     try {
       fs.unlinkSync(path.join(dir, 'ui.tar'))
     } catch {}
