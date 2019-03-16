@@ -29,16 +29,16 @@ export default (publicClient, internalClient) => async (call: CallRequest) => {
     signature,
   } = call
 
-  // const requestData = buildServiceLoggerRequestPackage(call)
-  // const requestEntryHash = await logServiceRequest(internalClient,
-  //   {happId, agentId, dnaHash, requestData})
+  const requestData = buildServiceLoggerRequestPackage(call)
+  const requestEntryHash = await logServiceRequest(internalClient,
+    {happId, agentId, dnaHash, requestData})
   const result = await zomeCallByDna(publicClient, {
     agentId, dnaHash, zomeName: zome, funcName: func, params
   })
-  // const responseData = buildServiceLoggerResponsePackage(result)
-  // const metrics = calcMetrics(requestData, responseData)
-  // const responseEntryHash = await logServiceResponse(internalClient,
-  //   {happId, requestEntryHash, responseData, metrics})
+  const responseData = buildServiceLoggerResponsePackage(result)
+  const metrics = calcMetrics(requestData, responseData)
+  const responseEntryHash = await logServiceResponse(internalClient,
+    {happId, requestEntryHash, responseData, metrics})
 
   return result
 }

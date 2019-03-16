@@ -6,6 +6,7 @@ import {Client as RpcClient, Server as RpcServer} from 'rpc-websockets'
 import * as Config from '../src/config'
 import {IntrceptrServer} from '../src/server'
 import {instanceIdFromAgentAndDna} from '../src/common'
+import {HAPP_DATABASE} from '../src/shims/happ-server'
 
 const tape = tapePromise(_tape)
 
@@ -28,7 +29,11 @@ export const testMasterClient = () => {
     params: {} 
   }
   const testDnas = []
-  const testApps = [{address: 'test-app-id', entry: 'fake entry'}]
+  // Stub HHA to say that all available apps are enabled
+  const testApps = Object.keys(HAPP_DATABASE).map(happId => ({
+    address: happId,
+    entry: 'fake entry',
+  }))
 
   client.call.withArgs('admin/agent/list').returns([{id: 'existing-agent-id'}])
   client.call.withArgs('admin/dna/list').returns(testDnas)

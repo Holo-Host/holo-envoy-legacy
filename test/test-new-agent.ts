@@ -37,7 +37,7 @@ sinonTest('can only host agent for enabled app', async T => {
   const {intrceptr, masterClient, publicClient, internalClient} = testIntrceptr()
   await newAgentFlow(masterClient)({
     agentId: 'agentId',
-    happId: 'test-app-id',
+    happId: 'test-app-3',
     signature: 'TODO unused signature'
   })
 
