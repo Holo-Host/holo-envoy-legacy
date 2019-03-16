@@ -49,7 +49,7 @@ export default client => async ({happId}: InstallHappRequest): Promise<InstallHa
   await setupServiceLogger(client, {hostedHappId: happId})
 }
 
-export const installDnasAndUi = async (client, opts: {happId: string, properties?: any}) => {
+export const installDnasAndUi = async (client, opts: {happId: string, properties?: any}): Promise<void> => {
   // TODO: fetch data from somewhere, write fetched files to temp dir and extract
   // TODO: used cached version if possible
   const {happId, properties} = opts
@@ -142,7 +142,7 @@ const setupInstance = async (client, {instanceId, agentId, dnaId, conductorInter
   ])
 }
 
-export const setupInstances = async (client, opts: {happId: string, agentId: string, conductorInterface: Config.ConductorInterface}) => {
+export const setupInstances = async (client, opts: {happId: string, agentId: string, conductorInterface: Config.ConductorInterface}): Promise<void> => {
   const {happId, agentId, conductorInterface} = opts
   const {dnas, ui} = await lookupHoloApp(client, {happId})
 
@@ -171,15 +171,15 @@ export const setupInstances = async (client, opts: {happId: string, agentId: str
   console.log("Instance setup successful!")
 }
 
-const setupServiceLogger = async (adminClient, {hostedHappId}) => {
+const setupServiceLogger = async (masterClient, {hostedHappId}) => {
   const {hash, path} = Config.DNAS.serviceLogger
   const instanceId = Config.serviceLoggerInstanceIdFromHappId(hostedHappId)
   const agentId = Config.hostAgentId
   const properties = {
     forApp: hostedHappId
   }
-  await installDna(adminClient, {hash, path, properties})
-  await setupInstance(adminClient, {instanceId, dnaId: hash, agentId, conductorInterface: Config.ConductorInterface.Internal })
+  await installDna(masterClient, {hash, path, properties})
+  await setupInstance(masterClient, {instanceId, dnaId: hash, agentId, conductorInterface: Config.ConductorInterface.Internal })
 
   // TODO NEXT: 
   // - Open client to Internal interface

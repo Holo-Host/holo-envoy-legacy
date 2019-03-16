@@ -3,6 +3,7 @@ import tapePromise from 'tape-promise'
 import * as sinon from 'sinon'
 import {Client as RpcClient, Server as RpcServer} from 'rpc-websockets'
 
+import * as Config from '../src/config'
 import {IntrceptrServer} from '../src/server'
 import {instanceIdFromAgentAndDna} from '../src/common'
 
@@ -20,7 +21,17 @@ const baseClient = () => {
 export const testMasterClient = () => {
   const client = baseClient()
   const success = {success: true}
-  client.call.withArgs('admin/dna/list').returns([])
+    const getEnabledAppArgs = { 
+    instance_id: Config.holoHostingAppId,
+    zome: 'host',
+    function: 'get_enabled_app',
+    params: {} 
+  }
+  const testDnas = []
+  const testApps = [{id: 'test-app'}]
+
+  client.call.withArgs('admin/agent/list').returns([{id: 'existing-agent-id'}])
+  client.call.withArgs('admin/dna/list').returns(testDnas)
   client.call.withArgs('admin/dna/install_from_file').returns(success)
   client.call.withArgs('admin/ui/install').returns(success)
   client.call.withArgs('admin/instance/list').resolves([{
@@ -29,6 +40,7 @@ export const testMasterClient = () => {
   client.call.withArgs('admin/instance/add').resolves(success)
   client.call.withArgs('admin/interface/add_instance').resolves(success)
   client.call.withArgs('admin/instance/start').resolves(success)
+  client.call.withArgs('call', getEnabledAppArgs).resolves(testApps)
   return client
 }
 
