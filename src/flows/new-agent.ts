@@ -25,7 +25,7 @@ export default (masterClient) => async ({
     funcName: 'get_enabled_app',
     params: {}
   })
-  if (enabledApps.find(app => console.log(`TODO check if app is enabled`, app))) {
+  if (enabledApps.find(app => app.address === happId)) {
     await createAgent(masterClient, agentId)
     await setupInstances(masterClient, {happId, agentId, conductorInterface: ConductorInterface.Public})
   } else {

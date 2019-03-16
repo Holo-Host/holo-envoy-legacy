@@ -59,4 +59,12 @@ export const HAPP_DATABASE = {
   //     }
   //   ]
   // }
+  'test-app-id': {  // for testing only
+    dnas: [
+      {location: 'nowhere', hash: 'hash'},
+      {location: 'nowhere', hash: 'hash'},
+      {location: 'nowhere', hash: 'hash'},
+    ],
+    ui: {location: 'nowhere', hash: 'hash'}
+  }
 }

@@ -28,7 +28,7 @@ export const testMasterClient = () => {
     params: {} 
   }
   const testDnas = []
-  const testApps = [{id: 'test-app'}]
+  const testApps = [{address: 'test-app-id', entry: 'fake entry'}]
 
   client.call.withArgs('admin/agent/list').returns([{id: 'existing-agent-id'}])
   client.call.withArgs('admin/dna/list').returns(testDnas)

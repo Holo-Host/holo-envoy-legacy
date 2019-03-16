@@ -37,11 +37,17 @@ sinonTest('can only host agent for enabled app', async T => {
   const {intrceptr, masterClient, publicClient, internalClient} = testIntrceptr()
   await newAgentFlow(masterClient)({
     agentId: 'agentId',
-    happId: 'test-app',
+    happId: 'test-app-id',
     signature: 'TODO unused signature'
   })
 
-  T.callCount(masterClient.call, 7)
+  // 16 calls:
+  // 1 for get_enabled_app
+  // 2 for createAgent
+  // 1 for lookupHoloApp
+  // 4 for each zome (x3)
+  // NB: the particulars of setupInstance are tested in test-install-happ
+  T.callCount(masterClient.call, 16)
   T.calledWith(masterClient.call.firstCall, 'call', {
     instance_id: Config.holoHostingAppId,
     zome: 'host',

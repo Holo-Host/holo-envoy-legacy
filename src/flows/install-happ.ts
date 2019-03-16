@@ -144,7 +144,8 @@ const setupInstance = async (client, {instanceId, agentId, dnaId, conductorInter
 
 export const setupInstances = async (client, opts: {happId: string, agentId: string, conductorInterface: Config.ConductorInterface}): Promise<void> => {
   const {happId, agentId, conductorInterface} = opts
-  const {dnas, ui} = await lookupHoloApp(client, {happId})
+  // NB: we don't actually use the UI info because we never install it into the conductor
+  const {dnas, ui: _} = await lookupHoloApp(client, {happId})
 
   const dnaPromises = dnas.map(async (dna) => {
     const dnaId = dna.hash
