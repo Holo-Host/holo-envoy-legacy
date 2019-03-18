@@ -46,15 +46,16 @@ export default client => async ({happId}: InstallHappRequest): Promise<InstallHa
     conductorInterface: Config.ConductorInterface.Public,
   })
   // TODO: is this the right place?
-  await setupServiceLogger(client, {hostedHappId: happId})
+  // await setupServiceLogger(client, {hostedHappId: happId})
 }
 
 export const installDnasAndUi = async (client, opts: {happId: string, properties?: any}): Promise<void> => {
   // TODO: fetch data from somewhere, write fetched files to temp dir and extract
   // TODO: used cached version if possible
   const {happId, properties} = opts
-  console.log('Installing hApp (TODO real happId)', happId)
-  const {ui, dnas} = await downloadAppResources(client, happId)
+  console.log('Installing hApp ', happId)
+  const {ui, dnas} = HAPP_DATABASE[happId]
+  // const {ui, dnas} = await downloadAppResources(client, happId)
 
   console.log('  DNAs: ', dnas.map(dna => dna.path))
   if (ui) {
@@ -193,12 +194,12 @@ export const lookupHoloApp = async (client, {happId}: LookupHappRequest): Promis
   // assuming DNAs are served as JSON packages
   // and UIs are served as ZIP archives
 
-  const _info = await zomeCallByInstance(client, {
-    instanceId: Config.holoHostingAppId, 
-    zomeName: 'hosts',
-    funcName: 'TODO',
-    params: {happId}
-  })
+  // const _info = await zomeCallByInstance(client, {
+  //   instanceId: Config.holoHostingAppId, 
+  //   zomeName: 'hosts',
+  //   funcName: 'TODO',
+  //   params: {happId}
+  // })
   if (!(happId in HAPP_DATABASE)) {
     throw `happId not found in shim database: ${happId}`
   }

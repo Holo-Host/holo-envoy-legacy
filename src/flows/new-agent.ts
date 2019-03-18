@@ -19,18 +19,18 @@ export default (masterClient) => async ({
   happId, 
   signature,
 }: NewAgentRequest): Promise<NewAgentResponse> => {
-  const enabledApps = await zomeCallByInstance(masterClient, {
-    instanceId: Config.holoHostingAppId, 
-    zomeName: 'host',
-    funcName: 'get_enabled_app',
-    params: {}
-  })
-  if (enabledApps.find(app => app.address === happId)) {
+  // const enabledApps = await zomeCallByInstance(masterClient, {
+  //   instanceId: Config.holoHostingAppId, 
+  //   zomeName: 'host',
+  //   funcName: 'get_enabled_app',
+  //   params: {}
+  // })
+  // if (enabledApps.find(app => app.address === happId)) {
     await createAgent(masterClient, agentId)
     await setupInstances(masterClient, {happId, agentId, conductorInterface: ConductorInterface.Public})
-  } else {
-    throw `App is not enabled for hosting: ${happId}`
-  }
+  // } else {
+  //   throw `App is not enabled for hosting: ${happId}`
+  // }
 }
 
 

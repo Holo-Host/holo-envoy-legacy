@@ -30,47 +30,47 @@ export const HAPP_DATABASE = {
   'simple-app': {
     dnas: [
       {
-        location: 'http://localhost:3333/simple-app/dist/simple-app.dna.json',
+        path: 'src/shims/happ-data/simple-app/dist/simple-app.dna.json',
         hash: 'QmUzZJmfXpxrwUcCeDV16DxeDF59PW2wSaFXzDpZZ33nVx'
       }
     ],
     ui: {
-      location: 'http://localhost:3333/simple-app/ui.tar',
+      path: 'src/shims/happ-data/simple-app/ui',
       hash: 'Qm_UI_Simple_App_simple'
     },
   },
   'basic-chat': {
     dnas: [
       {
-        location: 'http://localhost:3333/holochain-basic-chat/dna/holo-chat.hcpkg',
+        path: 'src/shims/happ-data/holochain-basic-chat/dna/holo-chat.hcpkg',
         hash: 'Qmd3zeMA5S5YWQ4QAZ6JTBPEEAEJwGmoSxkYn6y2Pm4PNV'
       }
     ],
     ui: {
-      location: 'http://localhost:3333/holochain-basic-chat/ui.tar',
+      path: 'src/shims/happ-data/holochain-basic-chat/ui',
       hash: 'Qm_UI_Simple_App_chat'
     },
   },
   // 'holo-hosting': {
   //   dnas: [
   //     {
-  //       location: 'http://localhost:3333/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
+  //       path: 'http://localhost:3333/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
   //       hash: 'Qm_DNA_Holo_Hosting_App'
   //     }
   //   ]
   // }
   'test-app-1': {  // for testing only
     dnas: [
-      {location: 'nowhere', hash: 'hash'},
+      {path: 'nowhere', hash: 'hash'},
     ],
-    ui: {location: 'nowhere', hash: 'hash'}
+    ui: {path: 'nowhere', hash: 'hash'}
   },
   'test-app-3': {  // for testing only
     dnas: [
-      {location: 'nowhere', hash: 'hash'},
-      {location: 'nowhere', hash: 'hash'},
-      {location: 'nowhere', hash: 'hash'},
+      {path: 'nowhere', hash: 'hash'},
+      {path: 'nowhere', hash: 'hash'},
+      {path: 'nowhere', hash: 'hash'},
     ],
-    ui: {location: 'nowhere', hash: 'hash'}
+    ui: {path: 'nowhere', hash: 'hash'}
   }
 }
