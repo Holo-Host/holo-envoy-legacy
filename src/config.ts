@@ -21,7 +21,7 @@ export const DNAS = {
   },
   holoHosting: {
     path: 'src/dnas/Holo-Hosting-App/dist/Holo-Hosting-App.dna.json',
-    hash: 'QmTODO',
+    hash: 'QmXuPFimMCoYQrXqX9vr1vve8JtpQ7smfkw1LugqEhyWTr',
   }
 }
 

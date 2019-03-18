@@ -55,7 +55,7 @@ export const HAPP_DATABASE = {
     dnas: [
       {
         location: 'http://localhost:3333/Holo-Hosting-App/dist/Holo-Hosting-App.dna.json',
-        hash: 'Qm_DNA_Holo_Hosting_App'
+        hash: 'QmXuPFimMCoYQrXqX9vr1vve8JtpQ7smfkw1LugqEhyWTr'
       }
     ]
   },
