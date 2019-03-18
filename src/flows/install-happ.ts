@@ -13,7 +13,7 @@ import {
   instanceIdFromAgentAndDna
 } from '../common'
 import * as Config from '../config'
-import {HAPP_DATABASE, HappResource, HappEntry} from '../shims/happ-server'
+import {HAPP_DATABASE, shimHappById, HappResource, HappEntry} from '../shims/happ-server'
 
 enum ResourceType {HappUi, HappDna}
 
@@ -199,18 +199,20 @@ export const lookupHoloApp = async (client, {happId}: LookupHappRequest): Promis
     funcName: 'get_enabled_app',
     params: {happId}
   })
-  if (!(happId in HAPP_DATABASE)) {
+  const happ = shimHappById(happId)
+  if (happ) {
+    return happ
+  } else {
     throw `happId not found in shim database: ${happId}`
   }
-  return HAPP_DATABASE[happId]
 }
 
 export const listHoloApps = () => {
   // TODO: call HHA's `get_my_registered_app` for real data
-  const fakeApps = Object.assign({}, HAPP_DATABASE)
-  for (const id in fakeApps) {
-    fakeApps[id].ui_hash = fakeApps[id].ui
-    fakeApps[id].dna_list = fakeApps[id].dnas
+  const fakeApps = ([] as any).concat(HAPP_DATABASE)
+  for (const i in fakeApps) {
+    fakeApps[i].ui_hash = fakeApps[i].ui
+    fakeApps[i].dna_list = fakeApps[i].dnas
   }
   return Promise.resolve(fakeApps)
 }

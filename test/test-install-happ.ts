@@ -6,7 +6,7 @@ import {EventEmitter} from 'events'
 import {mockResponse, sinonTest, testIntrceptr} from './common'
 import {bundle, unbundle, instanceIdFromAgentAndDna} from '../src/common'
 import * as Config from '../src/config'
-import {HAPP_DATABASE} from '../src/shims/happ-server'
+import {shimHappByNick} from '../src/shims/happ-server'
 import {serviceLoggerInstanceIdFromHappId} from '../src/config'
 
 import installHapp, * as M from '../src/flows/install-happ'
@@ -19,6 +19,8 @@ sinon.stub(fs, 'createWriteStream').returns(new EventEmitter())
 sinon.stub(fs, 'renameSync')
 sinon.stub(bundle)
 sinon.stub(unbundle)
+
+const simpleApp = shimHappByNick('simple-app')
 
 const axiosResponse = (status) => {
   return {
@@ -81,8 +83,8 @@ sinonTest('can install dnas and ui for hApp', async T => {
   const axiosStub = sinon.stub(axios, 'request')
     .resolves(axiosResponse(200))
   const happId = 'simple-app'
-  const dnaHash = HAPP_DATABASE['simple-app'].dnas[0].hash
-  const uiHash = HAPP_DATABASE['simple-app'].ui.hash
+  const dnaHash = simpleApp.dnas[0].hash
+  const uiHash = simpleApp.ui.hash
   const result = M.installDnasAndUi(masterClient, {happId})
   await T.doesNotReject(result)
   T.callCount(masterClient.call, 4)
@@ -113,8 +115,8 @@ sinonTest('can setup instances', async T => {
   const {masterClient} = testIntrceptr()
 
   const happId = 'simple-app'
-  const dnaHash = HAPP_DATABASE['simple-app'].dnas[0].hash
-  const uiHash = HAPP_DATABASE['simple-app'].ui.hash
+  const dnaHash = simpleApp.dnas[0].hash
+  const uiHash = simpleApp.ui.hash
   const agentId = 'fake-agent-id'
   const instanceId = instanceIdFromAgentAndDna(agentId, dnaHash)
   const result = M.setupInstances(masterClient, {happId, agentId, conductorInterface: Config.ConductorInterface.Public})

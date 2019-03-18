@@ -30,7 +30,7 @@ export const testMasterClient = () => {
   }
   const testDnas = []
   // Stub HHA to say that all available apps are enabled
-  const testApps = Object.keys(HAPP_DATABASE).map(happId => ({
+  const testApps = HAPP_DATABASE.map(({happId}) => ({
     address: happId,
     entry: 'fake entry',
   }))

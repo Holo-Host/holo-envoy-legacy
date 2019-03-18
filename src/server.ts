@@ -90,7 +90,7 @@ export class IntrceptrServer {
     for (const ui of uis) {
       uisById[ui.id] = ui
     }
-    Object.keys(happs).forEach(happId => {
+    happs.forEach(({happId}) => {
       const ui = uisById[uiIdFromHappId(happId)]
       if (ui) {
         const dir = ui.root_dir

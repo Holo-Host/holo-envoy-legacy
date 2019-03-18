@@ -7,7 +7,7 @@ export type HappResource = {
 
 export type HappEntry = {
   dnas: Array<HappResource>
-  ui: HappResource | void
+  ui?: HappResource | void
 }
 
 export default (shimPort, uiPort) => {
@@ -26,8 +26,13 @@ export default (shimPort, uiPort) => {
   uiServer.start()
 }
 
-export const HAPP_DATABASE = {
-  'simple-app': {
+export const shimHappByNick = nick => HAPP_DATABASE.find(a => a.nick === nick)
+export const shimHappById = happId => HAPP_DATABASE.find(a => a.happId === happId)
+
+export const HAPP_DATABASE = [
+  {
+    happId: 'TODO',
+    nick: 'simple-app',
     dnas: [
       {
         location: 'http://localhost:3333/simple-app/dist/simple-app.dna.json',
@@ -39,7 +44,9 @@ export const HAPP_DATABASE = {
       hash: 'Qm_UI_Simple_App_simple'
     },
   },
-  'basic-chat': {
+  {
+    happId: 'QmUV3uZBnTvGenTLfMKWwA2WpiZMtnntwCWZ74r6qDC6hb',
+    nick: 'basic-chat',
     dnas: [
       {
         location: 'http://localhost:3333/holochain-basic-chat/dna/holo-chat.hcpkg',
@@ -51,7 +58,9 @@ export const HAPP_DATABASE = {
       hash: 'Qm_UI_Simple_App_chat'
     },
   },
-  'holo-hosting': {
+  {
+    happId: 'holo-hosting',
+    nick: 'holo-hosting',
     dnas: [
       {
         location: 'http://localhost:3333/Holo-Hosting-App/dist/Holo-Hosting-App.dna.json',
@@ -61,13 +70,17 @@ export const HAPP_DATABASE = {
   },
 
   // The following are for testing only
-  'test-app-1': {
+  {
+    happId: 'test-app-1',
+    nick: 'test-app-1',
     dnas: [
       {location: 'nowhere', hash: 'hash'},
     ],
     ui: {location: 'nowhere', hash: 'hash'}
   },
-  'test-app-3': {  // for testing only
+  {
+    happId: 'test-app-3',
+    nick: 'test-app-3',
     dnas: [
       {location: 'nowhere', hash: 'hash'},
       {location: 'nowhere', hash: 'hash'},
@@ -75,4 +88,4 @@ export const HAPP_DATABASE = {
     ],
     ui: {location: 'nowhere', hash: 'hash'}
   }
-}
+]
