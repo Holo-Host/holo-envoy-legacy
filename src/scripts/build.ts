@@ -12,7 +12,7 @@ const happs = [
     dnas: ['./src/dnas/servicelogger/']
   },
   {
-    dnas: ['./src/dnas/Holo-Hosting-App/']
+    dnas: ['./src/dnas/Holo-Hosting-App/dna-src/']
   },
   {
     dnas: ['./src/shims/happ-data/holochain-basic-chat/dna-src/'],

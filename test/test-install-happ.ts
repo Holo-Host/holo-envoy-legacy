@@ -91,7 +91,7 @@ sinonTest('can install dnas and ui for hApp', async T => {
     function: "TODO",
     instance_id: Config.holoHostingAppId,
     params: { happId },
-    zome: "hosts"
+    zome: "host"
   })
   T.calledWith(masterClient.call.getCall(1), 'admin/dna/list')
   T.calledWith(masterClient.call.getCall(2), 'admin/dna/install_from_file', { 
@@ -125,7 +125,7 @@ sinonTest('can setup instances', async T => {
     function: "TODO",
     instance_id: Config.holoHostingAppId,
     params: { happId },
-    zome: "hosts"
+    zome: "host"
   })
   T.calledWith(masterClient.call.getCall(1), 'admin/instance/list')
   T.calledWith(masterClient.call.getCall(2), 'admin/instance/add', { 

@@ -20,7 +20,7 @@ export const DNAS = {
     hash: 'QmSfVCAibdfEAACx7UZ7kgTBKrDSKmBUrbKgTYMweN8frQ',
   },
   holoHosting: {
-    path: 'src/dnas/Holo-Hosting-App/dist/Holo-Hosting-App.dna.json',
+    path: 'src/dnas/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
     hash: 'QmXuPFimMCoYQrXqX9vr1vve8JtpQ7smfkw1LugqEhyWTr',
   }
 }

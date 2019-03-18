@@ -195,8 +195,8 @@ export const lookupHoloApp = async (client, {happId}: LookupHappRequest): Promis
 
   const _info = await zomeCallByInstance(client, {
     instanceId: Config.holoHostingAppId,
-    zomeName: 'hosts',
-    funcName: 'TODO',
+    zomeName: 'host',
+    funcName: 'get_enabled_app',
     params: {happId}
   })
   if (!(happId in HAPP_DATABASE)) {
