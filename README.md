@@ -60,4 +60,9 @@ Upon which it will immediately connect to the Conductor at the admin websocket i
 
 ## More info
 
+If at any time you want to update the submodules to the latest commit run the command
+```
+git submodule update --remote --merge
+```
+
 See https://hackmd.io/5xL7XKp5Srm_Ez5_eTxAOQ for latest design considerations. See also https://hackmd.io/cvXMlcffThSpN-C5WrfGzg for an earlier design doc with the broader picture but possibly outdated details.

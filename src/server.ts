@@ -125,7 +125,16 @@ export class IntrceptrServer {
   identifyAgent = ({agentId}, ws) => {
     // TODO: also take salt and signature of salt to prove browser owns agent ID
     console.log("adding new event to server", `agent/${agentId}/sign`)
-    this.server.event(`agent/${agentId}/sign`)
+
+    try {
+      this.server.event(`agent/${agentId}/sign`)
+    } catch (e) {
+      if (e.message.includes('Already registered event')) {
+        console.log('welcome back', agentId)
+      } else {
+        throw e
+      }
+    }
 
     console.log('identified as ', agentId)
     // if (!this.sockets[agentId]) {
