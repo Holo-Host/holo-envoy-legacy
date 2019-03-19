@@ -20,7 +20,7 @@ sinon.stub(fs, 'renameSync')
 sinon.stub(bundle)
 sinon.stub(unbundle)
 
-const simpleApp = shimHappByNick('simple-app')
+const simpleApp = shimHappByNick('simple-app')!
 
 const axiosResponse = (status) => {
   return {
@@ -65,7 +65,7 @@ sinonTest('throws error for unreachable resources', async T => {
 
   const axiosStub = sinon.stub(axios, 'request')
     .resolves(axiosResponse(404))
-  const happId = 'simple-app'
+  const happId = simpleApp.happId
 
   await T.rejects(
     M.installDnasAndUi(masterClient, {happId}),
@@ -82,18 +82,18 @@ sinonTest('can install dnas and ui for hApp', async T => {
 
   const axiosStub = sinon.stub(axios, 'request')
     .resolves(axiosResponse(200))
-  const happId = 'simple-app'
+  const happId = simpleApp.happId
   const dnaHash = simpleApp.dnas[0].hash
-  const uiHash = simpleApp.ui.hash
+  const uiHash = simpleApp.ui!.hash
   const result = M.installDnasAndUi(masterClient, {happId})
   await T.doesNotReject(result)
   T.callCount(masterClient.call, 4)
 
   T.calledWith(masterClient.call.getCall(0), 'call', {
-    function: "TODO",
     instance_id: Config.holoHostingAppId,
+    function: "get_enabled_app",
+    zome: "host",
     params: { happId },
-    zome: "host"
   })
   T.calledWith(masterClient.call.getCall(1), 'admin/dna/list')
   T.calledWith(masterClient.call.getCall(2), 'admin/dna/install_from_file', { 
@@ -114,9 +114,9 @@ sinonTest('can install dnas and ui for hApp', async T => {
 sinonTest('can setup instances', async T => {
   const {masterClient} = testIntrceptr()
 
-  const happId = 'simple-app'
+  const happId = simpleApp.happId
   const dnaHash = simpleApp.dnas[0].hash
-  const uiHash = simpleApp.ui.hash
+  const uiHash = simpleApp.ui!.hash
   const agentId = 'fake-agent-id'
   const instanceId = instanceIdFromAgentAndDna(agentId, dnaHash)
   const result = M.setupInstances(masterClient, {happId, agentId, conductorInterface: Config.ConductorInterface.Public})
@@ -124,10 +124,10 @@ sinonTest('can setup instances', async T => {
   T.callCount(masterClient.call, 5)
 
   T.calledWith(masterClient.call.getCall(0), 'call', {
-    function: "TODO",
     instance_id: Config.holoHostingAppId,
+    function: "get_enabled_app",
+    zome: "host",
     params: { happId },
-    zome: "host"
   })
   T.calledWith(masterClient.call.getCall(1), 'admin/instance/list')
   T.calledWith(masterClient.call.getCall(2), 'admin/instance/add', { 

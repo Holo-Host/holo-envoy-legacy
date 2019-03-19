@@ -70,6 +70,7 @@ const install = async (happNick) => {
     }
   })
   console.log(`enable ${happId}: `, hostResult)
+  client.close()
 }
 
 const newAgent = (dir, cmd) => withIntrceptrClient(async client => {
