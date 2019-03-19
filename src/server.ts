@@ -92,8 +92,7 @@ export class IntrceptrServer {
         const hash = ui.id  // TODO: eventually needs to be hApp hash!
         // This is a problem for webpages withs static assets!!!
         // They are expecting to retrieve from / not /{happId}
-        // app.use(`/${happId}`, express.static(dir))
-        app.use(`/`, express.static(dir)) // will error if multiple apps are hosted
+        app.use(`/${happId}`, express.static(dir)) // will error if multiple apps are hosted
         console.log(`serving UI for '${happId}' from '${dir}'`)
       } else {
         console.warn(`App '${happId}' has no UI, skipping...`)
@@ -126,7 +125,16 @@ export class IntrceptrServer {
   identifyAgent = ({agentId}, ws) => {
     // TODO: also take salt and signature of salt to prove browser owns agent ID
     console.log("adding new event to server", `agent/${agentId}/sign`)
-    this.server.event(`agent/${agentId}/sign`)
+
+    try {
+      this.server.event(`agent/${agentId}/sign`)
+    } catch (e) {
+      if (e.message.includes('Already registered event')) {
+        console.log('welcome back', agentId)
+      } else {
+        throw e
+      }
+    }
 
     console.log('identified as ', agentId)
     // if (!this.sockets[agentId]) {
