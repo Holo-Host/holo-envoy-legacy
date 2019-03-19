@@ -68,8 +68,8 @@ export const testIntrceptr = () => {
   return {intrceptr, masterClient, publicClient, internalClient}
 }
 
-export const sinonTest = (description, testFn) => {
-  tape(description, async t => {
+const _sinonTest = (tapeRunner, description, testFn) => {
+  tapeRunner(description, async t => {
     const s = Object.assign(sinon.assert, t)
     s.pass = t.pass
     s.fail = t.fail
@@ -87,3 +87,6 @@ export const sinonTest = (description, testFn) => {
     }
   })
 }
+
+export const sinonTest = (description, testFn) => _sinonTest(tape, description, testFn)
+sinonTest.only = (description, testFn) => _sinonTest(tape.only, description, testFn)

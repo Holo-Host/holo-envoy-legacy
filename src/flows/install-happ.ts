@@ -10,7 +10,8 @@ import {
   unbundle,
   uiIdFromHappId,
   zomeCallByInstance,
-  instanceIdFromAgentAndDna
+  instanceIdFromAgentAndDna, 
+  serviceLoggerInstanceIdFromHappId,
 } from '../common'
 import * as Config from '../config'
 import {HAPP_DATABASE, shimHappById, HappResource, HappEntry} from '../shims/happ-server'
@@ -53,7 +54,7 @@ export const installDnasAndUi = async (client, opts: {happId: string, properties
   // TODO: fetch data from somewhere, write fetched files to temp dir and extract
   // TODO: used cached version if possible
   const {happId, properties} = opts
-  console.log('Installing hApp (TODO real happId)', happId)
+  console.log('Installing hApp ', happId)
   const {ui, dnas} = await downloadAppResources(client, happId)
 
   console.log('  DNAs: ', dnas.map(dna => dna.path))
@@ -172,9 +173,9 @@ export const setupInstances = async (client, opts: {happId: string, agentId: str
   console.log("Instance setup successful!")
 }
 
-const setupServiceLogger = async (masterClient, {hostedHappId}) => {
+export const setupServiceLogger = async (masterClient, {hostedHappId}) => {
   const {hash, path} = Config.DNAS.serviceLogger
-  const instanceId = Config.serviceLoggerInstanceIdFromHappId(hostedHappId)
+  const instanceId = serviceLoggerInstanceIdFromHappId(hostedHappId)
   const agentId = Config.hostAgentId
   const properties = {
     forApp: hostedHappId

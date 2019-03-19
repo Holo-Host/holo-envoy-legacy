@@ -23,26 +23,20 @@ export const sequentialPromises = tasks => tasks.reduce((promiseChain, currentTa
   );
 }, Promise.resolve([]))
 
-///////////////////////////////////////////////////////////////////
-///////////////////////     CONFIG     ////////////////////////////
-///////////////////////////////////////////////////////////////////
-
-export const InstanceIds = {
-  holoHosting: `holo-hosting`,
-  serviceLogs: happId => `service-logs-${happId}`
-}
-
 
 ///////////////////////////////////////////////////////////////////
 ///////////////////////      UTIL      ////////////////////////////
 ///////////////////////////////////////////////////////////////////
 
-export const uiIdFromHappId = happId => happId + '-ui'
-export const instanceIdFromAgentAndDna = (agentId, dnaId) => `${agentId}::${dnaId}`
-
-export const removeInstanceFromCallString = callString => {
-  return callString.split('/').slice(1).join('/')
-}
+export const uiIdFromHappId = (
+  happId => happId + '-ui'
+)
+export const instanceIdFromAgentAndDna = (agentId, dnaId) => (
+  `${agentId}::${dnaId}`
+)
+export const serviceLoggerInstanceIdFromHappId = hostedHappId => (
+  `servicelogger-${hostedHappId}`
+)
 
 export const zomeCallByDna = async (client, {agentId, dnaHash, zomeName, funcName, params}) => {
   // let instance = await lookupInstance(client, {dnaHash, agentId})

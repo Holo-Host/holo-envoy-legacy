@@ -35,5 +35,3 @@ export const PORTS = {
   publicInterface: 4444,
   internalInterface: 2222,
 }
-
-export const serviceLoggerInstanceIdFromHappId = hostedHappId => `servicelogger-${hostedHappId}`

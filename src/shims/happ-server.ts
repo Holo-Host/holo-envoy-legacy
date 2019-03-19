@@ -31,12 +31,12 @@ export const shimHappById = happId => HAPP_DATABASE.find(a => a.happId === happI
 
 export const HAPP_DATABASE = [
   {
-    happId: 'TODO',
+    happId: 'QmSaU6meHqcLm8351EA5FMQtE11uedP2MMhpoQajqpch1Y',
     nick: 'simple-app',
     dnas: [
       {
         location: 'http://localhost:3333/simple-app/dist/simple-app.dna.json',
-        hash: 'QmUzZJmfXpxrwUcCeDV16DxeDF59PW2wSaFXzDpZZ33nVx'
+        hash: 'QmcnAdZJyDpJewK2sJPXTc5YUVg6ym6kink2n6MtJxVEze'
       }
     ],
     ui: {
