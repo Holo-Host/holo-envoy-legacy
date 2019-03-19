@@ -6,8 +6,10 @@ import {
   sinonTest, 
   testIntrceptr,
 } from './common'
-import {instanceIdFromAgentAndDna} from '../src/common'
-import {serviceLoggerInstanceIdFromHappId} from '../src/config'
+import {
+  instanceIdFromAgentAndDna,
+  serviceLoggerInstanceIdFromHappId,
+} from '../src/common'
 import {IntrceptrServer} from '../src/server'
 import * as Z from '../src/flows/zome-call'
 

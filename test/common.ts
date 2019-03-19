@@ -30,7 +30,7 @@ export const testMasterClient = () => {
   }
   const testDnas = []
   // Stub HHA to say that all available apps are enabled
-  const testApps = Object.keys(HAPP_DATABASE).map(happId => ({
+  const testApps = HAPP_DATABASE.map(({happId}) => ({    
     address: happId,
     entry: 'fake entry',
   }))
@@ -45,7 +45,7 @@ export const testMasterClient = () => {
   client.call.withArgs('admin/instance/add').resolves(success)
   client.call.withArgs('admin/interface/add_instance').resolves(success)
   client.call.withArgs('admin/instance/start').resolves(success)
-  client.call.withArgs('call', getEnabledAppArgs).resolves(testApps)
+  client.call.withArgs('call', getEnabledAppArgs).resolves({Ok: testApps})
   return client
 }
 
@@ -68,8 +68,8 @@ export const testIntrceptr = () => {
   return {intrceptr, masterClient, publicClient, internalClient}
 }
 
-export const sinonTest = (description, testFn) => {
-  tape(description, async t => {
+const _sinonTest = (tapeRunner, description, testFn) => {
+  tapeRunner(description, async t => {
     const s = Object.assign(sinon.assert, t)
     s.pass = t.pass
     s.fail = t.fail
@@ -87,3 +87,6 @@ export const sinonTest = (description, testFn) => {
     }
   })
 }
+
+export const sinonTest = (description, testFn) => _sinonTest(tape, description, testFn)
+sinonTest.only = (description, testFn) => _sinonTest(tape.only, description, testFn)

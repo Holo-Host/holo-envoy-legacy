@@ -1,6 +1,6 @@
 
 import {Instance, HappID} from '../types'
-import {callWhenConnected, errorResponse, fail, InstanceIds, zomeCallByInstance} from '../common'
+import {callWhenConnected, errorResponse, fail, zomeCallByInstance} from '../common'
 import {ConductorInterface} from '../config'
 import * as Config from '../config'
 import {setupInstances} from './install-happ'
@@ -25,7 +25,7 @@ export default (masterClient) => async ({
     funcName: 'get_enabled_app',
     params: {}
   })
-  if (enabledApps.find(app => app.address === happId)) {
+  if (enabledApps.Ok.find(app => app.address === happId)) {
     await createAgent(masterClient, agentId)
     await setupInstances(masterClient, {happId, agentId, conductorInterface: ConductorInterface.Public})
   } else {

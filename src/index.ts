@@ -11,6 +11,8 @@ import startAdminServer from './admin-server'
 import startShimServers from './shims/happ-server'
 import * as C from './config'
 
+console.debug = () => {}
+
 console.log('----------------------------------')
 
 process.on('unhandledRejection', (reason, p) => {

@@ -17,9 +17,9 @@ const successResponse = { success: true }
 
 export default (port) => new Promise((fulfill, reject) => {
   // clients to the interface served by the Conductor
-  const masterClient = new Client(`ws://localhost:${C.PORTS.masterInterface}`, { max_reconnects: 0 }) // zero reconnects means unlimited
-  const publicClient = new Client(`ws://localhost:${C.PORTS.publicInterface}`, { max_reconnects: 0 })
-  const internalClient = new Client(`ws://localhost:${C.PORTS.internalInterface}`, { max_reconnects: 0 })
+  const masterClient = getMasterClient()
+  const publicClient = getPublicClient()
+  const internalClient = getInternalClient()
   console.debug("Connecting to admin and happ interfaces...")
   masterClient.once('open', () => {
     publicClient.once('open', () => {
@@ -31,6 +31,11 @@ export default (port) => new Promise((fulfill, reject) => {
     })
   })
 })
+
+const clientOpts = { max_reconnects: 0 }  // zero reconnects means unlimited
+export const getMasterClient = () => new Client(`ws://localhost:${C.PORTS.masterInterface}`, clientOpts)
+export const getPublicClient = () => new Client(`ws://localhost:${C.PORTS.publicInterface}`, clientOpts)
+export const getInternalClient = () => new Client(`ws://localhost:${C.PORTS.internalInterface}`, clientOpts)
 
 type SigningRequest = {
   entry: Object,
@@ -71,7 +76,7 @@ export class IntrceptrServer {
     httpServer.listen(port, () => console.log('HTTP server running on port', port))
     wss.on('listening', () => console.log("Websocket server listening on port", port))
     wss.on('error', data => console.log("<C> error: ", data))
-    
+
     this.server = wss
   }
 
@@ -85,7 +90,7 @@ export class IntrceptrServer {
     for (const ui of uis) {
       uisById[ui.id] = ui
     }
-    Object.keys(happs).forEach(happId => {
+    happs.forEach(({happId}) => {
       const ui = uisById[uiIdFromHappId(happId)]
       if (ui) {
         const dir = ui.root_dir
@@ -98,7 +103,7 @@ export class IntrceptrServer {
         console.warn(`App '${happId}' has no UI, skipping...`)
       }
     })
-    
+
     // TODO: redirect to ports of conductor UI interfaces
     return require('http').createServer(app)
   }
@@ -118,14 +123,13 @@ export class IntrceptrServer {
     return wss
   }
 
-  
+
   // TODO: service log signature endpoint
 
 
   identifyAgent = ({agentId}, ws) => {
     // TODO: also take salt and signature of salt to prove browser owns agent ID
     console.log("adding new event to server", `agent/${agentId}/sign`)
-
     try {
       this.server.event(`agent/${agentId}/sign`)
     } catch (e) {
@@ -137,16 +141,6 @@ export class IntrceptrServer {
     }
 
     console.log('identified as ', agentId)
-    // if (!this.sockets[agentId]) {
-    //   this.sockets[agentId] = [ws]
-    // } else {
-    //   this.sockets[agentId].push(ws)
-    // }
-    // ws.on('close', () => {
-    //   // remove the closed socket
-    //   this.sockets[agentId] = this.sockets[agentId].filter(socket => socket !== ws)
-    // })
-
     return { agentId }
   }
 

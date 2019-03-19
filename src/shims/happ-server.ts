@@ -7,7 +7,7 @@ export type HappResource = {
 
 export type HappEntry = {
   dnas: Array<HappResource>
-  ui: HappResource | void
+  ui?: HappResource | void
 }
 
 export default (shimPort, uiPort) => {
@@ -26,12 +26,17 @@ export default (shimPort, uiPort) => {
   uiServer.start()
 }
 
-export const HAPP_DATABASE = {
-  'simple-app': {
+export const shimHappByNick = nick => HAPP_DATABASE.find(a => a.nick === nick)
+export const shimHappById = happId => HAPP_DATABASE.find(a => a.happId === happId)
+
+export const HAPP_DATABASE = [
+  {
+    happId: 'QmSaU6meHqcLm8351EA5FMQtE11uedP2MMhpoQajqpch1Y',
+    nick: 'simple-app',
     dnas: [
       {
         location: 'http://localhost:3333/simple-app/dist/simple-app.dna.json',
-        hash: 'QmUzZJmfXpxrwUcCeDV16DxeDF59PW2wSaFXzDpZZ33nVx'
+        hash: 'QmcnAdZJyDpJewK2sJPXTc5YUVg6ym6kink2n6MtJxVEze'
       }
     ],
     ui: {
@@ -39,7 +44,9 @@ export const HAPP_DATABASE = {
       hash: 'Qm_UI_Simple_App_simple'
     },
   },
-  'basic-chat': {
+  {
+    happId: 'QmUV3uZBnTvGenTLfMKWwA2WpiZMtnntwCWZ74r6qDC6hb',
+    nick: 'basic-chat',
     dnas: [
       {
         location: 'http://localhost:3333/holochain-basic-chat/dna/holo-chat.hcpkg',
@@ -51,21 +58,29 @@ export const HAPP_DATABASE = {
       hash: 'Qm_UI_Simple_App_chat'
     },
   },
-  // 'holo-hosting': {
-  //   dnas: [
-  //     {
-  //       location: 'http://localhost:3333/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
-  //       hash: 'Qm_DNA_Holo_Hosting_App'
-  //     }
-  //   ]
-  // }
-  'test-app-1': {  // for testing only
+  {
+    happId: 'holo-hosting',
+    nick: 'holo-hosting',
+    dnas: [
+      {
+        location: 'http://localhost:3333/Holo-Hosting-App/dist/Holo-Hosting-App.dna.json',
+        hash: 'QmXuPFimMCoYQrXqX9vr1vve8JtpQ7smfkw1LugqEhyWTr'
+      }
+    ]
+  },
+
+  // The following are for testing only
+  {
+    happId: 'test-app-1',
+    nick: 'test-app-1',
     dnas: [
       {location: 'nowhere', hash: 'hash'},
     ],
     ui: {location: 'nowhere', hash: 'hash'}
   },
-  'test-app-3': {  // for testing only
+  {
+    happId: 'test-app-3',
+    nick: 'test-app-3',
     dnas: [
       {location: 'nowhere', hash: 'hash'},
       {location: 'nowhere', hash: 'hash'},
@@ -73,4 +88,4 @@ export const HAPP_DATABASE = {
     ],
     ui: {location: 'nowhere', hash: 'hash'}
   }
-}
+]

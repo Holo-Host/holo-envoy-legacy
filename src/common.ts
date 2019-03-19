@@ -23,26 +23,20 @@ export const sequentialPromises = tasks => tasks.reduce((promiseChain, currentTa
   );
 }, Promise.resolve([]))
 
-///////////////////////////////////////////////////////////////////
-///////////////////////     CONFIG     ////////////////////////////
-///////////////////////////////////////////////////////////////////
-
-export const InstanceIds = {
-  holoHosting: `holo-hosting`,
-  serviceLogs: happId => `service-logs-${happId}`
-}
-
 
 ///////////////////////////////////////////////////////////////////
 ///////////////////////      UTIL      ////////////////////////////
 ///////////////////////////////////////////////////////////////////
 
-export const uiIdFromHappId = happId => happId + '-ui'
-export const instanceIdFromAgentAndDna = (agentId, dnaId) => `${agentId}::${dnaId}`
-
-export const removeInstanceFromCallString = callString => {
-  return callString.split('/').slice(1).join('/')
-}
+export const uiIdFromHappId = (
+  happId => happId + '-ui'
+)
+export const instanceIdFromAgentAndDna = (agentId, dnaId) => (
+  `${agentId}::${dnaId}`
+)
+export const serviceLoggerInstanceIdFromHappId = hostedHappId => (
+  `servicelogger-${hostedHappId}`
+)
 
 export const zomeCallByDna = async (client, {agentId, dnaHash, zomeName, funcName, params}) => {
   // let instance = await lookupInstance(client, {dnaHash, agentId})
@@ -51,8 +45,8 @@ export const zomeCallByDna = async (client, {agentId, dnaHash, zomeName, funcNam
   if (instanceId) {
     return await zomeCallByInstance(client, {instanceId, zomeName, funcName, params})
   } else {
-    return errorResponse(`No instance found 
-      where agentId == '${agentId}' 
+    return errorResponse(`No instance found
+      where agentId == '${agentId}'
       and   dnaHash == '${dnaHash}'
     `)
   }
@@ -61,13 +55,13 @@ export const zomeCallByDna = async (client, {agentId, dnaHash, zomeName, funcNam
 export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName, params}) => {
   const payload = {
     instance_id: instanceId,
-    zome: zomeName, 
+    zome: zomeName,
     function: funcName,
     params
   }
 
   try {
-    console.info("Calling zome...", payload, client.call)
+    console.info("Calling zome...", payload)
     return callWhenConnected(client, 'call', payload)
   } catch(e) {
     console.error("Zome call failed: ", payload, e)
@@ -83,14 +77,14 @@ export const lookupInstance = async (client, {dnaHash, agentId}): Promise<Instan
 
 export const callWhenConnected = async (client, method, payload) => {
   if(client.ready) {
-    console.info("calling (already connected)")
+    console.info("calling (already connected)", method, payload)
     return await client.call(method, payload)
   } else {
     console.info("waiting to connect, so as to call...")
-    return new Promise((resolve) => {
-      console.info("connected, calling...")
+    return new Promise((resolve, reject) => {
       client.once('open', () => {
-        resolve(client.call(method, payload))
+        console.info("connected, calling...", method, payload)
+        client.call(method, payload).then(resolve).catch(reject)
       })
     })
   }

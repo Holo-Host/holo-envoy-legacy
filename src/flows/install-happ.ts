@@ -6,14 +6,15 @@ import * as path from 'path'
 import {HappID} from '../types'
 import {
   callWhenConnected,
-  fail, 
-  unbundle, 
-  uiIdFromHappId, 
-  zomeCallByInstance, 
-  instanceIdFromAgentAndDna
+  fail,
+  unbundle,
+  uiIdFromHappId,
+  zomeCallByInstance,
+  instanceIdFromAgentAndDna, 
+  serviceLoggerInstanceIdFromHappId,
 } from '../common'
 import * as Config from '../config'
-import {HAPP_DATABASE, HappResource, HappEntry} from '../shims/happ-server'
+import {HAPP_DATABASE, shimHappById, HappResource, HappEntry} from '../shims/happ-server'
 
 enum ResourceType {HappUi, HappDna}
 
@@ -53,7 +54,7 @@ export const installDnasAndUi = async (client, opts: {happId: string, properties
   // TODO: fetch data from somewhere, write fetched files to temp dir and extract
   // TODO: used cached version if possible
   const {happId, properties} = opts
-  console.log('Installing hApp (TODO real happId)', happId)
+  console.log('Installing hApp ', happId)
   const {ui, dnas} = await downloadAppResources(client, happId)
 
   console.log('  DNAs: ', dnas.map(dna => dna.path))
@@ -113,7 +114,7 @@ export const installDna = (client, {hash, path, properties}) => {
   })
 }
 
-const setupInstance = async (client, {instanceId, agentId, dnaId, conductorInterface}) => {
+export const setupInstance = async (client, {instanceId, agentId, dnaId, conductorInterface}) => {
 
   const instanceList = await callWhenConnected(client, 'admin/instance/list', {})
   if (instanceList.find(({id}) => id === instanceId)) {
@@ -151,7 +152,7 @@ export const setupInstances = async (client, opts: {happId: string, agentId: str
     const dnaId = dna.hash
     const instanceId = instanceIdFromAgentAndDna(agentId, dnaId)
     return setupInstance(client, {
-      dnaId, 
+      dnaId,
       agentId,
       instanceId,
       conductorInterface
@@ -172,9 +173,9 @@ export const setupInstances = async (client, opts: {happId: string, agentId: str
   console.log("Instance setup successful!")
 }
 
-const setupServiceLogger = async (masterClient, {hostedHappId}) => {
+export const setupServiceLogger = async (masterClient, {hostedHappId}) => {
   const {hash, path} = Config.DNAS.serviceLogger
-  const instanceId = Config.serviceLoggerInstanceIdFromHappId(hostedHappId)
+  const instanceId = serviceLoggerInstanceIdFromHappId(hostedHappId)
   const agentId = Config.hostAgentId
   const properties = {
     forApp: hostedHappId
@@ -182,35 +183,44 @@ const setupServiceLogger = async (masterClient, {hostedHappId}) => {
   await installDna(masterClient, {hash, path, properties})
   await setupInstance(masterClient, {instanceId, dnaId: hash, agentId, conductorInterface: Config.ConductorInterface.Internal })
 
-  // TODO NEXT: 
+  // TODO:
   // - Open client to Internal interface
   // - Make initial call to serviceLogger
 }
 
 export const lookupHoloApp = async (client, {happId}: LookupHappRequest): Promise<HappEntry> => {
-  // TODO: make actual call to HHA
   // this is a dummy response for now
   // assuming DNAs are served as JSON packages
   // and UIs are served as ZIP archives
 
-  const _info = await zomeCallByInstance(client, {
-    instanceId: Config.holoHostingAppId, 
-    zomeName: 'hosts',
-    funcName: 'TODO',
-    params: {happId}
-  })
-  if (!(happId in HAPP_DATABASE)) {
+  if (! await happIsEnabled(client, happId)) {
+    throw `hApp is not registered by a provider! (happId = ${happId})`
+  }
+
+  const happ = shimHappById(happId)
+  if (happ) {
+    return happ
+  } else {
     throw `happId not found in shim database: ${happId}`
   }
-  return HAPP_DATABASE[happId]
+}
+
+export const happIsEnabled = async (client, happId) => {
+  const happEntries = await zomeCallByInstance(client, {
+    instanceId: Config.holoHostingAppId,
+    zomeName: 'host',
+    funcName: 'get_enabled_app',
+    params: {}
+  })
+  return Boolean(happEntries.Ok.find(happ => happ.address === happId))
 }
 
 export const listHoloApps = () => {
   // TODO: call HHA's `get_my_registered_app` for real data
-  const fakeApps = Object.assign({}, HAPP_DATABASE)
-  for (const id in fakeApps) {
-    fakeApps[id].ui_hash = fakeApps[id].ui
-    fakeApps[id].dna_list = fakeApps[id].dnas
+  const fakeApps = ([] as any).concat(HAPP_DATABASE)
+  for (const i in fakeApps) {
+    fakeApps[i].ui_hash = fakeApps[i].ui
+    fakeApps[i].dna_list = fakeApps[i].dnas
   }
   return Promise.resolve(fakeApps)
 }

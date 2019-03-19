@@ -1,7 +1,13 @@
 
 import {Instance, HappID} from '../types'
-import {errorResponse, fail, InstanceIds, zomeCallByDna, zomeCallByInstance} from '../common'
-import {serviceLoggerInstanceIdFromHappId} from '../config'
+import {
+  errorResponse, 
+  fail, 
+  serviceLoggerInstanceIdFromHappId,
+  zomeCallByDna, 
+  zomeCallByInstance
+} from '../common'
+
 
 export type CallRequest = {
   agentId: string,
