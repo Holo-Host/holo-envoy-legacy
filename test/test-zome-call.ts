@@ -53,15 +53,15 @@ sinonTest('can call public zome function', async T => {
 
   T.callCount(internalClient.call, 2)
 
-  T.calledWith(internalClient.call.getCall(0), 'call', {
+  T.calledWith(internalClient.call, 'call', {
     instance_id: serviceLoggerInstanceId,
     zome: 'service',
     function: 'log_request', 
     params: {
       agent_id: 'agentId',
-      zome_call_spec: 'TODO',
+      zome_call_spec: 'zome/function',
       dna_hash: 'dnaHash',
-      client_signature: 'TODO',
+      client_signature: 'signature',
     }
   })
 
@@ -73,7 +73,6 @@ sinonTest('can call public zome function', async T => {
       request_hash: 'requestHash',
       hosting_stats: metrics,
       response_log: mockResponse,
-      host_signature: 'TODO, probably should be signed by servicelogger, not externally',
     }
   })
 
@@ -97,12 +96,12 @@ sinonTest('can sign things across the wormhole', async T => {
   T.callCount(spy1, 0)
   T.deepEqual(Object.keys(intrceptr.signingRequests), ['0', '1'])
 
-  intrceptr.clientSignature({signature: 'sig 1', requestId: 0})
+  intrceptr.wormholeSignature({signature: 'sig 1', requestId: 0})
   T.calledWith(spy0, 'sig 1')
   T.callCount(spy1, 0)
   T.deepEqual(Object.keys(intrceptr.signingRequests), ['1'])
   
-  intrceptr.clientSignature({signature: 'sig 2', requestId: 1})
+  intrceptr.wormholeSignature({signature: 'sig 2', requestId: 1})
   T.calledWith(spy1, 'sig 2')
   T.deepEqual(Object.keys(intrceptr.signingRequests), [])
 })

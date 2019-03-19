@@ -38,7 +38,7 @@ export default (publicClient, internalClient) => async (call: CallRequest) => {
 
   const requestData = buildServiceLoggerRequestPackage(call)
   const requestEntryHash = await logServiceRequest(internalClient,
-    {happId, agentId, dnaHash, requestData, zomeName, funcName})
+    {happId, agentId, dnaHash, requestData, zomeName, funcName, signature})
   const result = await zomeCallByDna(publicClient, {
     agentId, dnaHash, zomeName, funcName, params
   })

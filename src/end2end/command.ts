@@ -24,7 +24,7 @@ export const withIntrceptrClient = fn => {
     client.on('agent/sign', (params) => {
       console.log('on agent/sign:', params)
       const {entry, id} = params
-      client.call('holo/clientSignature', {
+      client.call('holo/wormholeSignature', {
         signature: 'TODO-signature',
         requestId: id,
       })

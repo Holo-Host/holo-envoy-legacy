@@ -10,7 +10,7 @@ import {Client, Server as RpcServer} from 'rpc-websockets'
 import {uiIdFromHappId} from './common'
 import * as C from './config'
 import installHapp, {InstallHappRequest, listHoloApps} from './flows/install-happ'
-import zomeCall, {CallRequest} from './flows/zome-call'
+import zomeCall, {CallRequest, logServiceSignature} from './flows/zome-call'
 import newAgent, {NewAgentRequest} from './flows/new-agent'
 
 const successResponse = { success: true }
@@ -126,10 +126,6 @@ export class IntrceptrServer {
     return wss
   }
 
-
-  // TODO: service log signature endpoint
-
-
   identifyAgent = ({agentId}, ws) => {
     // TODO: also take salt and signature of salt to prove browser owns agent ID
     console.log("adding new event to server", `agent/${agentId}/sign`)
@@ -172,7 +168,7 @@ export class IntrceptrServer {
 
   /**
    * Function to be called externally, registers a signing request which will be fulfilled
-   * by the `holo/clientSignature` JSON-RPC method registered on this server
+   * by the `holo/wormholeSignature` JSON-RPC method registered on this server
    */
   startHoloSigningRequest(agentId: string, entry: Object, callback: (Object) => void) {
     const id = this.nextCallId++
