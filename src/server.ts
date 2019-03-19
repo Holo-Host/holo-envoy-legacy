@@ -113,7 +113,10 @@ export class IntrceptrServer {
 
     wss.register('holo/identify', this.identifyAgent)
 
-    wss.register('holo/clientSignature', this.clientSignature)
+    wss.register('holo/clientSignature', this.wormholeSignature)  // TODO: deprecated
+    wss.register('holo/wormholeSignature', this.wormholeSignature)
+
+    wss.register('holo/serviceSignature', this.serviceSignature)
 
     wss.register('holo/call', this.zomeCall)
 
@@ -144,12 +147,16 @@ export class IntrceptrServer {
     return { agentId }
   }
 
-  clientSignature = ({signature, requestId}) => {
+  wormholeSignature = ({signature, requestId}) => {
     const {entry, callback} = this.signingRequests[requestId]
-    verifySignature(entry, signature)
+    verifySignature(entry, signature)  // TODO: really?
     callback(signature)
     delete this.signingRequests[requestId]
     return successResponse
+  }
+
+  serviceSignature = ({happId, responseEntryHash, signature}) => {
+    return logServiceSignature(this.internalClient, {happId, responseEntryHash, signature})
   }
 
   newHostedAgent = async ({agentId, happId}) => {
