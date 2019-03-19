@@ -105,3 +105,24 @@ sinonTest('can sign things across the wormhole', async T => {
   T.calledWith(spy1, 'sig 2')
   T.deepEqual(Object.keys(intrceptr.signingRequests), [])
 })
+
+sinonTest.only('can sign responses for servicelogger later', async T => {
+  const {intrceptr, internalClient} = testIntrceptr()
+  const agentId = 'agentId'
+  const entry = {entry: 'whatever'}
+  const spy0 = sinon.spy()
+  const spy1 = sinon.spy()
+  await intrceptr.serviceSignature({
+    happId: 'happId', 
+    responseEntryHash: 'hash', 
+    signature: 'signature',
+  })
+
+  T.callCount(internalClient.call, 1)
+  T.calledWith(internalClient.call, 'call', {
+    zome: "service",
+    function: "log_service",
+    instance_id: "servicelogger-happId",
+    params: { client_signature: "signature", response_hash: "hash" },
+  })
+})
