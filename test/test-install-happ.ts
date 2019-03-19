@@ -31,11 +31,11 @@ const axiosResponse = (status) => {
   }
 }
 
-const enabledAppCall = (happId) => ({
+const enabledAppCall = ({
   instance_id: Config.holoHostingAppId,
   function: "get_enabled_app",
   zome: "host",
-  params: { happId },
+  params: { },
 })
 
 sinonTest('can install dnas', async T => {
@@ -57,11 +57,11 @@ sinonTest('can install dnas', async T => {
   })
 })
 
-sinonTest('throws error for invalid happId', async T => {
+sinonTest('throws error for non-hosted happId', async T => {
   const {masterClient} = testIntrceptr()
   await T.rejects(
     M.installDnasAndUi(masterClient, {happId: 'invalid'}),
-    /happId not found.*/
+    /hApp is not registered.*/
   )
   T.callCount(masterClient.call, 1)
 })
@@ -95,7 +95,7 @@ sinonTest('can install dnas and ui for hApp', async T => {
   await T.doesNotReject(result)
   T.callCount(masterClient.call, 4)
 
-  T.calledWith(masterClient.call.getCall(0), 'call', enabledAppCall(happId))
+  T.calledWith(masterClient.call.getCall(0), 'call', enabledAppCall)
   T.calledWith(masterClient.call.getCall(1), 'admin/dna/list')
   T.calledWith(masterClient.call.getCall(2), 'admin/dna/install_from_file', { 
     copy: true, 
@@ -124,7 +124,7 @@ sinonTest('can setup instances', async T => {
   await T.doesNotReject(result)
   T.callCount(masterClient.call, 5)
 
-  T.calledWith(masterClient.call.getCall(0), 'call', enabledAppCall(happId))
+  T.calledWith(masterClient.call.getCall(0), 'call', enabledAppCall)
   T.calledWith(masterClient.call.getCall(1), 'admin/instance/list')
   T.calledWith(masterClient.call.getCall(2), 'admin/instance/add', { 
     agent_id: agentId,

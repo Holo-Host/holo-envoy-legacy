@@ -30,7 +30,7 @@ export const testMasterClient = () => {
   }
   const testDnas = []
   // Stub HHA to say that all available apps are enabled
-  const testApps = HAPP_DATABASE.map(({happId}) => ({
+  const testApps = HAPP_DATABASE.map(({happId}) => ({    
     address: happId,
     entry: 'fake entry',
   }))
@@ -45,7 +45,7 @@ export const testMasterClient = () => {
   client.call.withArgs('admin/instance/add').resolves(success)
   client.call.withArgs('admin/interface/add_instance').resolves(success)
   client.call.withArgs('admin/instance/start').resolves(success)
-  client.call.withArgs('call', getEnabledAppArgs).resolves(testApps)
+  client.call.withArgs('call', getEnabledAppArgs).resolves({Ok: testApps})
   return client
 }
 

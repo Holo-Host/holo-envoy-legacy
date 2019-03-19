@@ -183,29 +183,36 @@ export const setupServiceLogger = async (masterClient, {hostedHappId}) => {
   await installDna(masterClient, {hash, path, properties})
   await setupInstance(masterClient, {instanceId, dnaId: hash, agentId, conductorInterface: Config.ConductorInterface.Internal })
 
-  // TODO NEXT:
+  // TODO:
   // - Open client to Internal interface
   // - Make initial call to serviceLogger
 }
 
 export const lookupHoloApp = async (client, {happId}: LookupHappRequest): Promise<HappEntry> => {
-  // TODO: make actual call to HHA
   // this is a dummy response for now
   // assuming DNAs are served as JSON packages
   // and UIs are served as ZIP archives
 
-  const _info = await zomeCallByInstance(client, {
-    instanceId: Config.holoHostingAppId,
-    zomeName: 'host',
-    funcName: 'get_enabled_app',
-    params: {happId}
-  })
+  if (! await happIsEnabled(client, happId)) {
+    throw `hApp is not registered by a provider! (happId = ${happId})`
+  }
+
   const happ = shimHappById(happId)
   if (happ) {
     return happ
   } else {
     throw `happId not found in shim database: ${happId}`
   }
+}
+
+export const happIsEnabled = async (client, happId) => {
+  const happEntries = await zomeCallByInstance(client, {
+    instanceId: Config.holoHostingAppId,
+    zomeName: 'host',
+    funcName: 'get_enabled_app',
+    params: {}
+  })
+  return Boolean(happEntries.Ok.find(happ => happ.address === happId))
 }
 
 export const listHoloApps = () => {

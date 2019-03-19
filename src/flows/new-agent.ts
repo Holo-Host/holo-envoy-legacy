@@ -25,7 +25,7 @@ export default (masterClient) => async ({
     funcName: 'get_enabled_app',
     params: {}
   })
-  if (enabledApps.find(app => app.address === happId)) {
+  if (enabledApps.Ok.find(app => app.address === happId)) {
     await createAgent(masterClient, agentId)
     await setupInstances(masterClient, {happId, agentId, conductorInterface: ConductorInterface.Public})
   } else {

@@ -77,14 +77,14 @@ export const lookupInstance = async (client, {dnaHash, agentId}): Promise<Instan
 
 export const callWhenConnected = async (client, method, payload) => {
   if(client.ready) {
-    console.info("calling (already connected)")
+    console.info("calling (already connected)", method, payload)
     return await client.call(method, payload)
   } else {
     console.info("waiting to connect, so as to call...")
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       client.once('open', () => {
-        console.info("connected, calling...")
-        resolve(client.call(method, payload))
+        console.info("connected, calling...", method, payload)
+        client.call(method, payload).then(resolve).catch(reject)
       })
     })
   }
