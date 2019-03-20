@@ -12,6 +12,7 @@ import * as C from './config'
 import installHapp, {InstallHappRequest, listHoloApps} from './flows/install-happ'
 import zomeCall, {CallRequest} from './flows/zome-call'
 import newAgent, {NewAgentRequest} from './flows/new-agent'
+import ConnectionManager from './connection-manager'
 
 const successResponse = { success: true }
 
@@ -21,15 +22,9 @@ export default (port) => new Promise((fulfill, reject) => {
   const publicClient = getPublicClient()
   const internalClient = getInternalClient()
   console.debug("Connecting to admin and happ interfaces...")
-  masterClient.once('open', () => {
-    publicClient.once('open', () => {
-      internalClient.once('open', () => {
-        const intrceptr = new IntrceptrServer({masterClient, publicClient, internalClient})
-        console.log('Websocket server running on port', port)
-        intrceptr.start(port).then(() => fulfill(intrceptr))
-      })
-    })
-  })
+
+  const intrceptr = new IntrceptrServer({masterClient, publicClient, internalClient})
+  intrceptr.start(port)
 })
 
 const clientOpts = { max_reconnects: 0 }  // zero reconnects means unlimited
@@ -56,33 +51,60 @@ const fail = (e) => {
  */
 export class IntrceptrServer {
   server: any
-  masterClient: any  // TODO: move this to separate admin-only server that's not publicly exposed!
-  publicClient: any
-  internalClient: any
-  hostedClients: any[]  // TODO use this if ever we put each client on their own interface
+  clients: {[s: string]: any}  // TODO: move masterClient to separate admin-only server that's not publicly exposed!??
   nextCallId = 0
   signingRequests = {}
+  connections: ConnectionManager
 
   constructor({masterClient, publicClient, internalClient}) {
-    this.masterClient = masterClient
-    this.publicClient = publicClient
-    this.internalClient = internalClient
+    this.clients = {
+      master: masterClient,
+      public: publicClient,
+      internal: internalClient,
+    }
   }
 
   start = async (port) => {
-    const httpServer = await this.buildHttpServer(this.masterClient)
-    const wss = await this.buildWebsocketServer(httpServer)
+    let httpServer, wss
+    this.connections = new ConnectionManager({
+      connections: ['master', 'public', 'internal'],
+      onStart: async () => {
+        console.log("Beginning server startup")
+        httpServer = await this.buildHttpServer(this.clients.master)
+        console.log("HTTP server initialized")
+        wss = await this.buildWebsocketServer(httpServer)
+        console.log("WS server initialized")
+        await httpServer.listen(port, () => console.log('HTTP server running on port', port))
+        wss.on('listening', () => console.log("Websocket server listening on port", port))
+        wss.on('error', data => console.log("<C> error: ", data))
+      },
+      onStop: () => {
+        httpServer.close()
+        wss.close()
+      },
+    })
 
-    httpServer.listen(port, () => console.log('HTTP server running on port', port))
-    wss.on('listening', () => console.log("Websocket server listening on port", port))
-    wss.on('error', data => console.log("<C> error: ", data))
+    Object.keys(this.clients).forEach(name => {
+      const client = this.clients[name]
+      client.on('open', () => this.connections.add(name))
+      client.on('close', () => this.connections.remove(name))
+    })
 
     this.server = wss
   }
 
+  /**
+   * Close the client connections
+   */
+  close() {
+    Object.values(this.clients).forEach((client) => client.close())
+  }
+
+
   buildHttpServer = async (masterClient) => {
     const app = express()
 
+    await this.connections.ready()
     const happs = await listHoloApps()
     const uis = await masterClient.call('admin/ui/list')
     const uisById = {}
@@ -154,12 +176,12 @@ export class IntrceptrServer {
 
   newHostedAgent = async ({agentId, happId}) => {
     const signature = 'TODO'
-    await newAgent(this.masterClient)({agentId, happId, signature})
+    await newAgent(this.clients.master)({agentId, happId, signature})
     return successResponse
   }
 
   zomeCall = (params: CallRequest) => {
-    return zomeCall(this.publicClient, this.internalClient)(params).catch(fail)
+    return zomeCall(this.clients.public, this.clients.internal)(params).catch(fail)
   }
 
 
@@ -175,16 +197,5 @@ export class IntrceptrServer {
     this.server.emit(`agent/${agentId}/sign`, {entry, id})
     this.signingRequests[id] = {entry, callback}
   }
-
-  /**
-   * Close both the server and client connections
-   */
-  close() {
-    this.masterClient!.close()
-    this.publicClient!.close()
-    this.internalClient!.close()
-    this.server!.close()
-  }
-
 
 }
