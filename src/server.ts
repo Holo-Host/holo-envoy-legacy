@@ -21,15 +21,9 @@ export default (port) => new Promise((fulfill, reject) => {
   const publicClient = getPublicClient()
   const internalClient = getInternalClient()
   console.debug("Connecting to admin and happ interfaces...")
-  masterClient.once('open', () => {
-    publicClient.once('open', () => {
-      internalClient.once('open', () => {
-        const intrceptr = new IntrceptrServer({masterClient, publicClient, internalClient})
-        console.log('Websocket server running on port', port)
-        intrceptr.start(port).then(() => fulfill(intrceptr))
-      })
-    })
-  })
+
+  const intrceptr = new IntrceptrServer({masterClient, publicClient, internalClient})
+  intrceptr.start(port)
 })
 
 const clientOpts = { max_reconnects: 0 }  // zero reconnects means unlimited
@@ -49,6 +43,102 @@ const fail = (e) => {
   return e
 }
 
+
+////////////////////////////////////////////////
+
+class ConnectionManager {
+  current: Set<string>
+  target: Set<String>
+  // update
+  onStart
+  onStop
+
+  promise
+  promiseResolve
+
+  constructor(opts: {
+    connections: Array<String>,
+    onStart, onStop
+  }) {
+    const {connections, onStart, onStop} = opts
+    this.target = new Set(connections)
+    this.current = new Set()
+    // this.update = update
+    this.onStart = onStart
+    this.onStop = onStop
+    this._setPromise()
+  }
+
+  _setPromise() {
+    const self = this
+    this.promise = new Promise(function(resolve) {
+      self.promiseResolve = resolve
+    })
+  }
+
+  add(name: string) {
+    this.update(() => this.current.add(name))
+  }
+
+  remove(name: string) {
+    this.update(() => this.current.delete(name))
+  }
+
+  ready() {
+    return this.promise
+  }
+
+  isReady() {
+    return eqSet(this.current, this.target)
+  }
+
+  update(fn) {
+    const sizeBefore = this.current.size
+    const wasFull = this.isReady()
+
+    fn()
+
+    const isFull = this.isReady()
+    const diff = this.current.size - sizeBefore
+    const established = Array.from(this.current)
+    if (wasFull && !isFull) {
+      console.log("Connection lost, stopping...")
+      this.onStop()
+      this._setPromise()
+    } else if (!wasFull && isFull) {
+      console.log("All connections established!", established, ". Starting...")
+      this.promiseResolve()
+      this.onStart()
+    } else {
+      console.info(`connections established: ${this.current.size}/${this.target.size}`, established)
+    }
+  }
+
+  dismantle() {
+    this.onStop()
+    this.add = this.remove = () => { throw 'ConnectionManager is dismantled!'}
+  }
+
+}
+
+function eqSet(as, bs) {
+    return as.size === bs.size && all(isIn(bs), as);
+}
+
+function all(pred, as) {
+    for (var a of as) if (!pred(a)) return false;
+    return true;
+}
+
+function isIn(as) {
+    return function (a) {
+        return as.has(a);
+    };
+}
+
+////////////////////////////////////////////////
+
+
 /**
  * A wrapper around a rpc-websockets Server and Client which brokers communication between
  * the browser user and the Conductor. The browser communicates with the Server, and the Client
@@ -56,33 +146,60 @@ const fail = (e) => {
  */
 export class IntrceptrServer {
   server: any
-  masterClient: any  // TODO: move this to separate admin-only server that's not publicly exposed!
-  publicClient: any
-  internalClient: any
-  hostedClients: any[]  // TODO use this if ever we put each client on their own interface
+  clients: {[s: string]: any}  // TODO: move masterClient to separate admin-only server that's not publicly exposed!??
   nextCallId = 0
   signingRequests = {}
+  connections: ConnectionManager
 
   constructor({masterClient, publicClient, internalClient}) {
-    this.masterClient = masterClient
-    this.publicClient = publicClient
-    this.internalClient = internalClient
+    this.clients = {
+      master: masterClient,
+      public: publicClient,
+      internal: internalClient,
+    }
   }
 
   start = async (port) => {
-    const httpServer = await this.buildHttpServer(this.masterClient)
-    const wss = await this.buildWebsocketServer(httpServer)
+    let httpServer, wss
+    this.connections = new ConnectionManager({
+      connections: ['master', 'public', 'internal'],
+      onStart: async () => {
+        console.log("Beginning server startup")
+        httpServer = await this.buildHttpServer(this.clients.master)
+        console.log("HTTP server initialized")
+        wss = await this.buildWebsocketServer(httpServer)
+        console.log("WS server initialized")
+        await httpServer.listen(port, () => console.log('HTTP server running on port', port))
+        wss.on('listening', () => console.log("Websocket server listening on port", port))
+        wss.on('error', data => console.log("<C> error: ", data))
+      },
+      onStop: () => {
+        httpServer.close()
+        wss.close()
+      },
+    })
 
-    httpServer.listen(port, () => console.log('HTTP server running on port', port))
-    wss.on('listening', () => console.log("Websocket server listening on port", port))
-    wss.on('error', data => console.log("<C> error: ", data))
+    Object.keys(this.clients).forEach(name => {
+      const client = this.clients[name]
+      client.on('open', () => this.connections.add(name))
+      client.on('close', () => this.connections.remove(name))
+    })
 
     this.server = wss
   }
 
+  /**
+   * Close the client connections
+   */
+  close() {
+    Object.values(this.clients).forEach((client) => client.close())
+  }
+
+
   buildHttpServer = async (masterClient) => {
     const app = express()
 
+    await this.connections.ready()
     const happs = await listHoloApps()
     const uis = await masterClient.call('admin/ui/list')
     const uisById = {}
@@ -154,12 +271,12 @@ export class IntrceptrServer {
 
   newHostedAgent = async ({agentId, happId}) => {
     const signature = 'TODO'
-    await newAgent(this.masterClient)({agentId, happId, signature})
+    await newAgent(this.clients.master)({agentId, happId, signature})
     return successResponse
   }
 
   zomeCall = (params: CallRequest) => {
-    return zomeCall(this.publicClient, this.internalClient)(params).catch(fail)
+    return zomeCall(this.clients.public, this.clients.internal)(params).catch(fail)
   }
 
 
@@ -175,16 +292,5 @@ export class IntrceptrServer {
     this.server.emit(`agent/${agentId}/sign`, {entry, id})
     this.signingRequests[id] = {entry, callback}
   }
-
-  /**
-   * Close both the server and client connections
-   */
-  close() {
-    this.masterClient!.close()
-    this.publicClient!.close()
-    this.internalClient!.close()
-    this.server!.close()
-  }
-
 
 }
