@@ -13,6 +13,10 @@ import zomeCall, {CallRequest} from './flows/zome-call'
 import newAgent, {NewAgentRequest} from './flows/new-agent'
 import ConnectionManager from './connection-manager'
 
+import startWormholeServer from './wormhole-server'
+import startAdminServer from './admin-server'
+import startShimServers from './shims/happ-server'
+
 const successResponse = { success: true }
 
 export default (port) => new Promise((fulfill, reject) => {
@@ -64,7 +68,8 @@ export class IntrceptrServer {
   }
 
   start = async (port) => {
-    let httpServer, wss
+    let wss, httpServer, shimServer, adminServer, wormholeServer
+    const intrceptr = this
     this.connections = new ConnectionManager({
       connections: ['master', 'public', 'internal'],
       onStart: async () => {
@@ -73,6 +78,11 @@ export class IntrceptrServer {
         console.log("HTTP server initialized")
         wss = await this.buildWebsocketServer(httpServer)
         console.log("WS server initialized")
+
+        shimServer = startShimServers(Config.PORTS.shim)
+        adminServer = startAdminServer(Config.PORTS.admin, intrceptr.clients.master)
+        wormholeServer = startWormholeServer(Config.PORTS.wormhole, intrceptr)
+
         await httpServer.listen(port, () => console.log('HTTP server running on port', port))
         wss.on('listening', () => console.log("Websocket server listening on port", port))
         wss.on('error', data => console.log("<C> error: ", data))
@@ -80,6 +90,7 @@ export class IntrceptrServer {
       onStop: () => {
         httpServer.close()
         wss.close()
+        shimServer.close()
       },
     })
 
