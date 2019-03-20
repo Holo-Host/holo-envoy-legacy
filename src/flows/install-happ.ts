@@ -214,7 +214,7 @@ export const happIsEnabled = async (client, happId) => {
     funcName: 'get_enabled_app',
     params: {}
   })
-  return Boolean(happEntries.Ok.find(happ => happ.address === happId))
+  return Boolean(happEntries.find(happ => happ.address === happId))
 }
 
 export const listHoloApps = () => {

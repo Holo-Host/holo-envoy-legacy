@@ -39,7 +39,7 @@ const adminCall = (uri, data) => axios.post(`http://localhost:${C.PORTS.admin}/$
 //////////////////////////////////////////////////
 
 const install = async (happNick) => {
-  
+
   const client = getMasterClient()
 
   const happEntry = shimHappByNick(happNick)!
@@ -54,13 +54,13 @@ const install = async (happNick) => {
     }
   })
 
-  const happId = JSON.parse(registerResult).Ok
+  const happId = registerResult
 
   console.log("Registered hApp: ", registerResult, happId)
 
   const happResult = await adminCall('holo/happs/install', {happId: happId, agentId: C.hostAgentId})
   console.log(`install ${happId}: `, happResult.statusText, happResult.status)
-  
+
   const hostResult = await zomeCallByInstance(client, {
     instanceId: C.holoHostingAppId,
     zomeName: 'host',

@@ -15,17 +15,17 @@ export type NewAgentRequest = {
 export type NewAgentResponse = void
 
 export default (masterClient) => async ({
-  agentId, 
-  happId, 
+  agentId,
+  happId,
   signature,
 }: NewAgentRequest): Promise<NewAgentResponse> => {
   const enabledApps = await zomeCallByInstance(masterClient, {
-    instanceId: Config.holoHostingAppId, 
+    instanceId: Config.holoHostingAppId,
     zomeName: 'host',
     funcName: 'get_enabled_app',
     params: {}
   })
-  if (enabledApps.Ok.find(app => app.address === happId)) {
+  if (enabledApps.find(app => app.address === happId)) {
     await createAgent(masterClient, agentId)
     await setupInstances(masterClient, {happId, agentId, conductorInterface: ConductorInterface.Public})
   } else {

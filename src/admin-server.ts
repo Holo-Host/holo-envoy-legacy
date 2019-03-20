@@ -5,9 +5,7 @@ import {Client} from 'rpc-websockets'
 import * as C from './config'
 import installHapp, {InstallHappRequest} from './flows/install-happ'
 
-export default (port) => {
-  const masterClient = new Client(`ws://localhost:${C.PORTS.masterInterface}`)
-
+export default (port, masterClient) => {
   const app = express()
   app.use(bodyParser.json())
 
@@ -15,8 +13,15 @@ export default (port) => {
     const {happId}: InstallHappRequest = req.body
     installHapp(masterClient)({happId})
       .then(() => res.send("Installation successful"))
-      .catch(e => next(JSON.stringify(e)))
+      .catch(catchHttp(next))
   })
 
   app.listen(port, () => console.log(`Admin HTTP server listening on port ${port}`))
+
+  return app
+}
+
+const catchHttp = next => e => {
+  console.error("HTTP error caught:")
+  next(e)
 }
