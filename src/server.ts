@@ -7,8 +7,7 @@
 import * as express from 'express'
 import {Client, Server as RpcServer} from 'rpc-websockets'
 
-import {uiIdFromHappId} from './common'
-import * as C from './config'
+import * as Config from './config'
 import installHapp, {InstallHappRequest, listHoloApps} from './flows/install-happ'
 import zomeCall, {CallRequest} from './flows/zome-call'
 import newAgent, {NewAgentRequest} from './flows/new-agent'
@@ -33,9 +32,9 @@ export default (port) => new Promise((fulfill, reject) => {
 })
 
 const clientOpts = { max_reconnects: 0 }  // zero reconnects means unlimited
-export const getMasterClient = () => new Client(`ws://localhost:${C.PORTS.masterInterface}`, clientOpts)
-export const getPublicClient = () => new Client(`ws://localhost:${C.PORTS.publicInterface}`, clientOpts)
-export const getInternalClient = () => new Client(`ws://localhost:${C.PORTS.internalInterface}`, clientOpts)
+export const getMasterClient = () => new Client(`ws://localhost:${Config.PORTS.masterInterface}`, clientOpts)
+export const getPublicClient = () => new Client(`ws://localhost:${Config.PORTS.publicInterface}`, clientOpts)
+export const getInternalClient = () => new Client(`ws://localhost:${Config.PORTS.internalInterface}`, clientOpts)
 
 type SigningRequest = {
   entry: Object,
@@ -83,28 +82,11 @@ export class IntrceptrServer {
   buildHttpServer = async (masterClient) => {
     const app = express()
 
-    const happs = await listHoloApps()
-    const uis = await masterClient.call('admin/ui/list')
-    const uisById = {}
+    // Simply rely on the fact that UIs are installed in a directory
+    // named after their happId
+    // TODO: check access to prevent cross-UI requests?
+    app.use(`/`, express.static(Config.uiStorageDir))
 
-    for (const ui of uis) {
-      uisById[ui.id] = ui
-    }
-    happs.forEach(({happId}) => {
-      const ui = uisById[uiIdFromHappId(happId)]
-      if (ui) {
-        const dir = ui.root_dir
-        const hash = ui.id  // TODO: eventually needs to be hApp hash!
-        // This is a problem for webpages withs static assets!!!
-        // They are expecting to retrieve from / not /{happId}
-        app.use(`/${happId}`, express.static(dir)) // will error if multiple apps are hosted
-        console.log(`serving UI for '${happId}' from '${dir}'`)
-      } else {
-        console.warn(`App '${happId}' has no UI, skipping...`)
-      }
-    })
-
-    // TODO: redirect to ports of conductor UI interfaces
     return require('http').createServer(app)
   }
 

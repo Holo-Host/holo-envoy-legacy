@@ -10,20 +10,13 @@ export type HappEntry = {
   ui?: HappResource | void
 }
 
-export default (shimPort, uiPort) => {
+export default (shimPort) => {
   const shimServer = new StaticServer({
     rootPath: './src/shims/happ-data',
     port: shimPort
   })
   console.log('Shim server running on port', shimPort)
   shimServer.start()
-
-  const uiServer = new StaticServer({
-    rootPath: './src/shims/ui',
-    port: uiPort
-  })
-  console.log('UI server running on port', uiPort)
-  uiServer.start()
 }
 
 export const shimHappByNick = nick => HAPP_DATABASE.find(a => a.nick === nick)

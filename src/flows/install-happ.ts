@@ -10,7 +10,7 @@ import {
   unbundle,
   uiIdFromHappId,
   zomeCallByInstance,
-  instanceIdFromAgentAndDna, 
+  instanceIdFromAgentAndDna,
   serviceLoggerInstanceIdFromHappId,
 } from '../common'
 import * as Config from '../config'
@@ -79,10 +79,7 @@ export const installDnasAndUi = async (client, opts: {happId: string, properties
   const results = ([] as any[]).concat(dnaResults)
 
   if (ui) {
-    const uiResult = await callWhenConnected(client, 'admin/ui/install', {
-      id: uiIdFromHappId(happId),
-      root_dir: ui.path
-    })
+    const uiResult = await installUi({ui, happId})
     results.concat([uiResult])
   }
 
@@ -95,6 +92,11 @@ export const installDnasAndUi = async (client, opts: {happId: string, properties
     })
   }
   console.log("Installation successful!")
+}
+
+const installUi = async ({ui, happId}) => {
+  fs.renameSync(ui.path, path.join(Config.uiStorageDir, happId))
+  return {success: true}
 }
 
 const isDnaInstalled = async (client, dnaId) => {

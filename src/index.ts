@@ -20,7 +20,7 @@ process.on('unhandledRejection', (reason, p) => {
   console.log("reason: ", reason)
 })
 
-startShimServers(C.PORTS.shim, C.PORTS.ui)
+startShimServers(C.PORTS.shim)
 startAdminServer(C.PORTS.admin)
 startServer(C.PORTS.intrceptr).then(intrceptr => {
   startWormholeServer(C.PORTS.wormhole, intrceptr)
