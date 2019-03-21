@@ -29,8 +29,8 @@ test('can calculate metrics', t => {
 sinonTest('can call public zome function', async T => {
   const {intrceptr, masterClient, publicClient, internalClient} = testIntrceptr()
 
-  internalClient.call.withArgs('call').onFirstCall().returns('requestHash')
-  internalClient.call.withArgs('call').onSecondCall().returns('responseHash')
+  internalClient.call.withArgs('call').onFirstCall().returns({Ok: "requestHash"})
+  internalClient.call.withArgs('call').onSecondCall().returns({Ok: "responseHash"})
   
   const happId = 'test-app-1'
   const serviceLoggerInstanceId = serviceLoggerInstanceIdFromHappId(happId)
@@ -49,11 +49,11 @@ sinonTest('can call public zome function', async T => {
   const responsePackage = Z.buildServiceLoggerResponsePackage(response)
   const metrics = Z.calcMetrics(requestPackage, responsePackage)
 
-  T.equal(response, mockResponse)
+  T.equal(response, mockResponse.Ok)
 
   T.callCount(internalClient.call, 2)
 
-  T.calledWith(internalClient.call, 'call', {
+  T.calledWith(internalClient.call.getCall(0), 'call', {
     instance_id: serviceLoggerInstanceId,
     zome: 'service',
     function: 'log_request', 
@@ -72,11 +72,11 @@ sinonTest('can call public zome function', async T => {
     params: {
       request_hash: 'requestHash',
       hosting_stats: metrics,
-      response_log: mockResponse,
+      response_log: 'TODO: response_log',
     }
   })
 
-  T.calledWith(publicClient.call, 'call', {
+  T.calledWith(publicClient.call.getCall(0), 'call', {
     instance_id: instanceIdFromAgentAndDna('agentId', 'dnaHash'),
     params: request,
     function: 'function',
@@ -106,14 +106,22 @@ sinonTest('can sign things across the wormhole', async T => {
   T.deepEqual(Object.keys(intrceptr.signingRequests), [])
 })
 
-sinonTest.only('can sign responses for servicelogger later', async T => {
+sinonTest('can sign responses for servicelogger later', async T => {
   const {intrceptr, internalClient} = testIntrceptr()
-  const agentId = 'agentId'
-  const entry = {entry: 'whatever'}
-  const spy0 = sinon.spy()
-  const spy1 = sinon.spy()
+  const happId = 'happId'
+  
+  internalClient.call.withArgs('call', {
+    instance_id: serviceLoggerInstanceIdFromHappId(happId),
+    zome: 'service',
+    function: 'log_service',
+    params: {
+      response_hash: 'hash', 
+      client_signature: 'signature',
+    }
+  }).resolves({Ok: 'whatever'})
+  
   await intrceptr.serviceSignature({
-    happId: 'happId', 
+    happId, 
     responseEntryHash: 'hash', 
     signature: 'signature',
   })

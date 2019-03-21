@@ -1,6 +1,6 @@
 
 import * as tar from 'tar-fs'
-import * as fs from 'fs'
+import * as fs from 'fs-extra'
 
 import {Instance, HappID} from './types'
 
@@ -86,17 +86,20 @@ export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName
     function: funcName,
     params
   }
-
+  let resultRaw
   try {
     console.info("Calling zome...", payload)
-    const resultRaw = await callWhenConnected(client, 'call', payload)
-    const result = JSON.parse(resultRaw)
+    resultRaw = await callWhenConnected(client, 'call', payload)
+    const result = resultRaw && typeof resultRaw === 'string' ? JSON.parse(resultRaw) : resultRaw
     if (!("Ok" in result)) {
       throw result
     }
     return result.Ok
   } catch(e) {
-    console.error("Zome call failed: ", payload, e)
+    console.error("ZOME CALL FAILED")
+    console.error(e)
+    console.error("payload:", payload)
+    console.error("raw result:", resultRaw)
     throw e
   }
 }

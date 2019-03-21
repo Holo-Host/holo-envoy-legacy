@@ -1,6 +1,6 @@
 
 import {spawn} from 'child_process'
-import * as fs from 'fs'
+import * as fs from 'fs-extra'
 import * as path from 'path'
 import * as rimraf from 'rimraf'
 import * as Config from './config'

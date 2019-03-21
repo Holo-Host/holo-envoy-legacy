@@ -87,7 +87,7 @@ const logServiceResponse = async (client, {happId, requestEntryHash, responseDat
     params: {
       request_hash: requestEntryHash,
       hosting_stats: metrics,
-      response_log: responseData,  // TODO, make sure this is calculated correctly
+      response_log: 'TODO: response_log',  // TODO, make sure this is calculated correctly
     }
   })
   return hash

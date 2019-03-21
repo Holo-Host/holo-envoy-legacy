@@ -193,7 +193,7 @@ export class IntrceptrServer {
   }
 
   serviceSignature = ({happId, responseEntryHash, signature}) => {
-    return logServiceSignature(this.internalClient, {happId, responseEntryHash, signature})
+    return logServiceSignature(this.clients.internal, {happId, responseEntryHash, signature})
   }
 
   newHostedAgent = async ({agentId, happId}) => {
