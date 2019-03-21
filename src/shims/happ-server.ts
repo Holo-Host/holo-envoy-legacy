@@ -10,20 +10,14 @@ export type HappEntry = {
   ui?: HappResource | void
 }
 
-export default (shimPort, uiPort) => {
+export default (shimPort) => {
   const shimServer = new StaticServer({
     rootPath: './src/shims/happ-data',
     port: shimPort
   })
   console.log('Shim server running on port', shimPort)
   shimServer.start()
-
-  const uiServer = new StaticServer({
-    rootPath: './src/shims/ui',
-    port: uiPort
-  })
-  console.log('UI server running on port', uiPort)
-  uiServer.start()
+  return shimServer
 }
 
 export const shimHappByNick = nick => HAPP_DATABASE.find(a => a.nick === nick)
@@ -31,12 +25,12 @@ export const shimHappById = happId => HAPP_DATABASE.find(a => a.happId === happI
 
 export const HAPP_DATABASE = [
   {
-    happId: 'QmSaU6meHqcLm8351EA5FMQtE11uedP2MMhpoQajqpch1Y',
+    happId: 'QmYcfBXfbFJSWfeNC32oEUL1bKsYvXRVN56me4Q9tNHUH7',
     nick: 'simple-app',
     dnas: [
       {
         location: 'http://localhost:3333/simple-app/dist/simple-app.dna.json',
-        hash: 'QmcnAdZJyDpJewK2sJPXTc5YUVg6ym6kink2n6MtJxVEze'
+        hash: 'QmSKxN3FGVrf1vVMav6gohJVi7GcF4jFcKVDhDcjiAnveo'
       }
     ],
     ui: {

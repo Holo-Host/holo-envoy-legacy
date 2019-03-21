@@ -1,5 +1,5 @@
 import axios from 'axios'
-import * as fs from 'fs'
+import * as fs from 'fs-extra'
 import * as os from 'os'
 import * as path from 'path'
 
@@ -10,7 +10,7 @@ import {
   unbundle,
   uiIdFromHappId,
   zomeCallByInstance,
-  instanceIdFromAgentAndDna, 
+  instanceIdFromAgentAndDna,
   serviceLoggerInstanceIdFromHappId,
 } from '../common'
 import * as Config from '../config'
@@ -79,10 +79,7 @@ export const installDnasAndUi = async (client, opts: {happId: string, properties
   const results = ([] as any[]).concat(dnaResults)
 
   if (ui) {
-    const uiResult = await callWhenConnected(client, 'admin/ui/install', {
-      id: uiIdFromHappId(happId),
-      root_dir: ui.path
-    })
+    const uiResult = await installUi({ui, happId})
     results.concat([uiResult])
   }
 
@@ -95,6 +92,11 @@ export const installDnasAndUi = async (client, opts: {happId: string, properties
     })
   }
   console.log("Installation successful!")
+}
+
+const installUi = async ({ui, happId}) => {
+  await fs.copy(ui.path, path.join(Config.uiStorageDir, happId))
+  return {success: true}
 }
 
 const isDnaInstalled = async (client, dnaId) => {
@@ -213,7 +215,8 @@ export const happIsEnabled = async (client, happId) => {
     funcName: 'get_enabled_app',
     params: {}
   })
-  return Boolean(happEntries.Ok.find(happ => happ.address === happId))
+  console.log("Enabled hApps:", happEntries)
+  return Boolean(happEntries.find(happ => happ.address === happId))
 }
 
 export const listHoloApps = () => {

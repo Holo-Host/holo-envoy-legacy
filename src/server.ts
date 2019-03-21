@@ -7,12 +7,15 @@
 import * as express from 'express'
 import {Client, Server as RpcServer} from 'rpc-websockets'
 
-import {uiIdFromHappId} from './common'
-import * as C from './config'
+import * as Config from './config'
 import installHapp, {InstallHappRequest, listHoloApps} from './flows/install-happ'
 import zomeCall, {CallRequest, logServiceSignature} from './flows/zome-call'
 import newAgent, {NewAgentRequest} from './flows/new-agent'
 import ConnectionManager from './connection-manager'
+
+import startWormholeServer from './wormhole-server'
+import startAdminServer from './admin-server'
+import startShimServers from './shims/happ-server'
 
 const successResponse = { success: true }
 
@@ -28,9 +31,9 @@ export default (port) => new Promise((fulfill, reject) => {
 })
 
 const clientOpts = { max_reconnects: 0 }  // zero reconnects means unlimited
-export const getMasterClient = () => new Client(`ws://localhost:${C.PORTS.masterInterface}`, clientOpts)
-export const getPublicClient = () => new Client(`ws://localhost:${C.PORTS.publicInterface}`, clientOpts)
-export const getInternalClient = () => new Client(`ws://localhost:${C.PORTS.internalInterface}`, clientOpts)
+export const getMasterClient = () => new Client(`ws://localhost:${Config.PORTS.masterInterface}`, clientOpts)
+export const getPublicClient = () => new Client(`ws://localhost:${Config.PORTS.publicInterface}`, clientOpts)
+export const getInternalClient = () => new Client(`ws://localhost:${Config.PORTS.internalInterface}`, clientOpts)
 
 type SigningRequest = {
   entry: Object,
@@ -65,7 +68,8 @@ export class IntrceptrServer {
   }
 
   start = async (port) => {
-    let httpServer, wss
+    let wss, httpServer, shimServer, adminServer, wormholeServer
+    const intrceptr = this
     this.connections = new ConnectionManager({
       connections: ['master', 'public', 'internal'],
       onStart: async () => {
@@ -74,13 +78,46 @@ export class IntrceptrServer {
         console.log("HTTP server initialized")
         wss = await this.buildWebsocketServer(httpServer)
         console.log("WS server initialized")
+
+        shimServer = startShimServers(Config.PORTS.shim)
+        adminServer = startAdminServer(Config.PORTS.admin, intrceptr.clients.master)
+        wormholeServer = startWormholeServer(Config.PORTS.wormhole, intrceptr)
+
         await httpServer.listen(port, () => console.log('HTTP server running on port', port))
         wss.on('listening', () => console.log("Websocket server listening on port", port))
         wss.on('error', data => console.log("<C> error: ", data))
       },
       onStop: () => {
-        httpServer.close()
-        wss.close()
+        if (httpServer) {
+          httpServer.close()
+          console.log("Shut down httpServer")
+        } else {
+          console.log("Not shutting down httpServer??")
+        }
+        if (adminServer) {
+          adminServer.close()
+          console.log("Shut down adminServer")
+        } else {
+          console.log("Not shutting down adminServer??")
+        }
+        if (wormholeServer) {
+          wormholeServer.close()
+          console.log("Shut down wormholeServer")
+        } else {
+          console.log("Not shutting down wormholeServer??")
+        }
+        if (wss) {
+          wss.close()
+          console.log("Shut down wss")
+        } else {
+          console.log("Not shutting down wss??")
+        }
+        if (shimServer) {
+          shimServer.stop()
+          console.log("Shut down shimServer")
+        } else {
+          console.log("Not shutting down shimServer??")
+        }
       },
     })
 
@@ -104,29 +141,11 @@ export class IntrceptrServer {
   buildHttpServer = async (masterClient) => {
     const app = express()
 
-    await this.connections.ready()
-    const happs = await listHoloApps()
-    const uis = await masterClient.call('admin/ui/list')
-    const uisById = {}
+    // Simply rely on the fact that UIs are installed in a directory
+    // named after their happId
+    // TODO: check access to prevent cross-UI requests?
+    app.use(`/`, express.static(Config.uiStorageDir))
 
-    for (const ui of uis) {
-      uisById[ui.id] = ui
-    }
-    happs.forEach(({happId}) => {
-      const ui = uisById[uiIdFromHappId(happId)]
-      if (ui) {
-        const dir = ui.root_dir
-        const hash = ui.id  // TODO: eventually needs to be hApp hash!
-        // This is a problem for webpages withs static assets!!!
-        // They are expecting to retrieve from / not /{happId}
-        app.use(`/${happId}`, express.static(dir)) // will error if multiple apps are hosted
-        console.log(`serving UI for '${happId}' from '${dir}'`)
-      } else {
-        console.warn(`App '${happId}' has no UI, skipping...`)
-      }
-    })
-
-    // TODO: redirect to ports of conductor UI interfaces
     return require('http').createServer(app)
   }
 

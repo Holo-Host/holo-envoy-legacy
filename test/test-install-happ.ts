@@ -90,23 +90,18 @@ sinonTest('can install dnas and ui for hApp', async T => {
     .resolves(axiosResponse(200))
   const happId = simpleApp.happId
   const dnaHash = simpleApp.dnas[0].hash
-  const uiHash = simpleApp.ui!.hash
   const result = M.installDnasAndUi(masterClient, {happId})
   await T.doesNotReject(result)
-  T.callCount(masterClient.call, 4)
+  T.callCount(masterClient.call, 3)
 
   T.calledWith(masterClient.call.getCall(0), 'call', enabledAppCall)
   T.calledWith(masterClient.call.getCall(1), 'admin/dna/list')
-  T.calledWith(masterClient.call.getCall(2), 'admin/dna/install_from_file', { 
-    copy: true, 
-    expected_hash: dnaHash, 
-    id: dnaHash, 
-    path: `tempdir/${dnaHash}.dna.json`, 
-    properties: undefined 
-  })
-  T.calledWith(masterClient.call.getCall(3), 'admin/ui/install', { 
-    id: `${happId}-ui`, 
-    root_dir: `tempdir/${uiHash}` 
+  T.calledWith(masterClient.call.getCall(2), 'admin/dna/install_from_file', {
+    copy: true,
+    expected_hash: dnaHash,
+    id: dnaHash,
+    path: `tempdir/${dnaHash}.dna.json`,
+    properties: undefined
   })
 
   axiosStub.restore()
@@ -117,7 +112,6 @@ sinonTest('can setup instances', async T => {
 
   const happId = simpleApp.happId
   const dnaHash = simpleApp.dnas[0].hash
-  const uiHash = simpleApp.ui!.hash
   const agentId = 'fake-agent-id'
   const instanceId = instanceIdFromAgentAndDna(agentId, dnaHash)
   const result = M.setupInstances(masterClient, {happId, agentId, conductorInterface: Config.ConductorInterface.Public})
@@ -126,17 +120,17 @@ sinonTest('can setup instances', async T => {
 
   T.calledWith(masterClient.call.getCall(0), 'call', enabledAppCall)
   T.calledWith(masterClient.call.getCall(1), 'admin/instance/list')
-  T.calledWith(masterClient.call.getCall(2), 'admin/instance/add', { 
+  T.calledWith(masterClient.call.getCall(2), 'admin/instance/add', {
     agent_id: agentId,
     dna_id: dnaHash,
     id: instanceId,
   })
-  T.calledWith(masterClient.call.getCall(3), 'admin/interface/add_instance', { 
-    instance_id: instanceId, 
-    interface_id: Config.ConductorInterface.Public, 
+  T.calledWith(masterClient.call.getCall(3), 'admin/interface/add_instance', {
+    instance_id: instanceId,
+    interface_id: Config.ConductorInterface.Public,
   })
-  T.calledWith(masterClient.call.getCall(4), 'admin/instance/start', { 
-    id: instanceId, 
+  T.calledWith(masterClient.call.getCall(4), 'admin/instance/start', {
+    id: instanceId,
   })
 })
 
@@ -146,7 +140,6 @@ sinonTest('can setup servicelogger', async T => {
   const serviceLogger = Config.DNAS.serviceLogger
   const happId = simpleApp.happId
   const dnaHash = simpleApp.dnas[0].hash
-  const uiHash = simpleApp.ui!.hash
   const agentId = 'fake-agent-id'
   const instanceId = instanceIdFromAgentAndDna(agentId, dnaHash)
   const serviceLoggerId = serviceLoggerInstanceIdFromHappId(happId)
@@ -162,16 +155,16 @@ sinonTest('can setup servicelogger', async T => {
     properties: { forApp: simpleApp.happId }
   })
   T.calledWith(masterClient.call, 'admin/instance/list')
-  T.calledWith(masterClient.call, 'admin/instance/add', { 
+  T.calledWith(masterClient.call, 'admin/instance/add', {
     agent_id: Config.hostAgentId,
     dna_id: serviceLogger.hash,
     id: serviceLoggerId,
   })
-  T.calledWith(masterClient.call, 'admin/interface/add_instance', { 
+  T.calledWith(masterClient.call, 'admin/interface/add_instance', {
     instance_id: serviceLoggerId,
-    interface_id: Config.ConductorInterface.Internal, 
+    interface_id: Config.ConductorInterface.Internal,
   })
-  T.calledWith(masterClient.call, 'admin/instance/start', { 
-    id: serviceLoggerId, 
+  T.calledWith(masterClient.call, 'admin/instance/start', {
+    id: serviceLoggerId,
   })
 })

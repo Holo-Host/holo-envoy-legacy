@@ -17,5 +17,7 @@ export default (port, icServer) => {
     icServer.startHoloSigningRequest(agentId, entry, callback)
   })
 
-  app.listen(port, () => console.log(`Wormhole HTTP server listening on port ${port}`))
+  const server = app.listen(port, () => console.log(`Wormhole HTTP server listening on port ${port}`))
+
+  return server
 }

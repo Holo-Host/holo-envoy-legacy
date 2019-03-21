@@ -11,12 +11,16 @@ export const initializeConductorConfig = () => {
   try {
     fs.mkdirSync(Config.conductorConfigDir, {recursive: true})
   } catch(e) {}
+  try {
+    fs.mkdirSync(Config.uiStorageDir, {recursive: true})
+  } catch(e) {}
   let toml = initialTomlConfig()
   fs.writeFileSync(Config.conductorConfigPath, toml)
 }
 
 export const cleanConductorStorage = () => {
   rimraf.sync(path.join(Config.conductorConfigDir, 'storage'))
+  rimraf.sync(Config.uiStorageDir)
 }
 
 export const spawnConductor = () => {

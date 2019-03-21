@@ -6,6 +6,7 @@ import * as C from '../config'
 import {fail, zomeCallByInstance} from '../common'
 import {getMasterClient} from '../server'
 import {shimHappById, shimHappByNick} from '../shims/happ-server'
+import * as HH from '../flows/holo-hosting'
 
 process.on('unhandledRejection', (reason, p) => {
   console.log("UNHANDLED REJECTION:", reason)
@@ -39,37 +40,24 @@ const adminCall = (uri, data) => axios.post(`http://localhost:${C.PORTS.admin}/$
 //////////////////////////////////////////////////
 
 const install = async (happNick) => {
-  
+
   const client = getMasterClient()
 
   const happEntry = shimHappByNick(happNick)!
 
-  const registerResult = await zomeCallByInstance(client, {
-    instanceId: C.holoHostingAppId,
-    zomeName: 'provider',
-    funcName: 'register_app',
-    params: {
-      ui_hash: happEntry.ui ? happEntry.ui.hash : "",
-      dna_list: happEntry.dnas.map(dna => dna.hash)
-    }
+  const happId = await HH.registerApp(client, {
+    uiHash: happEntry.ui ? happEntry.ui.hash : null,
+    dnaHashes: happEntry.dnas.map(dna => dna.hash)
   })
 
-  const happId = JSON.parse(registerResult).Ok
+  console.log("Registered hApp: ", happId)
 
-  console.log("Registered hApp: ", registerResult, happId)
+  const hostResult = await HH.enableApp(client, happId)
+  console.log(`enable ${happId}: `, hostResult)
 
   const happResult = await adminCall('holo/happs/install', {happId: happId, agentId: C.hostAgentId})
   console.log(`install ${happId}: `, happResult.statusText, happResult.status)
-  
-  const hostResult = await zomeCallByInstance(client, {
-    instanceId: C.holoHostingAppId,
-    zomeName: 'host',
-    funcName: 'enable_app',
-    params: {
-      app_hash: happId
-    }
-  })
-  console.log(`enable ${happId}: `, hostResult)
+
   client.close()
 }
 
