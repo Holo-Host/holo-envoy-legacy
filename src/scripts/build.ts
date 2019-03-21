@@ -1,4 +1,4 @@
-import * as fs from 'fs'
+import * as fs from 'fs-extra'
 import * as path from 'path'
 import {execSync} from 'child_process'
 import {bundle} from '../common'

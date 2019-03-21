@@ -191,7 +191,7 @@ export const setupServiceLogger = async (masterClient, {hostedHappId}) => {
 }
 
 export const lookupHoloApp = async (client, {happId}: LookupHappRequest): Promise<HappEntry> => {
-  // this is a dummy response for now
+  // this is a shim response for now
   // assuming DNAs are served as JSON packages
   // and UIs are served as ZIP archives
 
@@ -199,6 +199,7 @@ export const lookupHoloApp = async (client, {happId}: LookupHappRequest): Promis
     throw `hApp is not registered by a provider! (happId = ${happId})`
   }
 
+  // TODO: look up actual web 2.0 hApp store via HTTP
   const happ = shimHappById(happId)
   if (happ) {
     return happ

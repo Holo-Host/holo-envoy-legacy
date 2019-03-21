@@ -1,5 +1,5 @@
 import * as axios from 'axios'
-import * as fs from 'fs'
+import * as fs from 'fs-extra'
 import * as sinon from 'sinon'
 import {EventEmitter} from 'events'
 
@@ -16,6 +16,7 @@ sinon.stub(fs, 'createReadStream').returns({
 })
 sinon.stub(fs, 'createWriteStream').returns(new EventEmitter())
 sinon.stub(fs, 'renameSync')
+sinon.stub(fs, 'copy')
 sinon.stub(bundle)
 sinon.stub(unbundle)
 
@@ -69,8 +70,7 @@ sinonTest('throws error for non-hosted happId', async T => {
 sinonTest('throws error for unreachable resources', async T => {
   const {masterClient} = testIntrceptr()
 
-  const axiosStub = sinon.stub(axios, 'request')
-    .resolves(axiosResponse(404))
+  const axiosStub = sinon.stub(axios, 'request').resolves(axiosResponse(404))
   const happId = simpleApp.happId
 
   await T.rejects(
@@ -86,8 +86,7 @@ sinonTest('can install dnas and ui for hApp', async T => {
   const {masterClient} = testIntrceptr()
   T.comment('TODO: needs stub for HHA-enabled apps')
 
-  const axiosStub = sinon.stub(axios, 'request')
-    .resolves(axiosResponse(200))
+  const axiosStub = sinon.stub(axios, 'request').resolves(axiosResponse(200))
   const happId = simpleApp.happId
   const dnaHash = simpleApp.dnas[0].hash
   const result = M.installDnasAndUi(masterClient, {happId})

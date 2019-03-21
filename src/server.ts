@@ -9,7 +9,7 @@ import {Client, Server as RpcServer} from 'rpc-websockets'
 
 import * as Config from './config'
 import installHapp, {InstallHappRequest, listHoloApps} from './flows/install-happ'
-import zomeCall, {CallRequest} from './flows/zome-call'
+import zomeCall, {CallRequest, logServiceSignature} from './flows/zome-call'
 import newAgent, {NewAgentRequest} from './flows/new-agent'
 import ConnectionManager from './connection-manager'
 
@@ -154,7 +154,10 @@ export class IntrceptrServer {
 
     wss.register('holo/identify', this.identifyAgent)
 
-    wss.register('holo/clientSignature', this.clientSignature)
+    wss.register('holo/clientSignature', this.wormholeSignature)  // TODO: deprecated
+    wss.register('holo/wormholeSignature', this.wormholeSignature)
+
+    wss.register('holo/serviceSignature', this.serviceSignature)
 
     wss.register('holo/call', this.zomeCall)
 
@@ -163,10 +166,6 @@ export class IntrceptrServer {
 
     return wss
   }
-
-
-  // TODO: service log signature endpoint
-
 
   identifyAgent = ({agentId}, ws) => {
     // TODO: also take salt and signature of salt to prove browser owns agent ID
@@ -185,12 +184,16 @@ export class IntrceptrServer {
     return { agentId }
   }
 
-  clientSignature = ({signature, requestId}) => {
+  wormholeSignature = ({signature, requestId}) => {
     const {entry, callback} = this.signingRequests[requestId]
-    verifySignature(entry, signature)
+    verifySignature(entry, signature)  // TODO: really?
     callback(signature)
     delete this.signingRequests[requestId]
     return successResponse
+  }
+
+  serviceSignature = ({happId, responseEntryHash, signature}) => {
+    return logServiceSignature(this.clients.internal, {happId, responseEntryHash, signature})
   }
 
   newHostedAgent = async ({agentId, happId}) => {
@@ -206,7 +209,7 @@ export class IntrceptrServer {
 
   /**
    * Function to be called externally, registers a signing request which will be fulfilled
-   * by the `holo/clientSignature` JSON-RPC method registered on this server
+   * by the `holo/wormholeSignature` JSON-RPC method registered on this server
    */
   startHoloSigningRequest(agentId: string, entry: Object, callback: (Object) => void) {
     const id = this.nextCallId++

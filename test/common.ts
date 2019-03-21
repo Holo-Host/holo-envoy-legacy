@@ -10,7 +10,7 @@ import {HAPP_DATABASE} from '../src/shims/happ-server'
 
 const tape = tapePromise(_tape)
 
-export const mockResponse = {response: 'mock response'}
+export const mockResponse = {Ok: 'mock response'}
 
 const baseClient = () => {
   const client = sinon.stub(new RpcClient())
@@ -53,7 +53,7 @@ export const testInternalClient = () => baseClient()
 
 export const testPublicClient = () => {
   const client = baseClient()
-  client.call.withArgs('call').returns(mockResponse)
+  client.call.withArgs('call').resolves(mockResponse)
   return client
 }
 
