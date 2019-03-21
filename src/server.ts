@@ -88,9 +88,36 @@ export class IntrceptrServer {
         wss.on('error', data => console.log("<C> error: ", data))
       },
       onStop: () => {
-        httpServer.close()
-        wss.close()
-        shimServer.close()
+        if (httpServer) {
+          httpServer.close()
+          console.log("Shut down httpServer")
+        } else {
+          console.log("Not shutting down httpServer??")
+        }
+        if (adminServer) {
+          adminServer.close()
+          console.log("Shut down adminServer")
+        } else {
+          console.log("Not shutting down adminServer??")
+        }
+        if (wormholeServer) {
+          wormholeServer.close()
+          console.log("Shut down wormholeServer")
+        } else {
+          console.log("Not shutting down wormholeServer??")
+        }
+        if (wss) {
+          wss.close()
+          console.log("Shut down wss")
+        } else {
+          console.log("Not shutting down wss??")
+        }
+        if (shimServer) {
+          shimServer.stop()
+          console.log("Shut down shimServer")
+        } else {
+          console.log("Not shutting down shimServer??")
+        }
       },
     })
 

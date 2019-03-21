@@ -17,6 +17,7 @@ export default (shimPort) => {
   })
   console.log('Shim server running on port', shimPort)
   shimServer.start()
+  return shimServer
 }
 
 export const shimHappByNick = nick => HAPP_DATABASE.find(a => a.nick === nick)
@@ -24,12 +25,12 @@ export const shimHappById = happId => HAPP_DATABASE.find(a => a.happId === happI
 
 export const HAPP_DATABASE = [
   {
-    happId: 'QmSaU6meHqcLm8351EA5FMQtE11uedP2MMhpoQajqpch1Y',
+    happId: 'QmYcfBXfbFJSWfeNC32oEUL1bKsYvXRVN56me4Q9tNHUH7',
     nick: 'simple-app',
     dnas: [
       {
         location: 'http://localhost:3333/simple-app/dist/simple-app.dna.json',
-        hash: 'QmcnAdZJyDpJewK2sJPXTc5YUVg6ym6kink2n6MtJxVEze'
+        hash: 'QmSKxN3FGVrf1vVMav6gohJVi7GcF4jFcKVDhDcjiAnveo'
       }
     ],
     ui: {

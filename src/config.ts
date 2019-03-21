@@ -3,7 +3,7 @@ import {homedir} from 'os'
 
 export const conductorConfigDir = path.join(homedir(), '.holochain/holo')
 export const conductorConfigPath = path.join(conductorConfigDir, 'conductor-config.toml')
-export const uiStorageDir = path.join(conductorConfigDir, 'ui')
+export const uiStorageDir = path.join(conductorConfigDir, 'ui-store')
 
 export const hostAgentId = 'host-agent'
 export const holoHostingAppId = 'holo-hosting-app'

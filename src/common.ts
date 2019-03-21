@@ -64,7 +64,7 @@ export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName
     console.info("Calling zome...", payload)
     const resultRaw = await callWhenConnected(client, 'call', payload)
     const result = JSON.parse(resultRaw)
-    if (!result.Ok) {
+    if (!("Ok" in result)) {
       throw result
     }
     return result.Ok

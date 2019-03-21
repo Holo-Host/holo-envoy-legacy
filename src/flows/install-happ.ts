@@ -1,5 +1,5 @@
 import axios from 'axios'
-import * as fs from 'fs'
+import * as fs from 'fs-extra'
 import * as os from 'os'
 import * as path from 'path'
 
@@ -95,7 +95,7 @@ export const installDnasAndUi = async (client, opts: {happId: string, properties
 }
 
 const installUi = async ({ui, happId}) => {
-  fs.renameSync(ui.path, path.join(Config.uiStorageDir, happId))
+  await fs.copy(ui.path, path.join(Config.uiStorageDir, happId))
   return {success: true}
 }
 
@@ -214,6 +214,7 @@ export const happIsEnabled = async (client, happId) => {
     funcName: 'get_enabled_app',
     params: {}
   })
+  console.log("Enabled hApps:", happEntries)
   return Boolean(happEntries.find(happ => happ.address === happId))
 }
 

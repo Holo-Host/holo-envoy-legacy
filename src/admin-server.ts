@@ -16,12 +16,13 @@ export default (port, masterClient) => {
       .catch(catchHttp(next))
   })
 
-  app.listen(port, () => console.log(`Admin HTTP server listening on port ${port}`))
+  const server = app.listen(port, () => console.log(`Admin HTTP server listening on port ${port}`))
 
-  return app
+  return server
 }
 
 const catchHttp = next => e => {
+  const err = typeof e === 'object' ? JSON.stringify(e) : e
   console.error("HTTP error caught:")
-  next(e)
+  next(err)
 }
