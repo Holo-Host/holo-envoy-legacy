@@ -117,6 +117,7 @@ export const lookupInstance = async (client, {dnaHash, agentId}): Promise<Instan
  * If the WS client is connected to the server, make the RPC call immediately
  * Otherwise, wait for connection, then make the call
  * Return a promise that resolves when the call is complete
+ * TODO: may eventually be superseded by ConnectionManager
  */
 export const callWhenConnected = async (client, method, payload) => {
   if(client.ready) {
