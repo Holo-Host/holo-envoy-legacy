@@ -7,30 +7,33 @@
 import * as express from 'express'
 import {Client, Server as RpcServer} from 'rpc-websockets'
 
-import {uiIdFromHappId} from './common'
-import * as C from './config'
+import * as Config from './config'
 import installHapp, {InstallHappRequest, listHoloApps} from './flows/install-happ'
-import zomeCall, {CallRequest} from './flows/zome-call'
+import zomeCall, {CallRequest, logServiceSignature} from './flows/zome-call'
 import newAgent, {NewAgentRequest} from './flows/new-agent'
+import ConnectionManager from './connection-manager'
+
+import startWormholeServer from './wormhole-server'
+import startAdminServer from './admin-server'
+import startShimServers from './shims/happ-server'
 
 const successResponse = { success: true }
 
 export default (port) => new Promise((fulfill, reject) => {
   // clients to the interface served by the Conductor
-  const masterClient = new Client(`ws://localhost:${C.PORTS.masterInterface}`, { max_reconnects: 0 }) // zero reconnects means unlimited
-  const publicClient = new Client(`ws://localhost:${C.PORTS.publicInterface}`, { max_reconnects: 0 })
-  const internalClient = new Client(`ws://localhost:${C.PORTS.internalInterface}`, { max_reconnects: 0 })
+  const masterClient = getMasterClient()
+  const publicClient = getPublicClient()
+  const internalClient = getInternalClient()
   console.debug("Connecting to admin and happ interfaces...")
-  masterClient.once('open', () => {
-    publicClient.once('open', () => {
-      internalClient.once('open', () => {
-        const intrceptr = new IntrceptrServer({masterClient, publicClient, internalClient})
-        console.log('Websocket server running on port', port)
-        intrceptr.start(port).then(() => fulfill(intrceptr))
-      })
-    })
-  })
+
+  const intrceptr = new IntrceptrServer({masterClient, publicClient, internalClient})
+  intrceptr.start(port)
 })
+
+const clientOpts = { max_reconnects: 0 }  // zero reconnects means unlimited
+export const getMasterClient = () => new Client(`ws://localhost:${Config.PORTS.masterInterface}`, clientOpts)
+export const getPublicClient = () => new Client(`ws://localhost:${Config.PORTS.publicInterface}`, clientOpts)
+export const getInternalClient = () => new Client(`ws://localhost:${Config.PORTS.internalInterface}`, clientOpts)
 
 type SigningRequest = {
   entry: Object,
@@ -51,55 +54,98 @@ const fail = (e) => {
  */
 export class IntrceptrServer {
   server: any
-  masterClient: any  // TODO: move this to separate admin-only server that's not publicly exposed!
-  publicClient: any
-  internalClient: any
-  hostedClients: any[]  // TODO use this if ever we put each client on their own interface
+  clients: {[s: string]: any}  // TODO: move masterClient to separate admin-only server that's not publicly exposed!??
   nextCallId = 0
   signingRequests = {}
+  connections: ConnectionManager
 
   constructor({masterClient, publicClient, internalClient}) {
-    this.masterClient = masterClient
-    this.publicClient = publicClient
-    this.internalClient = internalClient
+    this.clients = {
+      master: masterClient,
+      public: publicClient,
+      internal: internalClient,
+    }
   }
 
   start = async (port) => {
-    const httpServer = await this.buildHttpServer(this.masterClient)
-    const wss = await this.buildWebsocketServer(httpServer)
+    let wss, httpServer, shimServer, adminServer, wormholeServer
+    const intrceptr = this
+    this.connections = new ConnectionManager({
+      connections: ['master', 'public', 'internal'],
+      onStart: async () => {
+        console.log("Beginning server startup")
+        httpServer = await this.buildHttpServer(this.clients.master)
+        console.log("HTTP server initialized")
+        wss = await this.buildWebsocketServer(httpServer)
+        console.log("WS server initialized")
 
-    httpServer.listen(port, () => console.log('HTTP server running on port', port))
-    wss.on('listening', () => console.log("Websocket server listening on port", port))
-    wss.on('error', data => console.log("<C> error: ", data))
-    
+        shimServer = startShimServers(Config.PORTS.shim)
+        adminServer = startAdminServer(Config.PORTS.admin, intrceptr.clients.master)
+        wormholeServer = startWormholeServer(Config.PORTS.wormhole, intrceptr)
+
+        await httpServer.listen(port, () => console.log('HTTP server running on port', port))
+        wss.on('listening', () => console.log("Websocket server listening on port", port))
+        wss.on('error', data => console.log("<C> error: ", data))
+      },
+      onStop: () => {
+        if (httpServer) {
+          httpServer.close()
+          console.log("Shut down httpServer")
+        } else {
+          console.log("Not shutting down httpServer??")
+        }
+        if (adminServer) {
+          adminServer.close()
+          console.log("Shut down adminServer")
+        } else {
+          console.log("Not shutting down adminServer??")
+        }
+        if (wormholeServer) {
+          wormholeServer.close()
+          console.log("Shut down wormholeServer")
+        } else {
+          console.log("Not shutting down wormholeServer??")
+        }
+        if (wss) {
+          wss.close()
+          console.log("Shut down wss")
+        } else {
+          console.log("Not shutting down wss??")
+        }
+        if (shimServer) {
+          shimServer.stop()
+          console.log("Shut down shimServer")
+        } else {
+          console.log("Not shutting down shimServer??")
+        }
+      },
+    })
+
+    Object.keys(this.clients).forEach(name => {
+      const client = this.clients[name]
+      client.on('open', () => this.connections.add(name))
+      client.on('close', () => this.connections.remove(name))
+    })
+
     this.server = wss
   }
+
+  /**
+   * Close the client connections
+   */
+  close() {
+    Object.values(this.clients).forEach((client) => client.close())
+  }
+
 
   buildHttpServer = async (masterClient) => {
     const app = express()
 
-    const happs = await listHoloApps()
-    const uis = await masterClient.call('admin/ui/list')
-    const uisById = {}
+    // Simply rely on the fact that UIs are installed in a directory
+    // named after their happId
+    // TODO: check access to prevent cross-UI requests?
+    app.use(`/`, express.static(Config.uiStorageDir))
 
-    for (const ui of uis) {
-      uisById[ui.id] = ui
-    }
-    Object.keys(happs).forEach(happId => {
-      const ui = uisById[uiIdFromHappId(happId)]
-      if (ui) {
-        const dir = ui.root_dir
-        const hash = ui.id  // TODO: eventually needs to be hApp hash!
-        // This is a problem for webpages withs static assets!!!
-        // They are expecting to retrieve from / not /{happId}
-        app.use(`/${happId}`, express.static(dir)) // will error if multiple apps are hosted
-        console.log(`serving UI for '${happId}' from '${dir}'`)
-      } else {
-        console.warn(`App '${happId}' has no UI, skipping...`)
-      }
-    })
-    
-    // TODO: redirect to ports of conductor UI interfaces
     return require('http').createServer(app)
   }
 
@@ -108,7 +154,10 @@ export class IntrceptrServer {
 
     wss.register('holo/identify', this.identifyAgent)
 
-    wss.register('holo/clientSignature', this.clientSignature)
+    wss.register('holo/clientSignature', this.wormholeSignature)  // TODO: deprecated
+    wss.register('holo/wormholeSignature', this.wormholeSignature)
+
+    wss.register('holo/serviceSignature', this.serviceSignature)
 
     wss.register('holo/call', this.zomeCall)
 
@@ -117,10 +166,6 @@ export class IntrceptrServer {
 
     return wss
   }
-
-  
-  // TODO: service log signature endpoint
-
 
   identifyAgent = ({agentId}, ws) => {
     // TODO: also take salt and signature of salt to prove browser owns agent ID
@@ -137,41 +182,35 @@ export class IntrceptrServer {
     }
 
     console.log('identified as ', agentId)
-    // if (!this.sockets[agentId]) {
-    //   this.sockets[agentId] = [ws]
-    // } else {
-    //   this.sockets[agentId].push(ws)
-    // }
-    // ws.on('close', () => {
-    //   // remove the closed socket
-    //   this.sockets[agentId] = this.sockets[agentId].filter(socket => socket !== ws)
-    // })
-
     return { agentId }
   }
 
-  clientSignature = ({signature, requestId}) => {
+  wormholeSignature = ({signature, requestId}) => {
     const {entry, callback} = this.signingRequests[requestId]
-    verifySignature(entry, signature)
+    verifySignature(entry, signature)  // TODO: really?
     callback(signature)
     delete this.signingRequests[requestId]
     return successResponse
   }
 
+  serviceSignature = ({happId, responseEntryHash, signature}) => {
+    return logServiceSignature(this.clients.internal, {happId, responseEntryHash, signature})
+  }
+
   newHostedAgent = async ({agentId, happId}) => {
     const signature = 'TODO'
-    await newAgent(this.masterClient)({agentId, happId, signature})
+    await newAgent(this.clients.master)({agentId, happId, signature})
     return successResponse
   }
 
   zomeCall = (params: CallRequest) => {
-    return zomeCall(this.publicClient, this.internalClient)(params).catch(fail)
+    return zomeCall(this.clients.public, this.clients.internal)(params).catch(fail)
   }
 
 
   /**
    * Function to be called externally, registers a signing request which will be fulfilled
-   * by the `holo/clientSignature` JSON-RPC method registered on this server
+   * by the `holo/wormholeSignature` JSON-RPC method registered on this server
    */
   startHoloSigningRequest(agentId: string, entry: Object, callback: (Object) => void) {
     const id = this.nextCallId++
@@ -181,16 +220,5 @@ export class IntrceptrServer {
     this.server.emit(`agent/${agentId}/sign`, {entry, id})
     this.signingRequests[id] = {entry, callback}
   }
-
-  /**
-   * Close both the server and client connections
-   */
-  close() {
-    this.masterClient!.close()
-    this.publicClient!.close()
-    this.internalClient!.close()
-    this.server!.close()
-  }
-
 
 }

@@ -1,8 +1,10 @@
 import * as path from 'path'
 import {homedir} from 'os'
 
+const devUI = process.env.INTRCEPTR_UI || ""
 export const conductorConfigDir = path.join(homedir(), '.holochain/holo')
 export const conductorConfigPath = path.join(conductorConfigDir, 'conductor-config.toml')
+export const uiStorageDir = path.join(conductorConfigDir, 'ui-store', devUI)
 
 export const hostAgentId = 'host-agent'
 export const holoHostingAppId = 'holo-hosting-app'
@@ -17,7 +19,11 @@ export enum ConductorInterface {
 export const DNAS = {
   serviceLogger: {
     path: 'src/dnas/servicelogger/dist/servicelogger.dna.json',
-    hash: 'QmSfVCAibdfEAACx7UZ7kgTBKrDSKmBUrbKgTYMweN8frQ',
+    hash: 'Qmcge6J1nkxXDc9bGNt5J5rdL3H524DAVJVpfz8DPN5P3r',
+  },
+  holoHosting: {
+    path: 'src/dnas/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
+    hash: 'QmXuPFimMCoYQrXqX9vr1vve8JtpQ7smfkw1LugqEhyWTr',
   }
 }
 
@@ -25,11 +31,8 @@ export const PORTS = {
   wormhole: 8888,
   admin: 9999,
   shim: 3333,
-  ui: 7000,
   intrceptr: 3000,
   masterInterface: 7777,
   publicInterface: 4444,
   internalInterface: 2222,
 }
-
-export const serviceLoggerInstanceIdFromHappId = hostedHappId => `servicelogger-${hostedHappId}`

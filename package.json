@@ -12,12 +12,14 @@
     "init": "ts-node -T init-conductor.ts",
     "conductor": "holochain -c ~/.holochain/holo/conductor-config.toml",
     "test": "ts-node test/index.ts | faucet",
-    "e2e": "ts-node src/end2end/one.ts"
+    "e2e": "ts-node src/end2end/one.ts",
+    "cmd": "ts-node src/end2end/command.ts"
   },
   "dependencies": {
     "axios": "^0.18.0",
     "body-parser": "^1.18.3",
     "express": "^4.16.4",
+    "fs-extra": "^7.0.1",
     "rpc-websockets": "maackle/rpc-websockets",
     "tar-fs": "^2.0.0"
   },

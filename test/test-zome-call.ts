@@ -6,8 +6,10 @@ import {
   sinonTest, 
   testIntrceptr,
 } from './common'
-import {instanceIdFromAgentAndDna} from '../src/common'
-import {serviceLoggerInstanceIdFromHappId} from '../src/config'
+import {
+  instanceIdFromAgentAndDna,
+  serviceLoggerInstanceIdFromHappId,
+} from '../src/common'
 import {IntrceptrServer} from '../src/server'
 import * as Z from '../src/flows/zome-call'
 
@@ -27,8 +29,8 @@ test('can calculate metrics', t => {
 sinonTest('can call public zome function', async T => {
   const {intrceptr, masterClient, publicClient, internalClient} = testIntrceptr()
 
-  internalClient.call.withArgs('call').onFirstCall().returns('requestHash')
-  internalClient.call.withArgs('call').onSecondCall().returns('responseHash')
+  internalClient.call.withArgs('call').onFirstCall().returns({Ok: "requestHash"})
+  internalClient.call.withArgs('call').onSecondCall().returns({Ok: "responseHash"})
   
   const happId = 'test-app-1'
   const serviceLoggerInstanceId = serviceLoggerInstanceIdFromHappId(happId)
@@ -47,7 +49,7 @@ sinonTest('can call public zome function', async T => {
   const responsePackage = Z.buildServiceLoggerResponsePackage(response)
   const metrics = Z.calcMetrics(requestPackage, responsePackage)
 
-  T.equal(response, mockResponse)
+  T.equal(response, mockResponse.Ok)
 
   T.callCount(internalClient.call, 2)
 
@@ -57,9 +59,9 @@ sinonTest('can call public zome function', async T => {
     function: 'log_request', 
     params: {
       agent_id: 'agentId',
-      zome_call_spec: 'TODO',
+      zome_call_spec: 'zome/function',
       dna_hash: 'dnaHash',
-      client_signature: 'TODO',
+      client_signature: 'signature',
     }
   })
 
@@ -70,12 +72,11 @@ sinonTest('can call public zome function', async T => {
     params: {
       request_hash: 'requestHash',
       hosting_stats: metrics,
-      response_log: mockResponse,
-      host_signature: 'TODO, probably should be signed by servicelogger, not externally',
+      response_log: 'TODO: response_log',
     }
   })
 
-  T.calledWith(publicClient.call, 'call', {
+  T.calledWith(publicClient.call.getCall(0), 'call', {
     instance_id: instanceIdFromAgentAndDna('agentId', 'dnaHash'),
     params: request,
     function: 'function',
@@ -95,12 +96,41 @@ sinonTest('can sign things across the wormhole', async T => {
   T.callCount(spy1, 0)
   T.deepEqual(Object.keys(intrceptr.signingRequests), ['0', '1'])
 
-  intrceptr.clientSignature({signature: 'sig 1', requestId: 0})
+  intrceptr.wormholeSignature({signature: 'sig 1', requestId: 0})
   T.calledWith(spy0, 'sig 1')
   T.callCount(spy1, 0)
   T.deepEqual(Object.keys(intrceptr.signingRequests), ['1'])
   
-  intrceptr.clientSignature({signature: 'sig 2', requestId: 1})
+  intrceptr.wormholeSignature({signature: 'sig 2', requestId: 1})
   T.calledWith(spy1, 'sig 2')
   T.deepEqual(Object.keys(intrceptr.signingRequests), [])
+})
+
+sinonTest('can sign responses for servicelogger later', async T => {
+  const {intrceptr, internalClient} = testIntrceptr()
+  const happId = 'happId'
+  
+  internalClient.call.withArgs('call', {
+    instance_id: serviceLoggerInstanceIdFromHappId(happId),
+    zome: 'service',
+    function: 'log_service',
+    params: {
+      response_hash: 'hash', 
+      client_signature: 'signature',
+    }
+  }).resolves({Ok: 'whatever'})
+  
+  await intrceptr.serviceSignature({
+    happId, 
+    responseEntryHash: 'hash', 
+    signature: 'signature',
+  })
+
+  T.callCount(internalClient.call, 1)
+  T.calledWith(internalClient.call, 'call', {
+    zome: "service",
+    function: "log_service",
+    instance_id: "servicelogger-happId",
+    params: { client_signature: "signature", response_hash: "hash" },
+  })
 })

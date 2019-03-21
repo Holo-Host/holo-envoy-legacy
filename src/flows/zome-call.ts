@@ -1,7 +1,14 @@
 
 import {Instance, HappID} from '../types'
-import {errorResponse, fail, InstanceIds, zomeCallByDna, zomeCallByInstance} from '../common'
-import {serviceLoggerInstanceIdFromHappId} from '../config'
+import {
+  errorResponse, 
+  fail, 
+  serviceLoggerInstanceIdFromHappId,
+  zomeCallByDna, 
+  zomeCallByInstance,
+  zomeCallSpec,
+} from '../common'
+
 
 export type CallRequest = {
   agentId: string,
@@ -23,22 +30,22 @@ export default (publicClient, internalClient) => async (call: CallRequest) => {
     agentId,
     happId,
     dnaHash,
-    zome,
-    function: func, 
+    zome: zomeName,
+    function: funcName, 
     params,
     signature,
   } = call
 
-  // const requestData = buildServiceLoggerRequestPackage(call)
-  // const requestEntryHash = await logServiceRequest(internalClient,
-  //   {happId, agentId, dnaHash, requestData})
+  const requestData = buildServiceLoggerRequestPackage(call)
+  const requestEntryHash = await logServiceRequest(internalClient,
+    {happId, agentId, dnaHash, requestData, zomeName, funcName, signature})
   const result = await zomeCallByDna(publicClient, {
-    agentId, dnaHash, zomeName: zome, funcName: func, params
+    agentId, dnaHash, zomeName, funcName, params
   })
-  // const responseData = buildServiceLoggerResponsePackage(result)
-  // const metrics = calcMetrics(requestData, responseData)
-  // const responseEntryHash = await logServiceResponse(internalClient,
-  //   {happId, requestEntryHash, responseData, metrics})
+  const responseData = buildServiceLoggerResponsePackage(result)
+  const metrics = calcMetrics(requestData, responseData)
+  const responseEntryHash = await logServiceResponse(internalClient,
+    {happId, requestEntryHash, responseData, metrics})
 
   return result
 }
@@ -52,7 +59,10 @@ type ServiceMetrics = {
 }
 
 
-const logServiceRequest = async (client, {happId, agentId, dnaHash, requestData}) => {
+const logServiceRequest = async (client, payload) => {
+  const {
+    happId, agentId, dnaHash, requestData, signature, zomeName, funcName
+  } = payload
   const instanceId = serviceLoggerInstanceIdFromHappId(happId)
   const hash = await zomeCallByInstance(client, {
     instanceId: instanceId,
@@ -60,9 +70,9 @@ const logServiceRequest = async (client, {happId, agentId, dnaHash, requestData}
     funcName: 'log_request',
     params: {
       agent_id: agentId,
-      zome_call_spec: 'TODO',
       dna_hash: dnaHash,
-      client_signature: 'TODO',
+      zome_call_spec: zomeCallSpec({zomeName, funcName}),  // TODO, figure out zome call spec format
+      client_signature: signature,
     }
   })
   return hash
@@ -77,14 +87,16 @@ const logServiceResponse = async (client, {happId, requestEntryHash, responseDat
     params: {
       request_hash: requestEntryHash,
       hosting_stats: metrics,
-      response_log: responseData,  // TODO, make sure this is calculated correctly
-      host_signature: 'TODO, probably should be signed by servicelogger, not externally', 
+      response_log: 'TODO: response_log',  // TODO, make sure this is calculated correctly
     }
   })
   return hash
 }
 
-const logServiceSignature = async (client, {happId, responseEntryHash, signature}) => {
+/**
+ * Gets called as a separate request from the UI, after the response has been delivered
+ */
+export const logServiceSignature = async (client, {happId, responseEntryHash, signature}) => {
   const instanceId = serviceLoggerInstanceIdFromHappId(happId)
   const hash = await zomeCallByInstance(client, {
     instanceId: instanceId,

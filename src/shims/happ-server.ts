@@ -7,70 +7,79 @@ export type HappResource = {
 
 export type HappEntry = {
   dnas: Array<HappResource>
-  ui: HappResource | void
+  ui?: HappResource | void
 }
 
-export default (shimPort, uiPort) => {
+export default (shimPort) => {
   const shimServer = new StaticServer({
     rootPath: './src/shims/happ-data',
     port: shimPort
   })
   console.log('Shim server running on port', shimPort)
   shimServer.start()
-
-  const uiServer = new StaticServer({
-    rootPath: './src/shims/ui',
-    port: uiPort
-  })
-  console.log('UI server running on port', uiPort)
-  uiServer.start()
+  return shimServer
 }
 
-export const HAPP_DATABASE = {
-  'simple-app': {
+export const shimHappByNick = nick => HAPP_DATABASE.find(a => a.nick === nick)
+export const shimHappById = happId => HAPP_DATABASE.find(a => a.happId === happId)
+
+export const HAPP_DATABASE = [
+  {
+    happId: 'QmYcfBXfbFJSWfeNC32oEUL1bKsYvXRVN56me4Q9tNHUH7',
+    nick: 'simple-app',
     dnas: [
       {
-        path: 'src/shims/happ-data/simple-app/dist/simple-app.dna.json',
-        hash: 'QmUzZJmfXpxrwUcCeDV16DxeDF59PW2wSaFXzDpZZ33nVx'
+        location: 'http://localhost:3333/simple-app/dist/simple-app.dna.json',
+        hash: 'QmSKxN3FGVrf1vVMav6gohJVi7GcF4jFcKVDhDcjiAnveo'
       }
     ],
     ui: {
-      path: 'src/shims/happ-data/simple-app/ui',
+      location: 'src/shims/happ-data/simple-app/ui',
       hash: 'Qm_UI_Simple_App_simple'
     },
   },
-  'basic-chat': {
+  {
+    happId: 'QmUV3uZBnTvGenTLfMKWwA2WpiZMtnntwCWZ74r6qDC6hb',
+    nick: 'basic-chat',
     dnas: [
       {
-        path: 'src/shims/happ-data/holochain-basic-chat/dna/holo-chat.hcpkg',
+        location: 'src/shims/happ-data/holochain-basic-chat/dna/holo-chat.hcpkg',
         hash: 'Qmd3zeMA5S5YWQ4QAZ6JTBPEEAEJwGmoSxkYn6y2Pm4PNV'
       }
     ],
     ui: {
-      path: 'src/shims/happ-data/holochain-basic-chat/ui',
+      location: 'src/shims/happ-data/holochain-basic-chat/ui',
       hash: 'Qm_UI_Simple_App_chat'
     },
   },
-  // 'holo-hosting': {
-  //   dnas: [
-  //     {
-  //       path: 'http://localhost:3333/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
-  //       hash: 'Qm_DNA_Holo_Hosting_App'
-  //     }
-  //   ]
-  // }
-  'test-app-1': {  // for testing only
+  {
+    happId: 'holo-hosting',
+    nick: 'holo-hosting',
     dnas: [
-      {path: 'nowhere', hash: 'hash'},
-    ],
-    ui: {path: 'nowhere', hash: 'hash'}
+      {
+        location: 'http://localhost:3333/Holo-Hosting-App/dist/Holo-Hosting-App.dna.json',
+        hash: 'QmXuPFimMCoYQrXqX9vr1vve8JtpQ7smfkw1LugqEhyWTr'
+      }
+    ]
   },
-  'test-app-3': {  // for testing only
+
+  // The following are for testing only
+  {
+    happId: 'test-app-1',
+    nick: 'test-app-1',
     dnas: [
-      {path: 'nowhere', hash: 'hash'},
-      {path: 'nowhere', hash: 'hash'},
-      {path: 'nowhere', hash: 'hash'},
+      {location: 'nowhere', hash: 'hash'},
     ],
-    ui: {path: 'nowhere', hash: 'hash'}
+    ui: {location: 'nowhere', hash: 'hash'}
+  },
+  {
+    happId: 'test-app-3',
+    nick: 'test-app-3',
+    dnas: [
+      {location: 'nowhere', hash: 'hash'},
+      {location: 'nowhere', hash: 'hash'},
+      {location: 'nowhere', hash: 'hash'},
+    ],
+    ui: {location: 'nowhere', hash: 'hash'}
   }
-}
+]

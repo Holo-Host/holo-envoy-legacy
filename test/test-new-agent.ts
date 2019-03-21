@@ -3,7 +3,6 @@ import * as sinon from 'sinon'
 
 import {mockResponse, sinonTest, testIntrceptr} from './common'
 import * as Config from '../src/config'
-import {serviceLoggerInstanceIdFromHappId} from '../src/config'
 import {IntrceptrServer} from '../src/server'
 import * as M from '../src/flows/new-agent'
 import newAgentFlow from '../src/flows/new-agent'

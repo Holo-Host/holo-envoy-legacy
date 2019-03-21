@@ -1,4 +1,4 @@
-import * as fs from 'fs'
+import * as fs from 'fs-extra'
 import * as path from 'path'
 import {execSync} from 'child_process'
 import {bundle} from '../common'
@@ -10,6 +10,9 @@ const happs = [
   },
   {
     dnas: ['./src/dnas/servicelogger/']
+  },
+  {
+    dnas: ['./src/dnas/Holo-Hosting-App/dna-src/']
   },
   {
     dnas: ['./src/shims/happ-data/holochain-basic-chat/dna-src/'],
@@ -24,7 +27,7 @@ happs.forEach(happ => {
   if (happ.ui) {
     const dir = happ.ui
     execSync(`cd ${dir} && hc package --strip-meta`)
-    
+
     try {
       fs.unlinkSync(path.join(dir, 'ui.tar'))
     } catch {}
