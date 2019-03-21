@@ -58,6 +58,20 @@ Finally, to run the intrceptr itself, you can run:
 
 Upon which it will immediately connect to the Conductor at the admin websocket interface specified in the Conductor config, and run its own servers for incoming connections and requests.
 
+## Running basic-chat
+
+Ensure the intrceptr and conductor are both running and install the chat dna and UI by running the following
+
+```
+npx ts-node ./src/end2end/command.ts install 'basic-chat'
+```
+
+It should respond with `install basic-chat:  OK 200`.
+
+This will automatically start running the chat instance but **it will not host the UI until you restart the intrceptr**. (hopefully will fix this soon)
+
+Navigate to `localhost:3000/basic-chat` to start chatting.
+
 ## More info
 
 If at any time you want to update the submodules to the latest commit run the command
