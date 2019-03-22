@@ -70,8 +70,9 @@ export class IntrceptrServer {
   start = async (port) => {
     let wss, httpServer, shimServer, adminServer, wormholeServer
     const intrceptr = this
+    const importantConnections = ['master']
     this.connections = new ConnectionManager({
-      connections: ['master', 'public', 'internal'],
+      connections: importantConnections,
       onStart: async () => {
         console.log("Beginning server startup")
         httpServer = await this.buildHttpServer(this.clients.master)
@@ -125,7 +126,9 @@ export class IntrceptrServer {
       },
     })
 
-    Object.keys(this.clients).forEach(name => {
+    // TODO: rework this so public and internal clients going down doesn't shut down
+    // stuff that only affects the master client
+    importantConnections.forEach(name => {
       const client = this.clients[name]
       client.on('open', () => this.connections.add(name))
       client.on('close', () => this.connections.remove(name))

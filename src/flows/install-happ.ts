@@ -95,7 +95,7 @@ export const installDnasAndUi = async (client, opts: {happId: string, properties
 
 const installUi = async ({ui, happId}) => {
   const target = path.join(Config.uiStorageDir, happId)
-  console.log("Installing UI (by copying from temp dir:", ui, target)
+  console.log("Installing UI (by copying from temp dir):", ui, target)
   await fs.copy(ui.path, target)
   return {success: true}
 }
