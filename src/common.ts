@@ -18,14 +18,23 @@ export const fail = e => console.error("FAIL: ", e)
 /**
  * The method of bundling UIs into a single bundle
  */
-export const bundle = (input, target) =>
-  tar.pack(input).pipe(fs.createWriteStream(target))
+export const bundle = (input, target) => new Promise((resolve, reject) => {
+  const writer = fs.createWriteStream(target)
+  writer.on('error', reject)
+  writer.on('finish', () => resolve(target))
+  tar.pack(input).pipe(writer)
+})
 
 /**
  * The opposite of `bundle`
  */
-export const unbundle = (input, target) =>
-  fs.createReadStream(input).pipe(tar.extract(target))
+export const unbundle = (input, target) => new Promise((resolve, reject) => {
+  const reader = fs.createReadStream(input)
+  console.debug("Unbundling...")
+  reader.on('error', reject)
+  reader.on('end', () => resolve(target))
+  reader.pipe(tar.extract(target))
+})
 
 ///////////////////////////////////////////////////////////////////
 ///////////////////////      UTIL      ////////////////////////////

@@ -86,6 +86,8 @@ export class IntrceptrServer {
         await httpServer.listen(port, () => console.log('HTTP server running on port', port))
         wss.on('listening', () => console.log("Websocket server listening on port", port))
         wss.on('error', data => console.log("<C> error: ", data))
+
+        this.server = wss
       },
       onStop: () => {
         if (httpServer) {
@@ -118,6 +120,8 @@ export class IntrceptrServer {
         } else {
           console.log("Not shutting down shimServer??")
         }
+
+        this.server = null
       },
     })
 
@@ -126,8 +130,6 @@ export class IntrceptrServer {
       client.on('open', () => this.connections.add(name))
       client.on('close', () => this.connections.remove(name))
     })
-
-    this.server = wss
   }
 
   /**
@@ -172,7 +174,7 @@ export class IntrceptrServer {
     console.log("adding new event to server", `agent/${agentId}/sign`)
 
     try {
-      this.server.event(`agent/${agentId}/sign`)
+      this.server!.event(`agent/${agentId}/sign`)
     } catch (e) {
       if (e.message.includes('Already registered event')) {
         console.log('welcome back', agentId)

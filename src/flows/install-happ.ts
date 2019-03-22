@@ -38,16 +38,15 @@ type DownloadResult = {
 
 export type InstallHappResponse = void
 
-export default client => async ({happId}: InstallHappRequest): Promise<InstallHappResponse> => {
+export default (masterClient) => async ({happId}: InstallHappRequest): Promise<InstallHappResponse> => {
   const agentId = Config.hostAgentId
-  await installDnasAndUi(client, {happId})
-  await setupInstances(client, {
+  await installDnasAndUi(masterClient, {happId})
+  await setupInstances(masterClient, {
     happId,
     agentId,
     conductorInterface: Config.ConductorInterface.Public,
   })
-  // TODO: is this the right place?
-  // await setupServiceLogger(client, {hostedHappId: happId})
+  await setupServiceLogger(masterClient, {hostedHappId: happId})
 }
 
 export const installDnasAndUi = async (client, opts: {happId: string, properties?: any}): Promise<void> => {
@@ -95,7 +94,9 @@ export const installDnasAndUi = async (client, opts: {happId: string, properties
 }
 
 const installUi = async ({ui, happId}) => {
-  await fs.copy(ui.path, path.join(Config.uiStorageDir, happId))
+  const target = path.join(Config.uiStorageDir, happId)
+  console.log("Installing UI (by copying from temp dir:", ui, target)
+  await fs.copy(ui.path, target)
   return {success: true}
 }
 
@@ -175,15 +176,20 @@ export const setupInstances = async (client, opts: {happId: string, agentId: str
   console.log("Instance setup successful!")
 }
 
-export const setupServiceLogger = async (masterClient, {hostedHappId}) => {
+export const setupServiceLogger = async (internalClient, {hostedHappId}) => {
   const {hash, path} = Config.DNAS.serviceLogger
   const instanceId = serviceLoggerInstanceIdFromHappId(hostedHappId)
   const agentId = Config.hostAgentId
   const properties = {
     forApp: hostedHappId
   }
-  await installDna(masterClient, {hash, path, properties})
-  await setupInstance(masterClient, {instanceId, dnaId: hash, agentId, conductorInterface: Config.ConductorInterface.Internal })
+  await installDna(internalClient, {hash, path, properties})
+  await setupInstance(internalClient, {
+    instanceId, 
+    dnaId: hash, 
+    agentId, 
+    conductorInterface: Config.ConductorInterface.Internal 
+  })
 
   // TODO:
   // - Open client to Internal interface
@@ -237,11 +243,12 @@ const downloadAppResources = async (_client, happId): Promise<DownloadResult> =>
 
   let uiResource: HappDownloadedResource | void
   if (ui) {
-    const uiPath = await downloadResource(baseDir, ui, ResourceType.HappUi)
-    unbundleUi(uiPath)
+    console.debug("Downloading UI: ", ui)
+    const uiTarPath = await downloadResource(baseDir, ui, ResourceType.HappUi)
+    const uiDir = await unbundleUi(uiTarPath)
     uiResource = {
       hash: ui.hash,
-      path: uiPath,
+      path: uiDir,
     }
   }
   const dnaResources = await Promise.all(dnas.map(async (dna): Promise<HappDownloadedResource> => ({
@@ -252,7 +259,7 @@ const downloadAppResources = async (_client, happId): Promise<DownloadResult> =>
 }
 
 const downloadResource = async (baseDir: string, res: HappResource, type: ResourceType): Promise<string> => {
-  const suffix = type === ResourceType.HappDna ? '.dna.json' : ''
+  const suffix = type === ResourceType.HappDna ? '.dna.json' : '.tar'
   const resourcePath = path.join(baseDir, res.hash + suffix)
   const response: any = await axios.request({
     url: res.location,
@@ -270,15 +277,19 @@ const downloadResource = async (baseDir: string, res: HappResource, type: Resour
       const writer = fs.createWriteStream(resourcePath)
         .on("finish", () => fulfill(resourcePath))
         .on("error", reject)
+      console.debug("Starting streaming download...")
       response.data.pipe(writer)
     }
   })
 }
 
-const unbundleUi = (target: string) => {
-  const source = target + '.tar'
-  fs.renameSync(target, source)
-  unbundle(source, target)
+const unbundleUi = async (source: string) => {
+  const [target, end] = source.split('.tar')
+  if (target == source) {
+    throw "Could not unbundle UI. Check that the resource is a .tar file: " + source
+  }
+  await unbundle(source, target)
+  return target
 }
 
 

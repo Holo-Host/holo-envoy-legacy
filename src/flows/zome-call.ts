@@ -36,6 +36,8 @@ export default (publicClient, internalClient) => async (call: CallRequest) => {
     signature,
   } = call
 
+  console.debug("holo/call input: ", call)
+
   const requestData = buildServiceLoggerRequestPackage(call)
   const requestEntryHash = await logServiceRequest(internalClient,
     {happId, agentId, dnaHash, requestData, zomeName, funcName, signature})

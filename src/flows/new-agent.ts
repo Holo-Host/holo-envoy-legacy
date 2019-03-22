@@ -3,7 +3,7 @@ import {Instance, HappID} from '../types'
 import {callWhenConnected, errorResponse, fail, zomeCallByInstance} from '../common'
 import {ConductorInterface} from '../config'
 import * as Config from '../config'
-import {setupInstances} from './install-happ'
+import {setupInstances, setupServiceLogger} from './install-happ'
 
 
 export type NewAgentRequest = {
@@ -30,7 +30,7 @@ export default (masterClient) => async ({
     await createAgent(masterClient, agentId)
     await setupInstances(masterClient, {happId, agentId, conductorInterface: ConductorInterface.Public})
   } else {
-    throw `App is not enabled for hosting: ${happId}`
+    throw `App is not enabled for hosting: '${happId}'`
   }
 }
 

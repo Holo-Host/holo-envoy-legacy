@@ -34,22 +34,22 @@ export const HAPP_DATABASE = [
       }
     ],
     ui: {
-      location: 'src/shims/happ-data/simple-app/ui',
-      hash: 'Qm_UI_Simple_App_simple'
+      location: 'src/shims/happ-data/simple-app/ui.tar',
+      hash: 'QmSimpleAppFakeHash'
     },
   },
   {
-    happId: 'QmUV3uZBnTvGenTLfMKWwA2WpiZMtnntwCWZ74r6qDC6hb',
+    happId: 'QmY8bukKS7BStWq4ivv29ijePnUavfdCAnHEmJ6QuVspmg',
     nick: 'basic-chat',
     dnas: [
       {
-        location: 'src/shims/happ-data/holochain-basic-chat/dna/holo-chat.hcpkg',
+        location: 'http://localhost:3333/holochain-basic-chat/dna/holo-chat.hcpkg',
         hash: 'Qmd3zeMA5S5YWQ4QAZ6JTBPEEAEJwGmoSxkYn6y2Pm4PNV'
       }
     ],
     ui: {
-      location: 'src/shims/happ-data/holochain-basic-chat/ui',
-      hash: 'Qm_UI_Simple_App_chat'
+      location: 'http://localhost:3333/holochain-basic-chat/ui.tar',
+      hash: 'QmBasicChatFakeHash'
     },
   },
   {
@@ -70,7 +70,7 @@ export const HAPP_DATABASE = [
     dnas: [
       {location: 'nowhere', hash: 'hash'},
     ],
-    ui: {location: 'nowhere', hash: 'hash'}
+    ui: {location: 'nowhere.tar', hash: 'hash'}
   },
   {
     happId: 'test-app-3',
@@ -80,6 +80,6 @@ export const HAPP_DATABASE = [
       {location: 'nowhere', hash: 'hash'},
       {location: 'nowhere', hash: 'hash'},
     ],
-    ui: {location: 'nowhere', hash: 'hash'}
+    ui: {location: 'nowhere.tar', hash: 'hash'}
   }
 ]

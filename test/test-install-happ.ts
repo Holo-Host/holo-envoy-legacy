@@ -1,5 +1,7 @@
 import * as axios from 'axios'
 import * as fs from 'fs-extra'
+import * as path from 'path'
+import * as tar from 'tar-fs'
 import * as sinon from 'sinon'
 import {EventEmitter} from 'events'
 
@@ -10,15 +12,21 @@ import {shimHappByNick} from '../src/shims/happ-server'
 
 import installHapp, * as M from '../src/flows/install-happ'
 
+const emitterWithPipe = () => {
+  return Object.assign(new EventEmitter(), {
+    pipe: sinon.stub()
+  })
+}
+
 sinon.stub(fs, 'mkdtempSync').returns('tempdir')
-sinon.stub(fs, 'createReadStream').returns({
-  pipe: sinon.stub()
-})
+sinon.stub(fs, 'createReadStream').returns(emitterWithPipe())
 sinon.stub(fs, 'createWriteStream').returns(new EventEmitter())
 sinon.stub(fs, 'renameSync')
 sinon.stub(fs, 'copy')
-sinon.stub(bundle)
-sinon.stub(unbundle)
+sinon.stub(tar, 'extract')
+sinon.stub(tar, 'pack')
+// sinon.stub(bundle)
+// sinon.stub(unbundle)
 
 const simpleApp = shimHappByNick('simple-app')!
 
@@ -89,6 +97,7 @@ sinonTest('can install dnas and ui for hApp', async T => {
   const axiosStub = sinon.stub(axios, 'request').resolves(axiosResponse(200))
   const happId = simpleApp.happId
   const dnaHash = simpleApp.dnas[0].hash
+  const uiHash = simpleApp.ui!.hash
   const result = M.installDnasAndUi(masterClient, {happId})
   await T.doesNotReject(result)
   T.callCount(masterClient.call, 3)
@@ -102,6 +111,14 @@ sinonTest('can install dnas and ui for hApp', async T => {
     path: `tempdir/${dnaHash}.dna.json`,
     properties: undefined
   })
+
+  T.calledWith(fs.createReadStream, 'tempdir/QmSimpleAppFakeHash.tar')
+  T.calledWith(tar.extract, 'tempdir/QmSimpleAppFakeHash')
+  T.calledWith(
+    fs.copy,
+    'tempdir/QmSimpleAppFakeHash.tar', 
+    path.join(Config.uiStorageDir, happId)
+  )
 
   axiosStub.restore()
 })
