@@ -47,7 +47,7 @@ export const createAgent = async (masterClient, agentId): Promise<void> => {
       id: agentId,
       name: agentId,
       public_address: agentId,
-      key_file: 'IGNORED',
+      keystore_file: 'IGNORED',
       holo_remote_key: true,
     })
   }

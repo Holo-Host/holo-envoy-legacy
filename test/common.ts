@@ -49,7 +49,11 @@ export const testMasterClient = () => {
   return client
 }
 
-export const testInternalClient = () => baseClient()
+export const testInternalClient = () => {
+  const client = baseClient()
+  client.call.withArgs('call').resolves(mockResponse)
+  return client
+}
 
 export const testPublicClient = () => {
   const client = baseClient()

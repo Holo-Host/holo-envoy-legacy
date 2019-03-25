@@ -18,8 +18,9 @@ test('can calculate metrics', t => {
   const response = {here: 'you go'}
   const metrics = Z.calcMetrics(request, response)
   t.deepEqual(metrics, {
-    bytesIn: 24,
-    bytesOut: 17,
+    bytes_in: 24,
+    bytes_out: 17,
+    cpu_seconds: 0.1111111,
   })
   t.end()
 })
@@ -58,11 +59,13 @@ sinonTest('can call public zome function', async T => {
     zome: 'service',
     function: 'log_request', 
     params: {
-      agent_id: 'agentId',
-      zome_call_spec: 'zome/function',
-      dna_hash: 'dnaHash',
-      client_signature: 'signature',
-    }
+      entry: {
+        agent_id: 'agentId',
+        zome_call_spec: 'zome/function',
+        dna_hash: 'dnaHash',
+        client_signature: 'signature',
+      }
+    } 
   })
 
   T.calledWith(internalClient.call.getCall(1), 'call', {
@@ -70,10 +73,12 @@ sinonTest('can call public zome function', async T => {
     zome: 'service',
     function: 'log_response', 
     params: {
-      request_hash: 'requestHash',
-      hosting_stats: metrics,
-      response_log: 'TODO: response_log',
-    }
+      entry: {
+        request_hash: 'requestHash',
+        hosting_stats: metrics,
+        response_log: 'TODO: response_log',
+      }
+    } 
   })
 
   T.calledWith(publicClient.call.getCall(0), 'call', {
@@ -131,6 +136,8 @@ sinonTest('can sign responses for servicelogger later', async T => {
     zome: "service",
     function: "log_service",
     instance_id: "servicelogger-happId",
-    params: { client_signature: "signature", response_hash: "hash" },
+    params: {
+      entry: { client_signature: "signature", response_hash: "hash" }
+    }
   })
 })

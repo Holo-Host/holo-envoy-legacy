@@ -2,6 +2,10 @@ import * as path from 'path'
 import {homedir} from 'os'
 
 const devUI = process.env.INTRCEPTR_UI || ""
+if (devUI) {
+  console.log("Using dev UI hash: ", devUI)
+}
+
 export const conductorConfigDir = path.join(homedir(), '.holochain/holo')
 export const conductorConfigPath = path.join(conductorConfigDir, 'conductor-config.toml')
 export const uiStorageDir = path.join(conductorConfigDir, 'ui-store', devUI)

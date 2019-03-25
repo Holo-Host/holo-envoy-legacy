@@ -100,10 +100,13 @@ export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName
     console.info("Calling zome...", payload)
     resultRaw = await callWhenConnected(client, 'call', payload)
     const result = resultRaw && typeof resultRaw === 'string' ? JSON.parse(resultRaw) : resultRaw
-    if (!("Ok" in result)) {
+    if (!result) {
+      throw `falsy result! (${resultRaw})`
+    } else if (!("Ok" in result)) {
       throw result
+    } else {
+      return result.Ok
     }
-    return result.Ok
   } catch(e) {
     console.error("ZOME CALL FAILED")
     console.error(e)
