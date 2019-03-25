@@ -8,7 +8,7 @@
 import startServer from './server'
 import * as C from './config'
 
-console.debug = () => {}
+// console.debug = () => {}
 
 console.log('----------------------------------')
 

@@ -33,8 +33,16 @@ export default (publicClient, internalClient) => async (call: CallRequest) => {
     zome: zomeName,
     function: funcName, 
     params,
-    signature,
   } = call
+
+  let signature = call.signature
+
+  console.debug("holo/call input: ", call)
+
+  if (typeof signature !== 'string') {
+    console.warn("hClient sent weird signature! TODO find out why")
+    signature = 'TODO-look-into-hClient-signature'
+  }
 
   const requestData = buildServiceLoggerRequestPackage(call)
   const requestEntryHash = await logServiceRequest(internalClient,
@@ -54,8 +62,9 @@ export default (publicClient, internalClient) => async (call: CallRequest) => {
 // Service Logs
 
 type ServiceMetrics = {
-  bytesIn: number,
-  bytesOut: number,
+  bytes_in: number,
+  bytes_out: number,
+  cpu_seconds: number,
 }
 
 
@@ -69,10 +78,12 @@ const logServiceRequest = async (client, payload) => {
     zomeName: 'service',
     funcName: 'log_request',
     params: {
-      agent_id: agentId,
-      dna_hash: dnaHash,
-      zome_call_spec: zomeCallSpec({zomeName, funcName}),  // TODO, figure out zome call spec format
-      client_signature: signature,
+      entry: {
+        agent_id: agentId,
+        dna_hash: dnaHash,
+        zome_call_spec: zomeCallSpec({zomeName, funcName}),  // TODO, figure out zome call spec format
+        client_signature: signature,
+      }
     }
   })
   return hash
@@ -85,9 +96,11 @@ const logServiceResponse = async (client, {happId, requestEntryHash, responseDat
     zomeName: 'service',
     funcName: 'log_response',
     params: {
-      request_hash: requestEntryHash,
-      hosting_stats: metrics,
-      response_log: 'TODO: response_log',  // TODO, make sure this is calculated correctly
+      entry: {
+        request_hash: requestEntryHash,
+        hosting_stats: metrics,
+        response_log: 'TODO: response_log',  // TODO, make sure this is calculated correctly
+      }
     }
   })
   return hash
@@ -103,8 +116,10 @@ export const logServiceSignature = async (client, {happId, responseEntryHash, si
     zomeName: 'service',
     funcName: 'log_service',
     params: {
-      response_hash: responseEntryHash,
-      client_signature: signature
+      entry: {
+        response_hash: responseEntryHash,
+        client_signature: signature
+      }
     }
   })
   return null
@@ -122,6 +137,7 @@ export const buildServiceLoggerResponsePackage = (response: CallResponse) => {
 }
 
 export const calcMetrics = (request, response): ServiceMetrics => ({
-  bytesIn: JSON.stringify(request).length,
-  bytesOut: JSON.stringify(response).length
+  bytes_in: JSON.stringify(request).length,
+  bytes_out: JSON.stringify(response).length,
+  cpu_seconds: 0.1111111,  // TODO
 })

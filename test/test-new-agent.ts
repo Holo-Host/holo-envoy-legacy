@@ -18,7 +18,7 @@ sinonTest('can host new agent', async T => {
   T.calledWith(masterClient.call.secondCall, 'admin/agent/add', { 
     holo_remote_key: true, 
     id: "agentId", 
-    key_file: "IGNORED", 
+    keystore_file: "IGNORED", 
     name: "agentId", 
     public_address: "agentId" 
   })

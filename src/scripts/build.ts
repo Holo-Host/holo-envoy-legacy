@@ -6,7 +6,7 @@ import {bundle} from '../common'
 const happs = [
   {
     dnas: ['./src/shims/happ-data/simple-app/'],
-    ui: './src/shims/happ-data/simple-app/ui/'
+    ui: './src/shims/happ-data/simple-app/ui'
   },
   {
     dnas: ['./src/dnas/servicelogger/']
@@ -16,24 +16,27 @@ const happs = [
   },
   {
     dnas: ['./src/shims/happ-data/holochain-basic-chat/dna-src/'],
-    ui: './src/shims/happ-data/holochain-basic-chat/ui/'
+    ui: './src/shims/happ-data/holochain-basic-chat/ui'
   },
   // {
   //   dnas: ['./src/shims/happ-data/Holo-Hosting-App/dna-src/']
   // }
 ]
 
+const uiBundlePromises = ([] as any)
+
 happs.forEach(happ => {
   if (happ.ui) {
-    const dir = happ.ui
-    execSync(`cd ${dir} && hc package --strip-meta`)
-
+    const tarPath = path.join(happ.ui, '..', 'ui.tar')
     try {
-      fs.unlinkSync(path.join(dir, 'ui.tar'))
-    } catch {}
+      fs.unlinkSync(tarPath)
+    } catch {
+      console.warn(`No ${tarPath}, skipping...`)
+    }
 
-    console.log(`Bundling UI for ${dir} ...`)
-    bundle(dir, path.join(dir, '..', 'ui.tar'))
+    console.log(`Bundling UI for ${happ.ui} ...`)
+    const promise = bundle(happ.ui, tarPath)
+    uiBundlePromises.push(promise)
   }
 
   happ.dnas.forEach(dir => {
@@ -41,4 +44,10 @@ happs.forEach(happ => {
     execSync(`cd ${dir} && hc package --strip-meta`)
   })
 })
-console.log('All done!')
+
+Promise.all(uiBundlePromises).then((results) => {
+  console.log('All done!')
+  if (results.length) {
+    console.log('UI bundles: ', results)
+  }
+})

@@ -46,7 +46,7 @@ signing_service_uri = "http://localhost:${Config.PORTS.wormhole}"
 [[agents]]
 id = "${Config.hostAgentId}"
 name = "Intrceptr Host"
-key_file = "${keyFile}"
+keystore_file = "${keyFile}"
 public_address = "${publicAddress}"
 
 [[dnas]]

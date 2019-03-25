@@ -70,8 +70,9 @@ export class IntrceptrServer {
   start = async (port) => {
     let wss, httpServer, shimServer, adminServer, wormholeServer
     const intrceptr = this
+    const importantConnections = ['master']
     this.connections = new ConnectionManager({
-      connections: ['master', 'public', 'internal'],
+      connections: importantConnections,
       onStart: async () => {
         console.log("Beginning server startup")
         httpServer = await this.buildHttpServer(this.clients.master)
@@ -86,6 +87,8 @@ export class IntrceptrServer {
         await httpServer.listen(port, () => console.log('HTTP server running on port', port))
         wss.on('listening', () => console.log("Websocket server listening on port", port))
         wss.on('error', data => console.log("<C> error: ", data))
+
+        this.server = wss
       },
       onStop: () => {
         if (httpServer) {
@@ -118,16 +121,18 @@ export class IntrceptrServer {
         } else {
           console.log("Not shutting down shimServer??")
         }
+
+        this.server = null
       },
     })
 
-    Object.keys(this.clients).forEach(name => {
+    // TODO: rework this so public and internal clients going down doesn't shut down
+    // stuff that only affects the master client
+    importantConnections.forEach(name => {
       const client = this.clients[name]
       client.on('open', () => this.connections.add(name))
       client.on('close', () => this.connections.remove(name))
     })
-
-    this.server = wss
   }
 
   /**
@@ -170,8 +175,9 @@ export class IntrceptrServer {
   identifyAgent = ({agentId}, ws) => {
     // TODO: also take salt and signature of salt to prove browser owns agent ID
     console.log("adding new event to server", `agent/${agentId}/sign`)
+
     try {
-      this.server.event(`agent/${agentId}/sign`)
+      this.server!.event(`agent/${agentId}/sign`)
     } catch (e) {
       if (e.message.includes('Already registered event')) {
         console.log('welcome back', agentId)
