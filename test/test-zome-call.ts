@@ -2,6 +2,9 @@ import * as test from 'tape'
 import * as sinon from 'sinon'
 
 import * as Config from '../src/config'
+import {lookupHoloInstance} from '../src/common'
+import {InstanceType} from '../src/types'
+import {testInstances, baseClient} from './common'
 
 import {
   mockResponse, 
@@ -24,6 +27,22 @@ test('can calculate metrics', t => {
     bytes_out: 17,
     cpu_seconds: 0.1111111,
   })
+  t.end()
+})
+
+test('lookupHoloInstance can find an instance', async t => {
+  const instances = [
+    {agent: Config.hostAgentId, dna: 'new-dna'},  // the public instance
+    {agent: 'hosted-agent', dna: 'new-dna'},  // the hosted instance
+  ]
+  const client = baseClient()
+  client.call.withArgs('info/instances').resolves(instances)
+  const resultHosted = await lookupHoloInstance(client, {agentId: 'hosted-agent', dnaHash: 'new-dna'}).catch(t.fail)
+  const resultPublic = await lookupHoloInstance(client, {agentId: 'missing-agent', dnaHash: 'new-dna'}).catch(t.fail)
+  t.equal(resultHosted.type, InstanceType.Hosted)
+  t.equal(resultHosted.agentId, 'hosted-agent')
+  t.equal(resultPublic.type, InstanceType.Public)
+  t.equal(resultPublic.agentId, Config.hostAgentId)
   t.end()
 })
 

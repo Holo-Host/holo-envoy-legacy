@@ -82,7 +82,7 @@ export const zomeCallSpec = ({zomeName, funcName}) => (
  * Make a zome call through the WS client, identified by AgentID + DNA Hash
  */
 export const zomeCallByDna = async (client, {agentId, dnaHash, zomeName, funcName, params}) => {
-  let instance = await lookupInstance(client, {dnaHash, agentId})
+  let instance = await lookupHoloInstance(client, {dnaHash, agentId})
   const instanceId = instanceIdFromAgentAndDna(instance.agentId, instance.dnaHash)
   return zomeCallByInstance(client, {instanceId, zomeName, funcName, params})
 }
@@ -123,7 +123,7 @@ export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName
  * If no such instance exists, look for the public instance for that DNA
  * If neither exist, reject the promise
  */
-export const lookupInstance = async (client, {dnaHash, agentId}): Promise<InstanceInfo> => {
+export const lookupHoloInstance = async (client, {dnaHash, agentId}): Promise<InstanceInfo> => {
   const instances: Array<InstanceInfo> = (await callWhenConnected(client, 'info/instances', {}))
     .map(({dna, agent}) => ({
       dnaHash: dna,
@@ -140,7 +140,7 @@ export const lookupInstance = async (client, {dnaHash, agentId}): Promise<Instan
       return Object.assign(pub, {type: InstanceType.Public})
     } else {
       throw `No instance found
-        where agentId == '${agentId}'
+        where agentId == '${agentId}' || agentId == '${Config.hostAgentId}'
         and   dnaHash == '${dnaHash}'
       `
     }

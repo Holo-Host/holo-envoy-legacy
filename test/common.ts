@@ -30,7 +30,7 @@ const testApps = HAPP_DATABASE.map(({happId}) => ({
 }))
 
 // Stub to pretend that all DNAs are installed and have public instances
-const testInstances = (() => {
+export const testInstances = (() => {
   const dnaHashes: Array<string> = []
   HAPP_DATABASE.forEach(({dnas, ui}) => {
     dnas.forEach(dna => {
@@ -43,10 +43,9 @@ const testInstances = (() => {
   }))
 })()
 
-const baseClient = () => {
+export const baseClient = () => {
   const client = sinon.stub(new RpcClient())
   client.call = sinon.stub()
-  client.call.withArgs('info/instances').resolves(testInstances)
   client.ready = true
   return client
 }
@@ -77,6 +76,7 @@ export const testInternalClient = () => {
 export const testPublicClient = () => {
   const client = baseClient()
   client.call.withArgs('call').resolves(mockResponse)
+  client.call.withArgs('info/instances').resolves(testInstances)
   return client
 }
 

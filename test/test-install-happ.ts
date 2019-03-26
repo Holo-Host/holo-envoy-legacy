@@ -92,7 +92,6 @@ sinonTest('throws error for unreachable resources', async T => {
 
 sinonTest('can install dnas and ui for hApp', async T => {
   const {masterClient} = testIntrceptr()
-  T.comment('TODO: needs stub for HHA-enabled apps')
 
   const axiosStub = sinon.stub(axios, 'request').resolves(axiosResponse(200))
   const happId = simpleApp.happId
