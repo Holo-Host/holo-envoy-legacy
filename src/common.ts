@@ -1,8 +1,9 @@
 
 import * as tar from 'tar-fs'
 import * as fs from 'fs-extra'
+import * as Config from './config'
 
-import {Instance, HappID} from './types'
+import {InstanceInfo, InstanceType, HappID} from './types'
 
 /**
  * The canonical error response when catching a rejection or exception
@@ -14,6 +15,15 @@ export const errorResponse = msg => ({error: msg})
  * A consistent way to reject promises
  */
 export const fail = e => console.error("FAIL: ", e)
+
+/**
+ * Useful for handling express server failure
+ */
+export const catchHttp = next => e => {
+  const err = typeof e === 'object' ? JSON.stringify(e) : e
+  console.error("HTTP error caught:")
+  next(err)
+}
 
 /**
  * The method of bundling UIs into a single bundle
@@ -72,17 +82,9 @@ export const zomeCallSpec = ({zomeName, funcName}) => (
  * Make a zome call through the WS client, identified by AgentID + DNA Hash
  */
 export const zomeCallByDna = async (client, {agentId, dnaHash, zomeName, funcName, params}) => {
-  // let instance = await lookupInstance(client, {dnaHash, agentId})
-  const instanceId = instanceIdFromAgentAndDna(agentId, dnaHash)
-  console.log('instance found: ', instanceId)
-  if (instanceId) {
-    return await zomeCallByInstance(client, {instanceId, zomeName, funcName, params})
-  } else {
-    return errorResponse(`No instance found
-      where agentId == '${agentId}'
-      and   dnaHash == '${dnaHash}'
-    `)
-  }
+  let instance = await lookupInstance(client, {dnaHash, agentId})
+  const instanceId = instanceIdFromAgentAndDna(instance.agentId, instance.dnaHash)
+  return zomeCallByInstance(client, {instanceId, zomeName, funcName, params})
 }
 
 /**
@@ -117,12 +119,32 @@ export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName
 }
 
 /**
- * Get an instance config via AgentID and DNA hash, if exists
+ * Look for an instance config via AgentID and DNA hash
+ * If no such instance exists, look for the public instance for that DNA
+ * If neither exist, reject the promise
  */
-export const lookupInstance = async (client, {dnaHash, agentId}): Promise<Instance | null> => {
-  const instances = await callWhenConnected(client, 'info/instances', {}).catch(fail)
-  console.log('all instances: ', instances)
-  return instances.find(inst => inst.dna === dnaHash && inst.agent === agentId) || null
+export const lookupInstance = async (client, {dnaHash, agentId}): Promise<InstanceInfo> => {
+  const instances: Array<InstanceInfo> = (await callWhenConnected(client, 'info/instances', {}))
+    .map(({dna, agent}) => ({
+      dnaHash: dna,
+      agentId: agent
+    }))
+  const hosted = instances.find(inst => inst.dnaHash === dnaHash && inst.agentId === agentId)
+  if (hosted) {
+    console.debug("Found instance for hosted agent: ", hosted)
+    return Object.assign(hosted, {type: InstanceType.Hosted})
+  } else {
+    const pub = instances.find(inst => inst.dnaHash === dnaHash && inst.agentId === Config.hostAgentId)
+    if (pub) {
+      console.debug("Found public instance: ", pub)
+      return Object.assign(pub, {type: InstanceType.Public})
+    } else {
+      throw `No instance found
+        where agentId == '${agentId}'
+        and   dnaHash == '${dnaHash}'
+      `
+    }
+  }
 }
 
 /**

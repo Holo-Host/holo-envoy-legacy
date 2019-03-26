@@ -12,29 +12,48 @@ const tape = tapePromise(_tape)
 
 export const mockResponse = {Ok: 'mock response'}
 
+const success = {success: true}
+
+const getEnabledAppArgs = { 
+  instance_id: Config.holoHostingAppId,
+  zome: 'host',
+  function: 'get_enabled_app',
+  params: {} 
+}
+
+const testDnas = []
+
+// Stub HHA to say that all available apps are enabled
+const testApps = HAPP_DATABASE.map(({happId}) => ({    
+  address: happId,
+  entry: 'fake entry',
+}))
+
+// Stub to pretend that all DNAs are installed and have public instances
+const testInstances = (() => {
+  const dnaHashes: Array<string> = []
+  HAPP_DATABASE.forEach(({dnas, ui}) => {
+    dnas.forEach(dna => {
+      dnaHashes.push(dna.hash)
+    })
+  })
+  return dnaHashes.map(hash => ({
+    agent: Config.hostAgentId,
+    dna: hash
+  }))
+})()
+
 const baseClient = () => {
   const client = sinon.stub(new RpcClient())
   client.call = sinon.stub()
+  client.call.withArgs('info/instances').resolves(testInstances)
   client.ready = true
   return client
 }
 
 export const testMasterClient = () => {
   const client = baseClient()
-  const success = {success: true}
-    const getEnabledAppArgs = { 
-    instance_id: Config.holoHostingAppId,
-    zome: 'host',
-    function: 'get_enabled_app',
-    params: {} 
-  }
-  const testDnas = []
-  // Stub HHA to say that all available apps are enabled
-  const testApps = HAPP_DATABASE.map(({happId}) => ({    
-    address: happId,
-    entry: 'fake entry',
-  }))
-
+ 
   client.call.withArgs('admin/agent/list').returns([{id: 'existing-agent-id'}])
   client.call.withArgs('admin/dna/list').returns(testDnas)
   client.call.withArgs('admin/dna/install_from_file').returns(success)
@@ -74,6 +93,9 @@ export const testIntrceptr = () => {
 
 const _sinonTest = (tapeRunner, description, testFn) => {
   tapeRunner(description, async t => {
+    // Here we smoosh tape's `t` object and sinon's `sinon.assert`
+    // into a single mega-object, so that sinon and tape assertions
+    // can both be used easily
     const s = Object.assign(sinon.assert, t)
     s.pass = t.pass
     s.fail = t.fail

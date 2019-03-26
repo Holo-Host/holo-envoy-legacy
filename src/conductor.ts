@@ -25,8 +25,8 @@ export const cleanConductorStorage = () => {
 
 export const spawnConductor = () => {
   const conductor = spawn('holochain', ['-c', Config.conductorConfigPath])
-  conductor.stdout.on('data', data => console.log('(HC)', data))
-  conductor.stderr.on('data', data => console.error('(HC) <E>', data))
+  conductor.stdout.on('data', data => console.log('(HC)', data.toString('utf8')))
+  conductor.stderr.on('data', data => console.error('(HC) <E>', data.toString('utf8')))
   conductor.on('close', code => console.log('Conductor closed with code: ', code))
 }
 

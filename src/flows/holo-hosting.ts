@@ -3,7 +3,7 @@ import * as C from '../config'
 import {zomeCallByInstance} from '../common'
 
 
-export const registerApp = (client, {uiHash, dnaHashes}) => {
+export const registerHapp = (client, {uiHash, dnaHashes}) => {
   return zomeCallByInstance(client, {
     instanceId: C.holoHostingAppId,
     zomeName: 'provider',
@@ -15,7 +15,7 @@ export const registerApp = (client, {uiHash, dnaHashes}) => {
   })
 }
 
-export const enableApp = (client, happId) => {
+export const enableHapp = (client, happId) => {
   return zomeCallByInstance(client, {
     instanceId: C.holoHostingAppId,
     zomeName: 'host',

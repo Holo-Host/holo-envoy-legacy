@@ -1,6 +1,8 @@
 import * as test from 'tape'
 import * as sinon from 'sinon'
 
+import * as Config from '../src/config'
+
 import {
   mockResponse, 
   sinonTest, 
@@ -33,13 +35,15 @@ sinonTest('can call public zome function', async T => {
   internalClient.call.withArgs('call').onFirstCall().returns({Ok: "requestHash"})
   internalClient.call.withArgs('call').onSecondCall().returns({Ok: "responseHash"})
   
+  const agentId = 'some-ad-hoc-agent-id'
+  const dnaHash = 'test-dna-hash-1a'
   const happId = 'test-app-1'
   const serviceLoggerInstanceId = serviceLoggerInstanceIdFromHappId(happId)
   const request = {params: 'params'}
   const call = {
     happId,
-    agentId: 'agentId',
-    dnaHash: 'dnaHash',
+    agentId,
+    dnaHash,
     zome: 'zome',
     function: 'function',
     params: request,
@@ -53,22 +57,23 @@ sinonTest('can call public zome function', async T => {
   T.equal(response, mockResponse.Ok)
 
   T.callCount(internalClient.call, 2)
+  T.callCount(publicClient.call, 2)
 
-  T.calledWith(internalClient.call.getCall(0), 'call', {
+  T.calledWith(internalClient.call, 'call', {
     instance_id: serviceLoggerInstanceId,
     zome: 'service',
     function: 'log_request', 
     params: {
       entry: {
-        agent_id: 'agentId',
+        agent_id: agentId,
         zome_call_spec: 'zome/function',
-        dna_hash: 'dnaHash',
+        dna_hash: dnaHash,
         client_signature: 'signature',
       }
     } 
   })
 
-  T.calledWith(internalClient.call.getCall(1), 'call', {
+  T.calledWith(internalClient.call, 'call', {
     instance_id: serviceLoggerInstanceId,
     zome: 'service',
     function: 'log_response', 
@@ -78,11 +83,14 @@ sinonTest('can call public zome function', async T => {
         hosting_stats: metrics,
         response_log: 'TODO: response_log',
       }
-    } 
+    }
   })
 
-  T.calledWith(publicClient.call.getCall(0), 'call', {
-    instance_id: instanceIdFromAgentAndDna('agentId', 'dnaHash'),
+  T.calledWith(publicClient.call, 'info/instances')
+
+  // NB: the instance is called with the host agent ID, not the ad-hoc one!!
+  T.calledWith(publicClient.call, 'call', {
+    instance_id: instanceIdFromAgentAndDna(Config.hostAgentId, dnaHash),
     params: request,
     function: 'function',
     zome: 'zome',

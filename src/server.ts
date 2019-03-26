@@ -14,7 +14,7 @@ import newAgent, {NewAgentRequest} from './flows/new-agent'
 import ConnectionManager from './connection-manager'
 
 import startWormholeServer from './wormhole-server'
-import startAdminServer from './admin-server'
+import startAdminHostServer from './admin-host-server'
 import startShimServers from './shims/happ-server'
 
 const successResponse = { success: true }
@@ -81,7 +81,7 @@ export class IntrceptrServer {
         console.log("WS server initialized")
 
         shimServer = startShimServers(Config.PORTS.shim)
-        adminServer = startAdminServer(Config.PORTS.admin, intrceptr.clients.master)
+        adminServer = startAdminHostServer(Config.PORTS.admin, intrceptr.clients.master)
         wormholeServer = startWormholeServer(Config.PORTS.wormhole, intrceptr)
 
         await httpServer.listen(port, () => console.log('HTTP server running on port', port))
@@ -212,16 +212,12 @@ export class IntrceptrServer {
     return zomeCall(this.clients.public, this.clients.internal)(params).catch(fail)
   }
 
-
   /**
    * Function to be called externally, registers a signing request which will be fulfilled
    * by the `holo/wormholeSignature` JSON-RPC method registered on this server
    */
   startHoloSigningRequest(agentId: string, entry: Object, callback: (Object) => void) {
     const id = this.nextCallId++
-    // if (!(agentId in this.sockets)) {
-    //   throw "Unidentified agent: " + agentId
-    // }
     this.server.emit(`agent/${agentId}/sign`, {entry, id})
     this.signingRequests[id] = {entry, callback}
   }

@@ -1,5 +1,5 @@
 
-import {Instance, HappID} from '../types'
+import {HappID} from '../types'
 import {callWhenConnected, errorResponse, fail, zomeCallByInstance} from '../common'
 import {ConductorInterface} from '../config'
 import * as Config from '../config'

@@ -35,38 +35,37 @@ export const withIntrceptrClient = fn => {
   })
 }
 
-const adminCall = (uri, data) => axios.post(`http://localhost:${C.PORTS.admin}/${uri}`, data)
+export const adminHostCall = (uri, data) => axios.post(`http://localhost:${C.PORTS.admin}/${uri}`, data)
 
 //////////////////////////////////////////////////
 
-const install = async (happNick) => {
+export const commandInstall = async (happNick) => {
 
   const client = getMasterClient()
 
   const happEntry = shimHappByNick(happNick)!
 
-  const happId = await HH.registerApp(client, {
+  const happId = await HH.registerHapp(client, {
     uiHash: happEntry.ui ? happEntry.ui.hash : null,
     dnaHashes: happEntry.dnas.map(dna => dna.hash)
   })
+  console.log("registered hApp: ", happId)
 
-  console.log("Registered hApp: ", happId)
+  const hostResult = await HH.enableHapp(client, happId)
+  console.log(`enabled ${happId}: `, hostResult)
 
-  const hostResult = await HH.enableApp(client, happId)
-  console.log(`enable ${happId}: `, hostResult)
-
-  const happResult = await adminCall('holo/happs/install', {happId: happId, agentId: C.hostAgentId})
-  console.log(`install ${happId}: `, happResult.statusText, happResult.status)
+  const happResult = await adminHostCall('holo/happs/install', {happId: happId, agentId: C.hostAgentId})
+  console.log(`installed ${happId}: `, happResult.statusText, happResult.status)
 
   client.close()
 }
 
-const newAgent = (dir, cmd) => withIntrceptrClient(async client => {
+const commandNewAgent = (dir, cmd) => withIntrceptrClient(async client => {
   await client.call('holo/identify', {agentId})
   await client.call('holo/agents/new', {agentId, happId: simpleApp.happId})
 })
 
-const zomeCallPublic = (dir, cmd) => withIntrceptrClient(async client => {
+const commandZomeCallPublic = (dir, cmd) => withIntrceptrClient(async client => {
   const result = await client.call('holo/call', {
     agentId: C.hostAgentId,
     happId: simpleApp.happId,
@@ -79,7 +78,7 @@ const zomeCallPublic = (dir, cmd) => withIntrceptrClient(async client => {
   console.log("how about that! ", result)
 })
 
-const zomeCallHosted = (dir, cmd) => withIntrceptrClient(async client => {
+const commandZomeCallHosted = (dir, cmd) => withIntrceptrClient(async client => {
   const result = await client.call('holo/call', {
     agentId,
     happId: simpleApp.happId,
@@ -93,9 +92,9 @@ const zomeCallHosted = (dir, cmd) => withIntrceptrClient(async client => {
 })
 
 commander.version('0.0.1')
-commander.command('install <happNick>').action(install)
-commander.command('new-agent').action(newAgent)
-commander.command('zome-call-public').action(zomeCallPublic)
-commander.command('zome-call-hosted').action(zomeCallHosted)
+commander.command('install <happNick>').action(commandInstall)
+commander.command('new-agent').action(commandNewAgent)
+commander.command('zome-call-public').action(commandZomeCallPublic)
+commander.command('zome-call-hosted').action(commandZomeCallHosted)
 
 commander.parse(process.argv)

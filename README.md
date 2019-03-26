@@ -63,7 +63,7 @@ Upon which it will immediately connect to the Conductor at the admin websocket i
 Ensure the intrceptr and conductor are both running and install the chat dna and UI by running the following
 
 ```
-npx ts-node ./src/end2end/command.ts install 'basic-chat'
+yarn run cmd install 'basic-chat'
 ```
 
 It should respond with `install basic-chat:  OK 200`.

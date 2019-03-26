@@ -1,5 +1,5 @@
 
-import {Instance, HappID} from '../types'
+import {HappID} from '../types'
 import {
   errorResponse, 
   fail, 
