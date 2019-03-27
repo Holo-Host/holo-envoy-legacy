@@ -19,7 +19,7 @@ import startShimServers from './shims/happ-server'
 
 const successResponse = { success: true }
 
-export default (port) => new Promise((fulfill, reject) => {
+export default (port) => {
   // clients to the interface served by the Conductor
   const masterClient = getMasterClient()
   const publicClient = getPublicClient()
@@ -28,7 +28,8 @@ export default (port) => new Promise((fulfill, reject) => {
 
   const intrceptr = new IntrceptrServer({masterClient, publicClient, internalClient})
   intrceptr.start(port)
-})
+  return intrceptr
+}
 
 const clientOpts = { max_reconnects: 0 }  // zero reconnects means unlimited
 export const getMasterClient = () => new Client(`ws://localhost:${Config.PORTS.masterInterface}`, clientOpts)

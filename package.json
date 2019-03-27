@@ -12,6 +12,7 @@
     "init": "ts-node -T init-conductor.ts",
     "conductor": "holochain -c ~/.holochain/holo/conductor-config.toml",
     "test": "ts-node test/index.ts | faucet",
+    "integration": "ts-node integration-tests/index.ts",
     "cmd": "ts-node integration-tests/command.ts"
   },
   "dependencies": {

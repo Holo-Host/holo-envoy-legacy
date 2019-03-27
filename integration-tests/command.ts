@@ -2,11 +2,11 @@ import axios from 'axios'
 import * as commander from 'commander'
 import {Client} from 'rpc-websockets'
 
-import * as C from '../config'
-import {fail, zomeCallByInstance} from '../common'
-import {getMasterClient} from '../server'
-import {shimHappById, shimHappByNick} from '../shims/happ-server'
-import * as HH from '../flows/holo-hosting'
+import * as C from '../src/config'
+import {fail, zomeCallByInstance} from '../src/common'
+import {getMasterClient} from '../src/server'
+import {shimHappById, shimHappByNick} from '../src/shims/happ-server'
+import * as HH from '../src/flows/holo-hosting'
 
 process.on('unhandledRejection', (reason, p) => {
   console.log("UNHANDLED REJECTION:", reason)
