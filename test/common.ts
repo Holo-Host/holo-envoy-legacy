@@ -14,17 +14,17 @@ export const mockResponse = {Ok: 'mock response'}
 
 const success = {success: true}
 
-const getEnabledAppArgs = { 
+const getEnabledAppArgs = {
   instance_id: Config.holoHostingAppId,
   zome: 'host',
   function: 'get_enabled_app',
-  params: {} 
+  params: {}
 }
 
 const testDnas = []
 
 // Stub HHA to say that all available apps are enabled
-const testApps = HAPP_DATABASE.map(({happId}) => ({    
+const testApps = HAPP_DATABASE.map(({happId}) => ({
   address: happId,
   entry: 'fake entry',
 }))
@@ -52,7 +52,7 @@ export const baseClient = () => {
 
 export const testMasterClient = () => {
   const client = baseClient()
- 
+
   client.call.withArgs('admin/agent/list').returns([{id: 'existing-agent-id'}])
   client.call.withArgs('admin/dna/list').returns(testDnas)
   client.call.withArgs('admin/dna/install_from_file').returns(success)
@@ -108,7 +108,7 @@ const _sinonTest = (tapeRunner, description, testFn) => {
     } finally {
       promise.catch(t.fail).then(() => {
         s.pass = s.fail = () => { throw "sinon.assert has been tainted by `sinonTest`" }
-        t.end()  
+        t.end()
       })
     }
   })
