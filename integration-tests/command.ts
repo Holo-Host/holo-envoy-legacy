@@ -26,7 +26,7 @@ export const commandInstall = async (happNick) => {
 
   const happEntry = shimHappByNick(happNick)!
 
-  const happId = await HH.registerHapp(client, {
+  const happId = await HH.SHIMS.registerHapp(client, {
     uiHash: happEntry.ui ? happEntry.ui.hash : null,
     dnaHashes: happEntry.dnas.map(dna => dna.hash)
   })

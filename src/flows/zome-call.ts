@@ -1,10 +1,10 @@
 
 import {HappID} from '../types'
 import {
-  errorResponse, 
-  fail, 
+  errorResponse,
+  fail,
   serviceLoggerInstanceIdFromHappId,
-  zomeCallByDna, 
+  zomeCallByDna,
   zomeCallByInstance,
   zomeCallSpec,
 } from '../common'
@@ -31,7 +31,7 @@ export default (publicClient, internalClient) => async (call: CallRequest) => {
     happId,
     dnaHash,
     zome: zomeName,
-    function: funcName, 
+    function: funcName,
     params,
   } = call
 
@@ -100,6 +100,8 @@ const logServiceResponse = async (client, {happId, requestEntryHash, responseDat
         request_hash: requestEntryHash,
         hosting_stats: metrics,
         response_log: 'TODO: response_log',  // TODO, make sure this is calculated correctly
+        response_data_hash: 'TODO: response_data_hash',
+        host_signature: 'TODO: host_signature',
       }
     }
   })

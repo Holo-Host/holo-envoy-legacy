@@ -7,7 +7,7 @@ export const adminHostCall = (uri, data) => {
   return axios.post(`http://localhost:${Config.PORTS.admin}/${uri}`, data)
 }
 
-export const withIntrceptrClient = fn => {
+export const withIntrceptrClient = fn => new Promise(resolve => {
   const client = new Client(`ws://localhost:${Config.PORTS.intrceptr}`)
   client.on('error', msg => console.error("WS Client error: ", msg))
   client.once('open', async () => {
@@ -24,6 +24,7 @@ export const withIntrceptrClient = fn => {
     })
 
     await fn(client)
+    resolve()
     client.close()
   })
-}
+})
