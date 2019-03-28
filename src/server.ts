@@ -92,6 +92,12 @@ export class IntrceptrServer {
         this.server = wss
       },
       onStop: () => {
+        if (wss) {
+          wss.close()
+          console.log("Shut down wss")
+        } else {
+          console.log("Not shutting down wss??")
+        }
         if (httpServer) {
           httpServer.close()
           console.log("Shut down httpServer")
@@ -109,12 +115,6 @@ export class IntrceptrServer {
           console.log("Shut down wormholeServer")
         } else {
           console.log("Not shutting down wormholeServer??")
-        }
-        if (wss) {
-          wss.close()
-          console.log("Shut down wss")
-        } else {
-          console.log("Not shutting down wss??")
         }
         if (shimServer) {
           shimServer.stop()
@@ -140,7 +140,11 @@ export class IntrceptrServer {
    * Close the client connections
    */
   close() {
-    Object.values(this.clients).forEach((client) => client.close())
+    Object.keys(this.clients).forEach((name) => {
+      console.log(`Closing client: `, name)
+      this.clients[name].close()
+    })
+    // this.connections.dismantle()
   }
 
 

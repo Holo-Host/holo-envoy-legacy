@@ -24,7 +24,6 @@ const withConductor = async (fn) => {
   // TODO: generate in a temp file, don't clobber the main one!
   initializeConductorConfig()
   const conductor = spawnConductor()
-
   await delay(1000)
 
   // enter passphrase
@@ -36,12 +35,14 @@ const withConductor = async (fn) => {
   const intrceptr = startIntrceptr(Config.PORTS.intrceptr)
   await intrceptr.connections.ready()
   await delay(1000)
-
   console.log("intrceptr ready! running test.")
-  await withIntrceptrClient(fn)
-
-  console.log("DONE! TODO shutdown")
+  await withIntrceptrClient(fn).finally(() => {
+    console.log("Shutting down everything...")
+    intrceptr.close()
+    conductor.kill()
+  })
 }
+
 
 const doRegister = async (happEntry: HappEntry): Promise<string> => {
 
