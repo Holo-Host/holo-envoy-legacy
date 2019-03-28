@@ -6,10 +6,17 @@ import {exec} from 'child_process'
 import {initializeConductorConfig, spawnConductor} from '../src/conductor'
 import * as HH from '../src/flows/holo-hosting'
 import * as Config from '../src/config'
-import startIntrceptr, {getMasterClient} from '../src/server'
+import startIntrceptr from '../src/server'
+import * as S from '../src/server'
 import {callWhenConnected} from '../src/common'
 import {shimHappById, shimHappByNick, HappEntry} from '../src/shims/happ-server'
 import {withIntrceptrClient, adminHostCall} from './common'
+
+
+import startWormholeServer from '../src/wormhole-server'
+import startAdminHostServer from '../src/admin-host-server'
+import startShimServers from '../src/shims/happ-server'
+
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
@@ -44,13 +51,13 @@ const withConductor = async (fn) => {
 }
 
 const doRegisterAgent = async () => {
-  await HH.SHIMS.registerAsProvider(getMasterClient())
-  await HH.registerAsHost(getMasterClient())
+  await HH.SHIMS.registerAsProvider(S.getMasterClient(false))
+  await HH.registerAsHost(S.getMasterClient(false))
   await delay(1000)
 }
 
 const doRegisterApp = async (happEntry: HappEntry): Promise<string> => {
-  const masterClient = getMasterClient()
+  const masterClient = S.getMasterClient(false)
   const happId = await HH.SHIMS.registerHapp(masterClient, {
     uiHash: happEntry.ui ? happEntry.ui.hash : null,
     dnaHashes: happEntry.dnas.map(dna => dna.hash)
@@ -105,6 +112,32 @@ test('can do public zome call', t => {
     t.ok(address)
     t.deepEqual(result, [])
   }).then(t.end)
+})
+
+test('shutdown test', async t => {
+  const intrceptr = new S.IntrceptrServer({
+    masterClient: null,
+    publicClient: null,
+    internalClient: null,
+  })
+
+  const client = S.getMasterClient(false)
+
+  const httpServer = await intrceptr.buildHttpServer(null)
+  const wss = await intrceptr.buildWebsocketServer(httpServer)
+
+  const shimServer = startShimServers(Config.PORTS.shim)
+  const adminServer = startAdminHostServer(Config.PORTS.admin, null)
+  const wormholeServer = startWormholeServer(Config.PORTS.wormhole, intrceptr)
+
+  httpServer.close()
+  wss.close()
+  shimServer.stop()
+  adminServer.close()
+  wormholeServer.close()
+
+  client.close(4000)
+  t.end()
 })
 
 

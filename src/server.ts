@@ -21,9 +21,9 @@ const successResponse = { success: true }
 
 export default (port) => {
   // clients to the interface served by the Conductor
-  const masterClient = getMasterClient()
-  const publicClient = getPublicClient()
-  const internalClient = getInternalClient()
+  const masterClient = getMasterClient(true)
+  const publicClient = getPublicClient(true)
+  const internalClient = getInternalClient(true)
   console.debug("Connecting to admin and happ interfaces...")
 
   const intrceptr = new IntrceptrServer({masterClient, publicClient, internalClient})
@@ -31,10 +31,10 @@ export default (port) => {
   return intrceptr
 }
 
-const clientOpts = { max_reconnects: 0 }  // zero reconnects means unlimited
-export const getMasterClient = () => new Client(`ws://localhost:${Config.PORTS.masterInterface}`, clientOpts)
-export const getPublicClient = () => new Client(`ws://localhost:${Config.PORTS.publicInterface}`, clientOpts)
-export const getInternalClient = () => new Client(`ws://localhost:${Config.PORTS.internalInterface}`, clientOpts)
+const clientOpts = reconnect => ({ max_reconnects: 0, reconnect })  // zero reconnects means unlimited
+export const getMasterClient = (reconnect) => new Client(`ws://localhost:${Config.PORTS.masterInterface}`, clientOpts(reconnect))
+export const getPublicClient = (reconnect) => new Client(`ws://localhost:${Config.PORTS.publicInterface}`, clientOpts(reconnect))
+export const getInternalClient = (reconnect) => new Client(`ws://localhost:${Config.PORTS.internalInterface}`, clientOpts(reconnect))
 
 type SigningRequest = {
   entry: Object,
@@ -142,6 +142,7 @@ export class IntrceptrServer {
   close() {
     Object.keys(this.clients).forEach((name) => {
       console.log(`Closing client: `, name)
+      this.clients[name].reconnect = false
       this.clients[name].close()
     })
     // this.connections.dismantle()

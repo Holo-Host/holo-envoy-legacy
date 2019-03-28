@@ -8,7 +8,9 @@ export const adminHostCall = (uri, data) => {
 }
 
 export const withIntrceptrClient = fn => new Promise((resolve, reject) => {
-  const client = new Client(`ws://localhost:${Config.PORTS.intrceptr}`)
+  const client = new Client(`ws://localhost:${Config.PORTS.intrceptr}`, {
+    reconnect: false
+  })
   client.on('error', msg => console.error("WS Client error: ", msg))
   client.once('open', async () => {
     // setup wormhole client dummy response
@@ -23,9 +25,13 @@ export const withIntrceptrClient = fn => new Promise((resolve, reject) => {
       })
     })
 
-    fn(client)
+    return fn(client)
       .then(resolve)
       .catch(reject)
-      .finally(() => client.close())
+      .finally(() => {
+        console.log('closing test client')
+        client.reconnect = false
+        client.close()
+      })
   })
 })
