@@ -1,5 +1,5 @@
 
-import {spawn} from 'child_process'
+import {spawn, execSync} from 'child_process'
 import * as fs from 'fs-extra'
 import * as path from 'path'
 import * as rimraf from 'rimraf'
@@ -25,6 +25,7 @@ export const cleanConductorStorage = () => {
 
 // TODO: allow optional temp path
 export const spawnConductor = () => {
+  console.log("Using conductor binary: ", execSync('which holochain').toString())
   const conductor = spawn('holochain', ['-c', Config.conductorConfigPath])
   conductor.stdout.on('data', data => console.log('(HC)', data.toString('utf8')))
   conductor.stderr.on('data', data => console.error('(HC) <E>', data.toString('utf8')))

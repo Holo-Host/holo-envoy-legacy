@@ -5,22 +5,19 @@ import {bundle} from '../common'
 
 const happs = [
   {
-    dnas: ['./src/shims/happ-data/simple-app/'],
-    ui: './src/shims/happ-data/simple-app/ui'
-  },
-  {
     dnas: ['./src/dnas/servicelogger/']
   },
   {
     dnas: ['./src/dnas/Holo-Hosting-App/dna-src/']
   },
+  // {
+  //   dnas: ['./src/shims/happ-data/simple-app/'],
+  //   ui: './src/shims/happ-data/simple-app/ui'
+  // },
   {
     dnas: ['./src/shims/happ-data/holochain-basic-chat/dna-src/'],
     ui: './src/shims/happ-data/holochain-basic-chat/ui'
   },
-  // {
-  //   dnas: ['./src/shims/happ-data/Holo-Hosting-App/dna-src/']
-  // }
 ]
 
 const uiBundlePromises = ([] as any)
@@ -41,6 +38,7 @@ happs.forEach(happ => {
 
   happ.dnas.forEach(dir => {
     console.log(`Packaging DNA for '${dir}'...`)
+    execSync(`find $dir -name Cargo.lock -delete`)
     execSync(`cd ${dir} && hc package --strip-meta`)
   })
 })

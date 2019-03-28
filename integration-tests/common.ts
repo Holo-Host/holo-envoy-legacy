@@ -26,12 +26,8 @@ export const withIntrceptrClient = fn => new Promise((resolve, reject) => {
     })
 
     return fn(client)
-      .then(resolve)
       .catch(reject)
-      .finally(() => {
-        console.log('closing test client')
-        client.reconnect = false
-        client.close()
-      })
+      .finally(() => client.close())
+      .then(resolve)
   })
 })

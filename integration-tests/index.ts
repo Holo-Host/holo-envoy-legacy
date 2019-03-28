@@ -95,6 +95,36 @@ const zomeCaller = (client, {happId, agentId, dnaHash, zome}) => (func, params) 
   })
 }
 
+test('all components shut themselves down properly', async t => {
+  const intrceptr = new S.IntrceptrServer({
+    masterClient: null,
+    publicClient: null,
+    internalClient: null,
+  })
+
+  const client = S.getMasterClient(false)
+  const httpServer = await intrceptr.buildHttpServer(null)
+  const wss = await intrceptr.buildWebsocketServer(httpServer)
+  const shimServer = startShimServers(Config.PORTS.shim)
+  const adminServer = startAdminHostServer(Config.PORTS.admin, null)
+  const wormholeServer = startWormholeServer(Config.PORTS.wormhole, intrceptr)
+
+  httpServer.close()
+  wss.close()
+  shimServer.stop()
+  adminServer.close()
+  wormholeServer.close()
+  client.close()
+
+  setTimeout(() => {
+    if(!t.ended) {
+      t.fail("At least one component took too long to shut down!")
+    }
+  }, 5000)
+
+  t.end()
+})
+
 test('can do public zome call', t => {
   const happNick = 'basic-chat'
   withConductor(async client => {
@@ -112,32 +142,6 @@ test('can do public zome call', t => {
     t.ok(address)
     t.deepEqual(result, [])
   }).then(t.end)
-})
-
-test('shutdown test', async t => {
-  const intrceptr = new S.IntrceptrServer({
-    masterClient: null,
-    publicClient: null,
-    internalClient: null,
-  })
-
-  const client = S.getMasterClient(false)
-
-  const httpServer = await intrceptr.buildHttpServer(null)
-  const wss = await intrceptr.buildWebsocketServer(httpServer)
-
-  const shimServer = startShimServers(Config.PORTS.shim)
-  const adminServer = startAdminHostServer(Config.PORTS.admin, null)
-  const wormholeServer = startWormholeServer(Config.PORTS.wormhole, intrceptr)
-
-  httpServer.close()
-  wss.close()
-  shimServer.stop()
-  adminServer.close()
-  wormholeServer.close()
-
-  client.close(4000)
-  t.end()
 })
 
 
