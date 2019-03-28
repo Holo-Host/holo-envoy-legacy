@@ -23,6 +23,12 @@ jobs:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
 
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - nix-build-001-{{ checksum "holochain-rust/Cargo.lock" }}
+            - nix-build-001
+
       - run: npm test
 
       # Download and cache dependencies

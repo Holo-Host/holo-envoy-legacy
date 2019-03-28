@@ -43,11 +43,15 @@ const withConductor = async (fn) => {
   })
 }
 
+const doRegisterAgent = async () => {
+  await HH.SHIMS.registerAsProvider(getMasterClient())
+  await HH.registerAsHost(getMasterClient())
+  await delay(1000)
+}
 
-const doRegister = async (happEntry: HappEntry): Promise<string> => {
-
+const doRegisterApp = async (happEntry: HappEntry): Promise<string> => {
   const masterClient = getMasterClient()
-  const happId = await HH.registerHapp(masterClient, {
+  const happId = await HH.SHIMS.registerHapp(masterClient, {
     uiHash: happEntry.ui ? happEntry.ui.hash : null,
     dnaHashes: happEntry.dnas.map(dna => dna.hash)
   })
@@ -66,7 +70,7 @@ const doAppSetup = async (client, happNick: string) => {
   const dnaHashes = happEntry.dnas.map(dna => dna.hash)
   const uiHash = happEntry.ui ? happEntry.ui.hash : null
 
-  const happId = await doRegister(happEntry)
+  const happId = await doRegisterApp(happEntry)
 
   const happResult = await adminHostCall('holo/happs/install', {happId: happId, agentId: Config.hostAgentId})
   console.log(`installed ${happId}: `, happResult.statusText, happResult.status)
@@ -74,42 +78,50 @@ const doAppSetup = async (client, happNick: string) => {
   return {happId, dnaHashes, uiHash}
 }
 
+const zomeCaller = (client, {happId, agentId, dnaHash, zome}) => (func, params) => {
+  return callWhenConnected(client, 'holo/call', {
+    happId, agentId, dnaHash,
+    zome: zome,
+    function: func,
+    params: params,
+    signature: 'TODO',
+  })
+}
 
 test('can do public zome call', t => {
   const happNick = 'basic-chat'
   withConductor(async client => {
+    await doRegisterAgent()
     const {happId, dnaHashes} = await doAppSetup(client, happNick)
     const dnaHash = dnaHashes[0]!
     const agentId = 'some-random-agent-id'
-    const result = await callWhenConnected(client, 'holo/call', {
-      happId, agentId, dnaHash,
-      zome: 'chat',
-      function: 'get_all_public_streams',
-      params: {},
-      signature: 'TODO',
+    const call = zomeCaller(client, {happId, agentId, dnaHash, zome: 'chat'})
+
+    const address = await call('register', {
+      name: 'chat noir',
+      avatar_url: null,
     })
-    t.equal(result, 'syke!!')
-    t.end()
-  })
+    const result = await call('get_all_public_streams', {})
+    t.ok(address)
+    t.deepEqual(result, [])
+  }).then(t.end)
 })
 
 
-
-test('can do hosted zome call', t => {
-  const happNick = 'basic-chat'
-  withConductor(async client => {
-    const {happId, dnaHashes} = await doAppSetup(client, happNick)
-    const dnaHash = dnaHashes[0]!
-    const agentId = 'some-random-agent-id'
-    const result = await callWhenConnected(client, 'holo/call', {
-      happId, agentId, dnaHash,
-      zome: 'chat',
-      function: 'get_all_public_streams',
-      params: {},
-      signature: 'TODO',
-    })
-    t.equal(result, 'syke!!')
-    t.end()
-  })
-})
+// test('can do hosted zome call', t => {
+//   const happNick = 'basic-chat'
+//   withConductor(async client => {
+//     const {happId, dnaHashes} = await doAppSetup(client, happNick)
+//     const dnaHash = dnaHashes[0]!
+//     const agentId = 'some-random-agent-id'
+//     const result = await callWhenConnected(client, 'holo/call', {
+//       happId, agentId, dnaHash,
+//       zome: 'chat',
+//       function: 'get_all_public_streams',
+//       params: {},
+//       signature: 'TODO',
+//     })
+//     t.equal(result, 'syke!!')
+//   }).then(t.end)
+// })
 
