@@ -16,7 +16,7 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
-      - run: npm install
+      - run: nix-shell --run 'npm install'
 
       - save_cache:
           paths:
@@ -29,7 +29,7 @@ jobs:
             - nix-build-001-{{ checksum "holochain-rust/Cargo.lock" }}
             - nix-build-001
 
-      - run: npm test
+      - run: nix-shell --run 'npm test'
 
       # Download and cache dependencies
       - restore_cache:
