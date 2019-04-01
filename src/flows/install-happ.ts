@@ -38,9 +38,9 @@ type DownloadResult = {
 
 export type InstallHappResponse = void
 
-export default (masterClient) => async ({happId}: InstallHappRequest): Promise<InstallHappResponse> => {
+export default (masterClient, baseDir) => async ({happId}: InstallHappRequest): Promise<InstallHappResponse> => {
   const agentId = Config.hostAgentId
-  await installDnasAndUi(masterClient, {happId})
+  await installDnasAndUi(masterClient, baseDir, {happId})
   await setupInstances(masterClient, {
     happId,
     agentId,
@@ -49,7 +49,7 @@ export default (masterClient) => async ({happId}: InstallHappRequest): Promise<I
   await setupServiceLogger(masterClient, {hostedHappId: happId})
 }
 
-export const installDnasAndUi = async (client, opts: {happId: string, properties?: any}): Promise<void> => {
+export const installDnasAndUi = async (client, baseDir, opts: {happId: string, properties?: any}): Promise<void> => {
   // TODO: fetch data from somewhere, write fetched files to temp dir and extract
   // TODO: used cached version if possible
   const {happId, properties} = opts
@@ -78,7 +78,7 @@ export const installDnasAndUi = async (client, opts: {happId: string, properties
   const results = ([] as any[]).concat(dnaResults)
 
   if (ui) {
-    const uiResult = await installUi({ui, happId})
+    const uiResult = await installUi(baseDir, {ui, happId})
     results.concat([uiResult])
   }
 
@@ -93,8 +93,8 @@ export const installDnasAndUi = async (client, opts: {happId: string, properties
   console.log("Installation successful!")
 }
 
-const installUi = async ({ui, happId}) => {
-  const target = path.join(Config.uiStorageDir, happId)
+const installUi = async (baseDir, {ui, happId}) => {
+  const target = path.join(Config.uiStorageDir(baseDir), happId)
   console.log("Installing UI (by copying from temp dir):", ui, target)
   await fs.copy(ui.path, target)
   return {success: true}

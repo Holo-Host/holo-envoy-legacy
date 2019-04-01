@@ -12,6 +12,7 @@ process.on('unhandledRejection', (reason, p) => {
 const init = async () => {
   await cleanConductorStorage()
   await initializeConductorConfig()
+  console.log("Conductor initialization complete.")
 }
 
-init().then(() => console.log("Conductor initialization complete."))
+init()

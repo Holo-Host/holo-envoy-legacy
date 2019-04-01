@@ -6,13 +6,13 @@ import * as C from './config'
 import {catchHttp} from './common'
 import installHapp, {InstallHappRequest} from './flows/install-happ'
 
-export default (port, masterClient) => {
+export default (port, baseDir: string, masterClient) => {
   const app = express()
   app.use(bodyParser.json())
 
   app.post('/holo/happs/install', async (req, res, next) => {
     const {happId}: InstallHappRequest = req.body
-    installHapp(masterClient)({happId})
+    installHapp(masterClient, baseDir)({happId})
       .then(() => res.send("Installation successful"))
       .catch(catchHttp(next))
   })

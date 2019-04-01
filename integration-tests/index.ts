@@ -1,5 +1,7 @@
 import * as test from 'tape'
 import * as fs from 'fs'
+import * as os from 'os'
+import * as path from 'path'
 import {exec} from 'child_process'
 
 
@@ -28,12 +30,13 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 const withConductor = async (fn) => {
   // TODO: how to shut down last run properly in case of failure?
   exec('killall holochain')
-  // TODO: generate in a temp file, don't clobber the main one!
-  cleanConductorStorage()
+  const baseDir = path.join(os.tmpdir(), fs.mkdtempSync('intrceptr-'))
+  console.log('Created directory for integration tests: ', baseDir)
+  cleanConductorStorage(baseDir)
   console.log("Cleared storage.")
-  initializeConductorConfig()
+  initializeConductorConfig(baseDir)
   console.log("Generated config.")
-  const conductor = spawnConductor()
+  const conductor = spawnConductor(Config.conductorConfigPath(baseDir))
   await delay(1000)
 
   // enter passphrase
@@ -109,7 +112,7 @@ test('all components shut themselves down properly', async t => {
   const httpServer = await intrceptr.buildHttpServer(null)
   const wss = await intrceptr.buildWebsocketServer(httpServer)
   const shimServer = startShimServers(Config.PORTS.shim)
-  const adminServer = startAdminHostServer(Config.PORTS.admin, null)
+  const adminServer = startAdminHostServer(Config.PORTS.admin, 'testdir', null)
   const wormholeServer = startWormholeServer(Config.PORTS.wormhole, intrceptr)
 
   httpServer.close()

@@ -1,14 +1,17 @@
 import * as path from 'path'
-import {homedir} from 'os'
+import * as os from 'os'
 
 const devUI = process.env.INTRCEPTR_UI || ""
+
 if (devUI) {
   console.log("Using dev UI hash: ", devUI)
 }
 
-export const conductorConfigDir = path.join(homedir(), '.holochain/holo')
-export const conductorConfigPath = path.join(conductorConfigDir, 'conductor-config.toml')
-export const uiStorageDir = path.join(conductorConfigDir, 'ui-store', devUI)
+export const defaultConductorPath = process.env.INTRCEPTR_PATH || path.join(os.homedir(), '.holochain/holo')
+
+export const conductorConfigPath = dir => path.join(dir, 'conductor-config.toml')
+export const uiStorageDir = dir => path.join(dir, 'ui-store', devUI)
+export const chainStorageDir = dir => path.join(dir, 'storage')
 
 export const hostAgentId = 'host-agent'
 export const holoHostingAppId = 'holo-hosting-app'
