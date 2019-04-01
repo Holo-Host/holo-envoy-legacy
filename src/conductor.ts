@@ -1,5 +1,5 @@
 
-import {spawn} from 'child_process'
+import {spawn, execSync} from 'child_process'
 import * as fs from 'fs-extra'
 import * as path from 'path'
 import * as rimraf from 'rimraf'
@@ -23,14 +23,20 @@ export const cleanConductorStorage = () => {
   rimraf.sync(Config.uiStorageDir)
 }
 
+// TODO: allow optional temp path
 export const spawnConductor = () => {
+  console.log("Using conductor binary: ", execSync('which holochain').toString())
   const conductor = spawn('holochain', ['-c', Config.conductorConfigPath])
   conductor.stdout.on('data', data => console.log('(HC)', data.toString('utf8')))
   conductor.stderr.on('data', data => console.error('(HC) <E>', data.toString('utf8')))
   conductor.on('close', code => console.log('Conductor closed with code: ', code))
+  return conductor
 }
 
 const initialTomlConfig = () => {
+
+  // const keyFile = 'what it is'
+  // const publicAddress = execSync(`hc keygen --path $STANDARD_KEY_PATH --silent`)
 
   // TODO: generate key here and use generated key path
   // this is temporary hard-coded config for now

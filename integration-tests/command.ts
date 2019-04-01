@@ -1,12 +1,12 @@
-import axios from 'axios'
 import * as commander from 'commander'
-import {Client} from 'rpc-websockets'
 
-import * as C from '../config'
-import {fail, zomeCallByInstance} from '../common'
-import {getMasterClient} from '../server'
-import {shimHappById, shimHappByNick} from '../shims/happ-server'
-import * as HH from '../flows/holo-hosting'
+import * as C from '../src/config'
+import {fail, zomeCallByInstance} from '../src/common'
+import {getMasterClient} from '../src/server'
+import {shimHappById, shimHappByNick} from '../src/shims/happ-server'
+import * as HH from '../src/flows/holo-hosting'
+
+import {withIntrceptrClient, adminHostCall} from './common'
 
 process.on('unhandledRejection', (reason, p) => {
   console.log("UNHANDLED REJECTION:", reason)
@@ -17,25 +17,6 @@ const simpleApp = shimHappByNick('simple-app')!
 const simpleAppDnaHash = simpleApp.dnas[0].hash
 const agentId = 'dummy-fake-not-real-agent-id'
 
-export const withIntrceptrClient = fn => {
-  const client = new Client(`ws://localhost:${C.PORTS.intrceptr}`)
-  client.on('error', msg => console.error("WS Client error: ", msg))
-  client.once('open', async () => {
-    client.subscribe('agent/sign')
-    client.on('agent/sign', (params) => {
-      console.log('on agent/sign:', params)
-      const {entry, id} = params
-      client.call('holo/wormholeSignature', {
-        signature: 'TODO-signature',
-        requestId: id,
-      })
-    })
-    await fn(client)
-    client.close()
-  })
-}
-
-export const adminHostCall = (uri, data) => axios.post(`http://localhost:${C.PORTS.admin}/${uri}`, data)
 
 //////////////////////////////////////////////////
 
@@ -45,7 +26,7 @@ export const commandInstall = async (happNick) => {
 
   const happEntry = shimHappByNick(happNick)!
 
-  const happId = await HH.registerHapp(client, {
+  const happId = await HH.SHIMS.registerHapp(client, {
     uiHash: happEntry.ui ? happEntry.ui.hash : null,
     dnaHashes: happEntry.dnas.map(dna => dna.hash)
   })

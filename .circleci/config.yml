@@ -2,8 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      # specify the version you desire here
-      - image: circleci/node:10.15.1
+      - image: holochain/holochain-rust:latest
 
     # working_directory: ~/repo
 
@@ -17,12 +16,32 @@ jobs:
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
-      - run: yarn install
+      - run: nix-shell --run 'npm install'
 
       - save_cache:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
 
-      # run tests!
-      - run: yarn test
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - nix-build-001-{{ checksum "holochain-rust/Cargo.lock" }}
+            - nix-build-001
+
+      - run: nix-shell --run 'npm test'
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - nix-build-001-{{ checksum "holochain-rust/Cargo.lock" }}
+            - nix-build-001
+
+      - run: git clone git@github.com:holochain/holochain-rust.git
+      - run: cd holochain-rust
+      - run: git checkout v0.0.8-alpha
+      - run: nix-shell --run hc-install-conductor
+
+      - save_cache:
+          paths: holochain-rust
+          key: nix-build-001-{{ checksum "holochain-rust/Cargo.lock" }}

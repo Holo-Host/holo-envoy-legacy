@@ -73,9 +73,9 @@ export default class ConnectionManager {
     }
   }
 
-  dismantle() {
-    this.onStop()
-    this.add = this.remove = () => { throw 'ConnectionManager is dismantled!'}
+  async dismantle() {
+    await this.onStop()
+    this.add = () => { throw 'ConnectionManager is dismantled!'}
   }
 
 }

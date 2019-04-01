@@ -2,19 +2,6 @@
 import * as C from '../config'
 import {zomeCallByInstance} from '../common'
 
-
-export const registerHapp = (client, {uiHash, dnaHashes}) => {
-  return zomeCallByInstance(client, {
-    instanceId: C.holoHostingAppId,
-    zomeName: 'provider',
-    funcName: 'register_app',
-    params: {
-      ui_hash: uiHash || "",
-      dna_list: dnaHashes,
-    }
-  })
-}
-
 export const enableHapp = (client, happId) => {
   return zomeCallByInstance(client, {
     instanceId: C.holoHostingAppId,
@@ -24,4 +11,46 @@ export const enableHapp = (client, happId) => {
       app_hash: happId
     }
   })
+}
+
+
+export const registerAsHost = (client) => {
+  return zomeCallByInstance(client, {
+    instanceId: C.holoHostingAppId,
+    zomeName: 'host',
+    funcName: 'register_as_host',
+    params: {
+      host_doc: {
+        kyc_proof: "TODO this proves nothing",
+      }
+    }
+  })
+}
+
+export const SHIMS = {
+
+  registerAsProvider: (client) => {
+    return zomeCallByInstance(client, {
+      instanceId: C.holoHostingAppId,
+      zomeName: 'provider',
+      funcName: 'register_as_provider',
+      params: {
+        provider_doc: {
+          kyc_proof: "TODO this proves nothing",
+        }
+      }
+    })
+  },
+
+  registerHapp: (client, {uiHash, dnaHashes}) => {
+    return zomeCallByInstance(client, {
+      instanceId: C.holoHostingAppId,
+      zomeName: 'provider',
+      funcName: 'register_app',
+      params: {
+        ui_hash: uiHash || "",
+        dna_list: dnaHashes,
+      }
+    })
+  }
 }

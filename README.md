@@ -32,7 +32,7 @@ To enable the intrceptr to generate the initial Conductor configuration includin
 
 Now, make a special file that intrceptr can read to determine your key info. It's a JSON file with two fields, "publicAddress" and "keyFile". Example:
 
-	cat shims/intrceptr-host-key.json
+	cat src/shims/intrceptr-host-key.json
 	{
 	    "publicAddress": "HcSciov95SKY7uxomk9DwbFgZhK93rfjbFe6Xgwffz8j3cxbFc4JkPKKSmx7odr",
 	    "keyFile": "/home/me/.config/holochain/keys/HcSciov95SKY7uxomk9DwbFgZhK93rfjbFe6Xgwffz8j3cxbFc4JkPKKSmx7odr"
@@ -43,6 +43,22 @@ Finally, to create the initial Conductor configuration needed by intrceptr, run 
 	yarn run init
 
 These steps only need to be run once. However, you may run `init` as often as you like to start with a fresh Conductor state.
+
+## Running tests
+
+### Unit tests:
+
+Just: 
+
+	yarn run test
+
+### Integration tests:
+
+Integration tests use the real holochain stack to run. You'll need to have `holochain` installed and on your PATH. You'll also need to have an agent key configured, as described above. **NB: If you want the test to run automatically, the keyfile should have a blank passphrase**.
+
+To run, just:
+
+	yarn run integration
 
 ## Usage
 
