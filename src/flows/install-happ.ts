@@ -185,10 +185,10 @@ export const setupServiceLogger = async (internalClient, {hostedHappId}) => {
   }
   await installDna(internalClient, {hash, path, properties})
   await setupInstance(internalClient, {
-    instanceId, 
-    dnaId: hash, 
-    agentId, 
-    conductorInterface: Config.ConductorInterface.Internal 
+    instanceId,
+    dnaId: hash,
+    agentId,
+    conductorInterface: Config.ConductorInterface.Internal
   })
 
   // TODO:

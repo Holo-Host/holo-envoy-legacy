@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import {exec} from 'child_process'
 
 
-import {initializeConductorConfig, spawnConductor} from '../src/conductor'
+import {initializeConductorConfig, cleanConductorStorage, spawnConductor} from '../src/conductor'
 import * as HH from '../src/flows/holo-hosting'
 import * as Config from '../src/config'
 import startIntrceptr from '../src/server'
@@ -29,7 +29,10 @@ const withConductor = async (fn) => {
   // TODO: how to shut down last run properly in case of failure?
   exec('killall holochain')
   // TODO: generate in a temp file, don't clobber the main one!
+  cleanConductorStorage()
+  console.log("Cleared storage.")
   initializeConductorConfig()
+  console.log("Generated config.")
   const conductor = spawnConductor()
   await delay(1000)
 

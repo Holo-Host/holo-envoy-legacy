@@ -35,6 +35,9 @@ export const spawnConductor = () => {
 
 const initialTomlConfig = () => {
 
+  // const keyFile = 'what it is'
+  // const publicAddress = execSync(`hc keygen --path $STANDARD_KEY_PATH --silent`)
+
   // TODO: generate key here and use generated key path
   // this is temporary hard-coded config for now
   const {keyFile, publicAddress} = JSON.parse(fs.readFileSync(Config.keyConfigFile, 'utf8'))
