@@ -56,7 +56,7 @@ const deleteKeyData = () => rimraf.sync(Config.testKeyDir)
 const withConductor = async (fn) => {
   // TODO: how to shut down last run properly in case of failure?
   exec('killall holochain')
-  const baseDir = path.join(os.tmpdir(), fs.mkdtempSync('intrceptr-'))
+  const baseDir = fs.mkdtempSync(path.join(os.tmpdir(), 'intrceptr-'))
   console.log('Created directory for integration tests: ', baseDir)
   cleanConductorStorage(baseDir)
   console.log("Cleared storage.")
