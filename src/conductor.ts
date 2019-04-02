@@ -11,7 +11,7 @@ export const cleanConductorStorage = (baseDir) => {
   rimraf.sync(Config.uiStorageDir(baseDir))
 }
 
-export const initializeConductorConfig = (baseDir) => {
+export const initializeConductorConfig = (baseDir, keyData) => {
   console.log("Creating conductor config at: ", Config.conductorConfigPath(baseDir))
   try {
     fs.mkdirSync(baseDir, {recursive: true})
@@ -19,8 +19,34 @@ export const initializeConductorConfig = (baseDir) => {
   try {
     fs.mkdirSync(Config.uiStorageDir(baseDir), {recursive: true})
   } catch(e) {}
-  let toml = initialTomlConfig(baseDir)
+  let toml = initialTomlConfig(baseDir, keyData)
   fs.writeFileSync(Config.conductorConfigPath(baseDir), toml)
+}
+
+export const keygen = (bundlePath?) => {
+  const extraArgs = bundlePath ? `--path ${bundlePath}` : ''
+
+  // TODO: use nullpass once it works, no stdin required, i.e.:
+  // execSync(`hc keygen --nullpass --quiet ${extraArgs}`)
+  const output = execSync(`hc keygen --quiet ${extraArgs}`, {
+    input: `${Config.testKeyPassphrase}\n${Config.testKeyPassphrase}\n`
+  })
+
+  const [publicAddress, keyFile] = output.toString().split("\n")
+
+  if (bundlePath && keyFile !== bundlePath) {
+    console.warn("requested and actual keybundle paths differ: ")
+    console.warn("", bundlePath, '!==', keyFile)
+  }
+
+  if (bundlePath) {
+    // we already know the path, so don't return it again
+    return {publicAddress}
+  } else {
+    // return both the path and the address if we let hc keygen pick the path
+    return {keyFile, publicAddress}
+  }
+
 }
 
 // TODO: allow optional temp path
@@ -33,14 +59,7 @@ export const spawnConductor = (baseDir) => {
   return conductor
 }
 
-const initialTomlConfig = (baseDir) => {
-
-  // const keyFile = 'what it is'
-  // const publicAddress = execSync(`hc keygen --path $STANDARD_KEY_PATH --silent`)
-
-  // TODO: generate key here and use generated key path
-  // this is temporary hard-coded config for now
-  const {keyFile, publicAddress} = JSON.parse(fs.readFileSync(Config.keyConfigFile, 'utf8'))
+const initialTomlConfig = (baseDir, {keyFile, publicAddress}) => {
 
   // TODO: add DNA for HCHC when available
   return `
