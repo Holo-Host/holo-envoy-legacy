@@ -7,8 +7,8 @@ import {InstanceType} from '../src/types'
 import {testInstances, baseClient} from './common'
 
 import {
-  mockResponse, 
-  sinonTest, 
+  mockResponse,
+  sinonTest,
   testIntrceptr,
 } from './common'
 import {
@@ -53,7 +53,7 @@ sinonTest('can call public zome function', async T => {
 
   internalClient.call.withArgs('call').onFirstCall().returns({Ok: "requestHash"})
   internalClient.call.withArgs('call').onSecondCall().returns({Ok: "responseHash"})
-  
+
   const agentId = 'some-ad-hoc-agent-id'
   const dnaHash = 'test-dna-hash-1a'
   const happId = 'test-app-1'
@@ -81,7 +81,7 @@ sinonTest('can call public zome function', async T => {
   T.calledWith(internalClient.call, 'call', {
     instance_id: serviceLoggerInstanceId,
     zome: 'service',
-    function: 'log_request', 
+    function: 'log_request',
     params: {
       entry: {
         agent_id: agentId,
@@ -89,17 +89,18 @@ sinonTest('can call public zome function', async T => {
         dna_hash: dnaHash,
         client_signature: 'signature',
       }
-    } 
+    }
   })
 
   T.calledWith(internalClient.call, 'call', {
     instance_id: serviceLoggerInstanceId,
     zome: 'service',
-    function: 'log_response', 
+    function: 'log_response',
     params: {
       entry: {
         request_hash: 'requestHash',
         hosting_stats: metrics,
+        response_data_hash: "TODO: response_data_hash",
         response_log: 'TODO: response_log',
       }
     }
@@ -132,7 +133,7 @@ sinonTest('can sign things across the wormhole', async T => {
   T.calledWith(spy0, 'sig 1')
   T.callCount(spy1, 0)
   T.deepEqual(Object.keys(intrceptr.signingRequests), ['1'])
-  
+
   intrceptr.wormholeSignature({signature: 'sig 2', requestId: 1})
   T.calledWith(spy1, 'sig 2')
   T.deepEqual(Object.keys(intrceptr.signingRequests), [])
@@ -141,20 +142,20 @@ sinonTest('can sign things across the wormhole', async T => {
 sinonTest('can sign responses for servicelogger later', async T => {
   const {intrceptr, internalClient} = testIntrceptr()
   const happId = 'happId'
-  
+
   internalClient.call.withArgs('call', {
     instance_id: serviceLoggerInstanceIdFromHappId(happId),
     zome: 'service',
     function: 'log_service',
     params: {
-      response_hash: 'hash', 
+      response_hash: 'hash',
       client_signature: 'signature',
     }
   }).resolves({Ok: 'whatever'})
-  
+
   await intrceptr.serviceSignature({
-    happId, 
-    responseEntryHash: 'hash', 
+    happId,
+    responseEntryHash: 'hash',
     signature: 'signature',
   })
 

@@ -69,7 +69,7 @@ sinonTest('can install dnas', async T => {
 sinonTest('throws error for non-hosted happId', async T => {
   const {masterClient} = testIntrceptr()
   await T.rejects(
-    M.installDnasAndUi(masterClient, {happId: 'invalid'}),
+    M.installDnasAndUi(masterClient, 'test-dir', {happId: 'invalid'}),
     /hApp is not registered.*/
   )
   T.callCount(masterClient.call, 1)
@@ -82,7 +82,7 @@ sinonTest('throws error for unreachable resources', async T => {
   const happId = simpleApp.happId
 
   await T.rejects(
-    M.installDnasAndUi(masterClient, {happId}),
+    M.installDnasAndUi(masterClient, 'test-dir', {happId}),
     /Could not fetch.*404/
   )
   T.callCount(masterClient.call, 1)
@@ -97,7 +97,7 @@ sinonTest('can install dnas and ui for hApp', async T => {
   const happId = simpleApp.happId
   const dnaHash = simpleApp.dnas[0].hash
   const uiHash = simpleApp.ui!.hash
-  const result = M.installDnasAndUi(masterClient, {happId})
+  const result = M.installDnasAndUi(masterClient, 'test-dir', {happId})
   await T.doesNotReject(result)
   T.callCount(masterClient.call, 3)
 
@@ -115,8 +115,8 @@ sinonTest('can install dnas and ui for hApp', async T => {
   T.calledWith(tar.extract, 'tempdir/QmSimpleAppFakeHash')
   T.calledWith(
     fs.copy,
-    'tempdir/QmSimpleAppFakeHash.tar', 
-    path.join(Config.uiStorageDir, happId)
+    'tempdir/QmSimpleAppFakeHash.tar',
+    path.join(Config.uiStorageDir(), happId)
   )
 
   axiosStub.restore()
