@@ -6,47 +6,66 @@ import * as rimraf from 'rimraf'
 import * as Config from './config'
 
 
-export const initializeConductorConfig = () => {
-  console.log("Creating conductor config at: ", Config.conductorConfigPath)
-  try {
-    fs.mkdirSync(Config.conductorConfigDir, {recursive: true})
-  } catch(e) {}
-  try {
-    fs.mkdirSync(Config.uiStorageDir, {recursive: true})
-  } catch(e) {}
-  let toml = initialTomlConfig()
-  fs.writeFileSync(Config.conductorConfigPath, toml)
+export const cleanConductorStorage = (baseDir) => {
+  rimraf.sync(Config.chainStorageDir(baseDir))
+  rimraf.sync(Config.uiStorageDir(baseDir))
 }
 
-export const cleanConductorStorage = () => {
-  rimraf.sync(path.join(Config.conductorConfigDir, 'storage'))
-  rimraf.sync(Config.uiStorageDir)
+export const initializeConductorConfig = (baseDir, keyData) => {
+  console.log("Creating conductor config at: ", Config.conductorConfigPath(baseDir))
+  try {
+    fs.mkdirSync(baseDir, {recursive: true})
+  } catch(e) {}
+  try {
+    fs.mkdirSync(Config.uiStorageDir(baseDir), {recursive: true})
+  } catch(e) {}
+  let toml = initialTomlConfig(baseDir, keyData)
+  fs.writeFileSync(Config.conductorConfigPath(baseDir), toml)
+}
+
+export const keygen = (bundlePath?) => {
+  const extraArgs = bundlePath ? `--path ${bundlePath}` : ''
+
+  // TODO: use nullpass once it works, no stdin required, i.e.:
+  // execSync(`hc keygen --nullpass --quiet ${extraArgs}`)
+  const output = execSync(`hc keygen --quiet ${extraArgs}`, {
+    input: `${Config.testKeyPassphrase}\n${Config.testKeyPassphrase}\n`
+  })
+
+  const [publicAddress, keyFile] = output.toString().split("\n")
+
+  if (bundlePath && keyFile !== bundlePath) {
+    console.warn("requested and actual keybundle paths differ: ")
+    console.warn("", bundlePath, '!==', keyFile)
+  }
+
+  if (bundlePath) {
+    // we already know the path, so don't return it again
+    return {publicAddress}
+  } else {
+    // return both the path and the address if we let hc keygen pick the path
+    return {keyFile, publicAddress}
+  }
+
 }
 
 // TODO: allow optional temp path
-export const spawnConductor = () => {
+export const spawnConductor = (baseDir) => {
   console.log("Using conductor binary: ", execSync('which holochain').toString())
-  const conductor = spawn('holochain', ['-c', Config.conductorConfigPath])
+  const conductor = spawn('holochain', ['-c', baseDir])
   conductor.stdout.on('data', data => console.log('(HC)', data.toString('utf8')))
   conductor.stderr.on('data', data => console.error('(HC) <E>', data.toString('utf8')))
   conductor.on('close', code => console.log('Conductor closed with code: ', code))
   return conductor
 }
 
-const initialTomlConfig = () => {
-
-  // const keyFile = 'what it is'
-  // const publicAddress = execSync(`hc keygen --path $STANDARD_KEY_PATH --silent`)
-
-  // TODO: generate key here and use generated key path
-  // this is temporary hard-coded config for now
-  const {keyFile, publicAddress} = JSON.parse(fs.readFileSync(Config.keyConfigFile, 'utf8'))
+const initialTomlConfig = (baseDir, {keyFile, publicAddress}) => {
 
   // TODO: add DNA for HCHC when available
   return `
 bridges = []
 
-persistence_dir = "${Config.conductorConfigDir}"
+persistence_dir = "${baseDir}"
 signing_service_uri = "http://localhost:${Config.PORTS.wormhole}"
 
 [[agents]]
@@ -66,7 +85,7 @@ dna = "${Config.DNAS.holoHosting.hash}"
 id = "${Config.holoHostingAppId}"
 
 [instances.storage]
-path = "${path.join(Config.conductorConfigDir, 'storage', Config.holoHostingAppId)}"
+path = "${path.join(Config.chainStorageDir(baseDir), Config.holoHostingAppId)}"
 type = "file"
 
 [[interfaces]]

@@ -13,6 +13,11 @@ export enum InstanceType {
 
 export type HappID = string
 
+export type KeyData = {
+  keyFile: string,
+  publicAddress: string,
+}
+
 // export type AdminUiInstallRequest = {
 //   id: string,
 //   root_dir: string

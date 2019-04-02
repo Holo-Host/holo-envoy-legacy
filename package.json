@@ -10,6 +10,7 @@
     "build": "yarn run build-happs & tsc",
     "clean": "rm -fr lib",
     "init": "ts-node -T init-conductor.ts",
+    "keygen": "ts-node -T keygen-cached.ts",
     "conductor": "holochain -c ~/.holochain/holo/conductor-config.toml",
     "test": "ts-node test/index.ts | faucet",
     "integration": "ts-node integration-tests/index.ts",

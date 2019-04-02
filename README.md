@@ -22,21 +22,15 @@ Now, install NPM dependencies:
 
 	yarn install
 
-To get the necessary DNAs and UIs ready, including shims, run this script:
+To get the necessary DNAs and UIs ready, including shims, run the following script **in a holochain-core nix-shell**:
 
 	yarn run build-happs
 
-To enable the intrceptr to generate the initial Conductor configuration including host keys, you need to create some keys and let intrceptr know about them:
+To enable the intrceptr to generate the initial Conductor configuration including host keys, you need to create some keys and let intrceptr know about them. As a temporary step, please use the following script to generate keys:
 
-	hc keygen
+	yarn run keygen
 
-Now, make a special file that intrceptr can read to determine your key info. It's a JSON file with two fields, "publicAddress" and "keyFile". Example:
-
-	cat src/shims/intrceptr-host-key.json
-	{
-	    "publicAddress": "HcSciov95SKY7uxomk9DwbFgZhK93rfjbFe6Xgwffz8j3cxbFc4JkPKKSmx7odr",
-	    "keyFile": "/home/me/.config/holochain/keys/HcSciov95SKY7uxomk9DwbFgZhK93rfjbFe6Xgwffz8j3cxbFc4JkPKKSmx7odr"
-	}
+This calls `hc keygen` under the hood, and also produces a special file that helps intrceptr locate the key later. If you want to use intrceptr with an existing keypair, please see the section on **Using existing keypairs** below
 
 Finally, to create the initial Conductor configuration needed by intrceptr, run this handy script:
 
@@ -54,11 +48,11 @@ Just:
 
 ### Integration tests:
 
-Integration tests use the real holochain stack to run. You'll need to have `holochain` installed and on your PATH. You'll also need to have an agent key configured, as described above. **NB: If you want the test to run automatically, the keyfile should have a blank passphrase**.
-
-To run, just:
+Integration tests use the real holochain stack to run. You'll need to have `holochain` and `hc` installed and on your PATH. To run, just:
 
 	yarn run integration
+
+The storage for each test will be run in a new dynamically generated temp directory. Also, a keybundle just for testing will be created the first time you run this script, and from that point on the same keybundle will be used for subsequent tests.
 
 ## Usage
 
@@ -96,3 +90,20 @@ git submodule update --remote --merge
 ```
 
 See https://hackmd.io/5xL7XKp5Srm_Ez5_eTxAOQ for latest design considerations. See also https://hackmd.io/cvXMlcffThSpN-C5WrfGzg for an earlier design doc with the broader picture but possibly outdated details.
+
+## Using existing keypairs
+
+In the setup, you were instructed to use `yarn run keygen`. The only special thing about that script is the special file that it creates, letting intrceptr know where to find the keybundle, and also what the agent's address is, since there is currently no tool that lets you pull decrypted information out of a keybundle.
+
+To use an existing keybundle, you can create this file yourself. It's a simple JSON file with two fields, "publicAddress" and "keyFile". It must live at `src/shims/intrceptr-host-key.json`.
+
+Example:
+
+	$ cat src/shims/intrceptr-host-key.json  
+
+should produce something like the following contents:
+
+	{
+	    "publicAddress": "HcSciov95SKY7uxomk9DwbFgZhK93rfjbFe6Xgwffz8j3cxbFc4JkPKKSmx7odr",
+	    "keyFile": "/home/me/.config/holochain/keys/HcSciov95SKY7uxomk9DwbFgZhK93rfjbFe6Xgwffz8j3cxbFc4JkPKKSmx7odr"
+	}

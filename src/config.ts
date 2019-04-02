@@ -1,14 +1,21 @@
 import * as path from 'path'
-import {homedir} from 'os'
+import * as os from 'os'
 
 const devUI = process.env.INTRCEPTR_UI || ""
+
 if (devUI) {
   console.log("Using dev UI hash: ", devUI)
 }
 
-export const conductorConfigDir = path.join(homedir(), '.holochain/holo')
-export const conductorConfigPath = path.join(conductorConfigDir, 'conductor-config.toml')
-export const uiStorageDir = path.join(conductorConfigDir, 'ui-store', devUI)
+export const defaultIntrceptrHome = process.env.INTRCEPTR_PATH || path.join(os.homedir(), '.holochain/holo')
+export const conductorConfigPath = (dir?) => path.join(dir || defaultIntrceptrHome, 'conductor-config.toml')
+export const uiStorageDir = (dir?) => path.join(dir || defaultIntrceptrHome, 'ui-store', devUI)
+export const chainStorageDir = (dir?) => path.join(dir || defaultIntrceptrHome, 'storage')
+
+export const testKeyDir = path.join(os.tmpdir(), 'intrceptr-test-keybundle')
+export const testKeybundlePath = path.join(testKeyDir, 'keybundle.json')
+export const testAgentAddressPath = path.join(testKeyDir, 'INTRCEPTR_AGENT_ADDRESS')
+export const testKeyPassphrase = ''  // TODO: can go away once `hc keygen --nullpass` fully works
 
 export const hostAgentId = 'host-agent'
 export const holoHostingAppId = 'holo-hosting-app'

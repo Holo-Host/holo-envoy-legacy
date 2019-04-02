@@ -82,7 +82,7 @@ export class IntrceptrServer {
         console.log("WS server initialized")
 
         shimServer = startShimServers(Config.PORTS.shim)
-        adminServer = startAdminHostServer(Config.PORTS.admin, intrceptr.clients.master)
+        adminServer = startAdminHostServer(Config.PORTS.admin, Config.defaultIntrceptrHome, intrceptr.clients.master)
         wormholeServer = startWormholeServer(Config.PORTS.wormhole, intrceptr)
 
         await httpServer.listen(port, () => console.log('HTTP server running on port', port))
@@ -155,7 +155,7 @@ export class IntrceptrServer {
     // Simply rely on the fact that UIs are installed in a directory
     // named after their happId
     // TODO: check access to prevent cross-UI requests?
-    app.use(`/`, express.static(Config.uiStorageDir))
+    app.use(`/`, express.static(Config.uiStorageDir(Config.defaultIntrceptrHome)))
 
     return require('http').createServer(app)
   }
