@@ -1,4 +1,5 @@
 import * as path from 'path'
+import * as fs from 'fs'
 import * as os from 'os'
 
 const devUI = process.env.INTRCEPTR_UI || ""
@@ -12,7 +13,7 @@ export const conductorConfigPath = (dir?) => path.join(dir || defaultIntrceptrHo
 export const uiStorageDir = (dir?) => path.join(dir || defaultIntrceptrHome, 'ui-store', devUI)
 export const chainStorageDir = (dir?) => path.join(dir || defaultIntrceptrHome, 'storage')
 
-export const testKeyDir = path.join(os.tmpdir(), 'intrceptr-test-keybundle')
+export const testKeyDir = path.join(os.tmpdir(), 'holo-intrceptr', 'test-keydata')
 export const testKeybundlePath = path.join(testKeyDir, 'keybundle.json')
 export const testAgentAddressPath = path.join(testKeyDir, 'INTRCEPTR_AGENT_ADDRESS')
 export const testKeyPassphrase = ''  // TODO: can go away once `hc keygen --nullpass` fully works

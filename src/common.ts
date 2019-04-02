@@ -16,11 +16,13 @@ export const errorResponse = msg => ({error: msg})
  */
 export const fail = e => console.error("FAIL: ", e)
 
+
+export const serializeError = e => typeof e === 'object' ? JSON.stringify(e) : e
 /**
  * Useful for handling express server failure
  */
 export const catchHttp = next => e => {
-  const err = typeof e === 'object' ? JSON.stringify(e) : e
+  const err = serializeError(e)
   console.error("HTTP error caught:")
   next(err)
 }

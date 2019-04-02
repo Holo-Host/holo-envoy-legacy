@@ -48,6 +48,13 @@ const fail = (e) => {
   return e
 }
 
+const requiredFields = (...fields) => {
+  const missing = fields.filter(field => field === undefined)
+  if (missing.length > 0) {
+    throw `The following fields were missing: ${missing.join(', ')}`
+  }
+}
+
 /**
  * A wrapper around a rpc-websockets Server and Client which brokers communication between
  * the browser user and the Conductor. The browser communicates with the Server, and the Client
@@ -178,7 +185,8 @@ export class IntrceptrServer {
     return wss
   }
 
-  identifyAgent = ({agentId}, ws) => {
+  identifyAgent = ({agentId}) => {
+    requiredFields(agentId)
     // TODO: also take salt and signature of salt to prove browser owns agent ID
     console.log("adding new event to server", `agent/${agentId}/sign`)
 
@@ -197,6 +205,7 @@ export class IntrceptrServer {
   }
 
   wormholeSignature = ({signature, requestId}) => {
+    requiredFields(requestId)
     const {entry, callback} = this.signingRequests[requestId]
     verifySignature(entry, signature)  // TODO: really?
     callback(signature)
@@ -205,10 +214,12 @@ export class IntrceptrServer {
   }
 
   serviceSignature = ({happId, responseEntryHash, signature}) => {
+    requiredFields(happId, responseEntryHash, signature)
     return logServiceSignature(this.clients.internal, {happId, responseEntryHash, signature})
   }
 
   newHostedAgent = async ({agentId, happId}) => {
+    requiredFields(agentId, happId)
     const signature = 'TODO'
     await newAgent(this.clients.master)({agentId, happId, signature})
     return successResponse
