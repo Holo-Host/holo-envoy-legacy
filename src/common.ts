@@ -58,6 +58,41 @@ export const unbundleUI = (input, target) => new Promise((resolve, reject) => {
   })
 })
 
+/**
+ * The method of bundling UIs into a single bundle
+ */
+export const compressDNA = (input, target) => new Promise((resolve, reject) => {
+  console.log("Compressing DNA...")
+  const output = fs.createWriteStream(target)
+  const archive = archiver('zip')
+  output.on('finish', () => resolve(target))
+  output.on('error', reject)
+  archive.on('error', reject)
+
+  archive.pipe(output)
+  archive.file(input)
+  archive.finalize()
+})
+
+/**
+ * The opposite of `compressDNA`
+ */
+export const expandDNA = (input, target) => new Promise((resolve, reject) => {
+  console.debug("Extracting DNA...")
+  try {
+    fs.unlink(target)
+  } catch {}
+  extract(input, {dir: target}, function (err) {
+    if (err) {
+      reject(err)
+    } else {
+      resolve(target)
+    }
+   // extraction is complete. make sure to handle the err
+  })
+})
+
+
 ///////////////////////////////////////////////////////////////////
 ///////////////////////      UTIL      ////////////////////////////
 ///////////////////////////////////////////////////////////////////

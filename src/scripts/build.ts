@@ -1,7 +1,7 @@
 import * as fs from 'fs-extra'
 import * as path from 'path'
 import {execSync} from 'child_process'
-import {bundleUI} from '../common'
+import {bundleUI, compressDNA} from '../common'
 
 const happs = [
   {
@@ -39,7 +39,10 @@ happs.forEach(happ => {
   happ.dnas.forEach(dir => {
     console.log(`Packaging DNA for '${dir}'...`)
     execSync(`find $dir -name Cargo.lock -delete`)
-    execSync(`cd ${dir} && hc package --strip-meta`)
+    const outName = 'dist/dna.json'
+    const outPath = path.join(dir, outName)
+    execSync(`cd ${dir} && hc package --strip-meta --output ${outName}`)
+    compressDNA(outPath, outPath + '.zip')
   })
 })
 

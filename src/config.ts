@@ -28,13 +28,15 @@ export enum ConductorInterface {
   Internal = 'internal-interface',
 }
 
+// NOTE: these are uncompressed DNA files.
+// These will eventually be baked into the nix image with each release
 export const DNAS = {
   serviceLogger: {
-    path: 'src/dnas/servicelogger/dist/servicelogger.dna.json',
+    path: 'src/dnas/servicelogger/dist/dna.json',
     hash: 'QmRft46moC7PLDtjrZVd3DhRe99mTBETdvpCMSkJZwhzgW',
   },
   holoHosting: {
-    path: 'src/dnas/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
+    path: 'src/dnas/Holo-Hosting-App/dna-src/dist/dna.json',
     hash: 'QmXuPFimMCoYQrXqX9vr1vve8JtpQ7smfkw1LugqEhyWTr',
   }
 }

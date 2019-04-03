@@ -8,6 +8,7 @@ import {
   callWhenConnected,
   fail,
   unbundleUI,
+  expandDNA,
   uiIdFromHappId,
   zomeCallByInstance,
   instanceIdFromAgentAndDna,
@@ -251,10 +252,19 @@ const downloadAppResources = async (_client, happId): Promise<DownloadResult> =>
       path: uiDir,
     }
   }
-  const dnaResources = await Promise.all(dnas.map(async (dna): Promise<HappDownloadedResource> => ({
-    hash: dna.hash,
-    path: await downloadResource(baseDir, dna, ResourceType.HappDna)
-  })))
+  const dnaResources = await Promise.all(dnas.map(async (dna): Promise<HappDownloadedResource> => {
+    const dnaZipPath = await downloadResource(baseDir, dna, ResourceType.HappDna)
+    // TODO: XXX: NB:
+    // this *assumes* the name of the compressed dna file!
+    // to make this robust, must examine the name of the file in the archive
+    // then rename it accordingly!
+    const dnaPath = path.dirname(dnaZipPath)
+    await expandDNA(dnaZipPath, dnaPath)
+    return {
+      hash: dna.hash,
+      path: dnaPath
+    }
+  }))
   return {ui: uiResource, dnas: dnaResources}
 }
 

@@ -29,7 +29,7 @@ export const HAPP_DATABASE = [
     nick: 'simple-app',
     dnas: [
       {
-        location: 'http://localhost:3333/simple-app/dist/simple-app.dna.json',
+        location: 'http://localhost:3333/simple-app/dist/dna.json.zip',
         hash: 'QmSKxN3FGVrf1vVMav6gohJVi7GcF4jFcKVDhDcjiAnveo'
       }
     ],
@@ -57,7 +57,7 @@ export const HAPP_DATABASE = [
     nick: 'holo-hosting',
     dnas: [
       {
-        location: 'http://localhost:3333/Holo-Hosting-App/dist/Holo-Hosting-App.dna.json',
+        location: 'http://localhost:3333/Holo-Hosting-App/dist/dna.json.zip',
         hash: 'QmXuPFimMCoYQrXqX9vr1vve8JtpQ7smfkw1LugqEhyWTr'
       }
     ]
