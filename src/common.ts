@@ -1,5 +1,6 @@
 
-import * as tar from 'tar-fs'
+import * as archiver from 'archiver'
+import * as extract from 'extract-zip'
 import * as fs from 'fs-extra'
 import * as Config from './config'
 
@@ -30,22 +31,31 @@ export const catchHttp = next => e => {
 /**
  * The method of bundling UIs into a single bundle
  */
-export const bundle = (input, target) => new Promise((resolve, reject) => {
-  const writer = fs.createWriteStream(target)
-  writer.on('error', reject)
-  writer.on('finish', () => resolve(target))
-  tar.pack(input).pipe(writer)
+export const bundleUI = (input, target) => new Promise((resolve, reject) => {
+  const output = fs.createWriteStream(target)
+  const archive = archiver('zip')
+  output.on('finish', () => resolve(target))
+  output.on('error', reject)
+  archive.on('error', reject)
+
+  archive.pipe(output)
+  archive.directory(input, false)
+  archive.finalize()
 })
 
 /**
- * The opposite of `bundle`
+ * The opposite of `bundleUI`
  */
-export const unbundle = (input, target) => new Promise((resolve, reject) => {
-  const reader = fs.createReadStream(input)
+export const unbundleUI = (input, target) => new Promise((resolve, reject) => {
   console.debug("Unbundling...")
-  reader.on('error', reject)
-  reader.on('end', () => resolve(target))
-  reader.pipe(tar.extract(target))
+  extract(input, {dir: target}, function (err) {
+    if (err) {
+      reject(err)
+    } else {
+      resolve(target)
+    }
+   // extraction is complete. make sure to handle the err
+  })
 })
 
 ///////////////////////////////////////////////////////////////////

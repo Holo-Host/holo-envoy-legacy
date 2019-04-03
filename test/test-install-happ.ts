@@ -1,12 +1,12 @@
 import * as axios from 'axios'
 import * as fs from 'fs-extra'
 import * as path from 'path'
-import * as tar from 'tar-fs'
 import * as sinon from 'sinon'
 import {EventEmitter} from 'events'
 
 import {mockResponse, sinonTest, testIntrceptr} from './common'
-import {bundle, unbundle, instanceIdFromAgentAndDna, serviceLoggerInstanceIdFromHappId} from '../src/common'
+import {bundleUI, unbundleUI, instanceIdFromAgentAndDna, serviceLoggerInstanceIdFromHappId} from '../src/common'
+import * as Common from '../src/common'
 import * as Config from '../src/config'
 import {shimHappByNick} from '../src/shims/happ-server'
 
@@ -23,10 +23,8 @@ sinon.stub(fs, 'createReadStream').returns(emitterWithPipe())
 sinon.stub(fs, 'createWriteStream').returns(new EventEmitter())
 sinon.stub(fs, 'renameSync')
 sinon.stub(fs, 'copy')
-sinon.stub(tar, 'extract')
-sinon.stub(tar, 'pack')
-// sinon.stub(bundle)
-// sinon.stub(unbundle)
+sinon.stub(Common, 'bundleUI')
+sinon.stub(Common, 'unbundleUI')
 
 const simpleApp = shimHappByNick('simple-app')!
 
@@ -111,12 +109,13 @@ sinonTest('can install dnas and ui for hApp', async T => {
     properties: undefined
   })
 
-  T.calledWith(fs.createReadStream, 'tempdir/QmSimpleAppFakeHash.tar')
-  T.calledWith(tar.extract, 'tempdir/QmSimpleAppFakeHash')
+  // const uiDir = `${happId}`
+  const uiDir = `tempdir/QmSimpleAppFakeHash`
+  T.calledWith(Common.unbundleUI, `${uiDir}.zip`, uiDir)
   T.calledWith(
     fs.copy,
-    'tempdir/QmSimpleAppFakeHash.tar',
-    path.join(Config.uiStorageDir(), happId)
+    `${uiDir}`,
+    path.join(Config.uiStorageDir('test-dir'), happId)
   )
 
   axiosStub.restore()

@@ -31,7 +31,7 @@ export enum ConductorInterface {
 export const DNAS = {
   serviceLogger: {
     path: 'src/dnas/servicelogger/dist/servicelogger.dna.json',
-    hash: 'QmUtZhnVQ4tAjdKmjuEibRwF12ejoXJ2iERcBzPRc3KPRP',
+    hash: 'QmRft46moC7PLDtjrZVd3DhRe99mTBETdvpCMSkJZwhzgW',
   },
   holoHosting: {
     path: 'src/dnas/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',

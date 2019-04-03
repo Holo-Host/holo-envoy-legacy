@@ -7,7 +7,7 @@ import {HappID} from '../types'
 import {
   callWhenConnected,
   fail,
-  unbundle,
+  unbundleUI,
   uiIdFromHappId,
   zomeCallByInstance,
   instanceIdFromAgentAndDna,
@@ -259,7 +259,7 @@ const downloadAppResources = async (_client, happId): Promise<DownloadResult> =>
 }
 
 const downloadResource = async (baseDir: string, res: HappResource, type: ResourceType): Promise<string> => {
-  const suffix = type === ResourceType.HappDna ? '.dna.json' : '.tar'
+  const suffix = type === ResourceType.HappDna ? '.dna.json' : '.zip'
   const resourcePath = path.join(baseDir, res.hash + suffix)
   const response: any = await axios.request({
     url: res.location,
@@ -284,11 +284,11 @@ const downloadResource = async (baseDir: string, res: HappResource, type: Resour
 }
 
 const unbundleUi = async (source: string) => {
-  const [target, end] = source.split('.tar')
+  const [target, end] = source.split('.zip')
   if (target == source) {
-    throw "Could not unbundle UI. Check that the resource is a .tar file: " + source
+    throw "Could not unbundle UI. Check that the resource is a .zip file: " + source
   }
-  await unbundle(source, target)
+  await unbundleUI(source, target)
   return target
 }
 

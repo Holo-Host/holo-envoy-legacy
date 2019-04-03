@@ -12,17 +12,20 @@
     "init": "ts-node -T init-conductor.ts",
     "keygen": "ts-node -T keygen-cached.ts",
     "conductor": "holochain -c ~/.holochain/holo/conductor-config.toml",
-    "test": "ts-node test/index.ts | faucet",
+    "test": "yarn run test:unit",
+    "test:unit": "ts-node test/index.ts | faucet",
+    "test:unit:raw": "ts-node test/index.ts",
     "integration": "ts-node integration-tests/index.ts",
     "cmd": "ts-node integration-tests/command.ts"
   },
   "dependencies": {
+    "archiver": "^3.0.0",
     "axios": "^0.18.0",
     "body-parser": "^1.18.3",
     "express": "^4.16.4",
+    "extract-zip": "^1.6.7",
     "fs-extra": "^7.0.1",
-    "rpc-websockets": "maackle/rpc-websockets",
-    "tar-fs": "^2.0.0"
+    "rpc-websockets": "maackle/rpc-websockets"
   },
   "devDependencies": {
     "@types/node": "^11.9.4",
