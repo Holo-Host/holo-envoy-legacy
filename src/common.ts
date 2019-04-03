@@ -169,3 +169,11 @@ export const callWhenConnected = async (client, method, payload) => {
     })
   }
 }
+
+export const whenReady = async client => {
+  if(!client.ready) {
+    return new Promise(resolve => {
+      client.once('open', resolve)
+    })
+  }
+}

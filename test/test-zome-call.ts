@@ -102,6 +102,7 @@ sinonTest('can call public zome function', async T => {
         hosting_stats: metrics,
         response_data_hash: "TODO: response_data_hash",
         response_log: 'TODO: response_log',
+        host_signature: 'TODO: remove this and have servicelogger make signature internally',
       }
     }
   })

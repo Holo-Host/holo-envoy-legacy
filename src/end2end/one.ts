@@ -15,7 +15,7 @@ const agentId = 'total-dummy-fake-not-real-agent-public-address'
 
 
 test('can install app', async t => {
-  withIntrceptrClient(async client => {
+  withIntrceptrClient(agentId, async client => {
     // TODO: conductor panics if installing the same app twice!
     console.log('installing happ...')
     await client.call('holo/happs/install', {happId: 'TODO', agentId: C.hostAgentId})
@@ -27,7 +27,7 @@ test('can install app', async t => {
 })
 
 test('end to end test (assuming app is installed)', async t => {
-  withIntrceptrClient(async (client) => {
+  withIntrceptrClient(agentId, async (client) => {
     console.log('identifying...')
     const agentName = C.hostAgentId
     const agentId = await client.call('holo/identify', {agentId: agentName})
@@ -50,7 +50,7 @@ test('end to end test (assuming app is installed)', async t => {
 })
 
 test('end to end hosted agent test (assuming app is installed)', async t => {
-  withIntrceptrClient(async (client) => {
+  withIntrceptrClient(agentId, async (client) => {
     console.log('identifying...')
     // const num = Math.floor(Math.random() * 10000)
     // const num = '5079'

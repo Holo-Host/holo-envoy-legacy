@@ -15,12 +15,12 @@ sinonTest('can host new agent', async T => {
 
   T.callCount(masterClient.call, 2)
   T.calledWith(masterClient.call.firstCall, 'admin/agent/list')
-  T.calledWith(masterClient.call.secondCall, 'admin/agent/add', { 
-    holo_remote_key: true, 
-    id: "agentId", 
-    keystore_file: "IGNORED", 
-    name: "agentId", 
-    public_address: "agentId" 
+  T.calledWith(masterClient.call.secondCall, 'admin/agent/add', {
+    holo_remote_key: "agentId",
+    id: "agentId",
+    keystore_file: "IGNORED",
+    name: "agentId",
+    public_address: "agentId"
   })
 })
 

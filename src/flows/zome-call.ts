@@ -101,6 +101,7 @@ const logServiceResponse = async (client, {happId, requestEntryHash, responseDat
         hosting_stats: metrics,
         response_log: 'TODO: response_log',  // TODO, make sure this is calculated correctly
         response_data_hash: 'TODO: response_data_hash',
+        host_signature: 'TODO: remove this and have servicelogger make signature internally',
       }
     }
   })

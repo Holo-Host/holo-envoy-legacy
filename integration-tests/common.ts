@@ -7,7 +7,7 @@ import {exec} from 'child_process'
 import * as rimraf from 'rimraf'
 import {Client} from 'rpc-websockets'
 import * as T from '../src/types'
-import {serializeError} from '../src/common'
+import {serializeError, whenReady} from '../src/common'
 
 import * as Config from '../src/config'
 import {initializeConductorConfig, cleanConductorStorage, spawnConductor, keygen} from '../src/conductor'
@@ -18,37 +18,29 @@ export const adminHostCall = (uri, data) => {
   return axios.post(`http://localhost:${Config.PORTS.admin}/${uri}`, data)
 }
 
-export const withIntrceptrClient = fn => new Promise((resolve, reject) => {
+export const getTestClient = async (): Promise<any> => {
   const client = new Client(`ws://localhost:${Config.PORTS.intrceptr}`, {
     reconnect: false
   })
   client.on('error', msg => console.error("WS Client error: ", msg))
-  client.once('open', async () => {
-    // setup wormhole client dummy response
-    // TODO: make it real
-    client.subscribe('agent/sign')
-    client.on('agent/sign', (params) => {
-      console.log('on agent/sign:', params)
-      const {entry, id} = params
-      client.call('holo/wormholeSignature', {
-        signature: 'TODO-signature',
-        requestId: id,
-      })
-    })
+  await whenReady(client)
+  return client
+}
 
-    return fn(client)
-      .catch(reject)
-      .finally(() => client.close())
-      .then(resolve)
-  })
-})
+/**
+ * @deprecated
+ */
+export const withIntrceptrClient = async (fn) => {
+  const client = await getTestClient()
+  return fn(client).finally(() => client.close())
+}
 
 /**
  * Fire up a conductor and create a WS client to it.
  * NB: there cannot be more than one conductor running at a time since they currently occupy
  * a fixed set of ports and a fixed config file path, etc.
  */
-export const conductorTest = async (t, fn) => {
+export const withConductor = async (fn) => {
   // TODO: how to shut down last run properly in case of failure?
   exec('killall holochain')
   const baseDir = fs.mkdtempSync(path.join(os.tmpdir(), 'holo-intrceptr', 'test-storage-'))
@@ -68,18 +60,15 @@ export const conductorTest = async (t, fn) => {
 
   const intrceptr = startIntrceptr(Config.PORTS.intrceptr)
   await intrceptr.connections.ready()
-  await delay(1000)
-  console.log("intrceptr ready! running test.")
-  await withIntrceptrClient(fn)
-  .then(t.end)
-  .catch(e => t.fail(serializeError(e)))
+
+  fn(intrceptr)
+  .catch(e => console.error(e))
   .finally(() => {
     console.log("Shutting down everything...")
     intrceptr.close()
     conductor.kill()
   })
 }
-
 
 export const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 

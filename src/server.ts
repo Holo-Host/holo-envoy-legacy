@@ -187,6 +187,7 @@ export class IntrceptrServer {
 
   identifyAgent = ({agentId}) => {
     requiredFields(agentId)
+
     // TODO: also take salt and signature of salt to prove browser owns agent ID
     console.log("adding new event to server", `agent/${agentId}/sign`)
 
@@ -235,6 +236,7 @@ export class IntrceptrServer {
    */
   startHoloSigningRequest(agentId: string, entry: Object, callback: (Object) => void) {
     const id = this.nextCallId++
+    console.debug('intrceptr emitting sign request event: ', `agent/${agentId}/sign`, {entry, id})
     this.server.emit(`agent/${agentId}/sign`, {entry, id})
     this.signingRequests[id] = {entry, callback}
   }
