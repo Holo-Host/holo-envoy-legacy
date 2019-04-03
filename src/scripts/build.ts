@@ -1,7 +1,7 @@
 import * as fs from 'fs-extra'
 import * as path from 'path'
 import {execSync} from 'child_process'
-import {bundle} from '../common'
+import {bundleUI} from '../common'
 
 const happs = [
   {
@@ -24,15 +24,15 @@ const uiBundlePromises = ([] as any)
 
 happs.forEach(happ => {
   if (happ.ui) {
-    const tarPath = path.join(happ.ui, '..', 'ui.tar')
+    const zipPath = path.join(happ.ui, '..', 'ui.zip')
     try {
-      fs.unlinkSync(tarPath)
+      fs.unlinkSync(zipPath)
     } catch {
-      console.warn(`No ${tarPath}, skipping...`)
+      console.warn(`No ${zipPath}, skipping...`)
     }
 
     console.log(`Bundling UI for ${happ.ui} ...`)
-    const promise = bundle(happ.ui, tarPath)
+    const promise = bundleUI(happ.ui, zipPath)
     uiBundlePromises.push(promise)
   }
 

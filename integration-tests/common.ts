@@ -43,7 +43,9 @@ export const withIntrceptrClient = async (fn) => {
 export const withConductor = async (fn) => {
   // TODO: how to shut down last run properly in case of failure?
   exec('killall holochain')
-  const baseDir = fs.mkdtempSync(path.join(os.tmpdir(), 'holo-intrceptr', 'test-storage-'))
+  const tmpBase = path.join(os.tmpdir(), 'holo-intrceptr')
+  fs.mkdirSync(tmpBase, {recursive: true})
+  const baseDir = fs.mkdtempSync(path.join(tmpBase, 'test-storage-'))
   console.log('Created directory for integration tests: ', baseDir)
   cleanConductorStorage(baseDir)
   console.log("Cleared storage.")
