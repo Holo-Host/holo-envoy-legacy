@@ -1,13 +1,16 @@
-import * as test from 'tape'
 import axios from 'axios'
+import * as test from 'tape'
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
 import {exec} from 'child_process'
 import * as rimraf from 'rimraf'
 import {Client} from 'rpc-websockets'
+import * as S from '../src/server'
 import * as T from '../src/types'
-import {serializeError, whenReady} from '../src/common'
+import * as HH from '../src/flows/holo-hosting'
+import {serializeError, whenReady, callWhenConnected} from '../src/common'
+import {shimHappById, shimHappByNick, HappEntry} from '../src/shims/happ-server'
 
 import * as Config from '../src/config'
 import {initializeConductorConfig, cleanConductorStorage, spawnConductor, keygen} from '../src/conductor'
@@ -63,9 +66,7 @@ export const withConductor = async (fn) => {
   const intrceptr = startIntrceptr(Config.PORTS.intrceptr)
   await intrceptr.connections.ready()
 
-  fn(intrceptr)
-  .catch(e => console.error(e))
-  .finally(() => {
+  fn(intrceptr).finally(() => {
     console.log("Shutting down everything...")
     intrceptr.close()
     conductor.kill()
@@ -97,3 +98,83 @@ const getOrCreateKeyData = (): T.KeyData => {
 }
 
 const deleteKeyData = () => rimraf.sync(Config.testKeyDir)
+
+
+export const doRegisterHost = async () => {
+  await HH.SHIMS.registerAsProvider(S.getMasterClient(false))
+  await HH.registerAsHost(S.getMasterClient(false))
+  await delay(1000)
+}
+
+export const doRegisterApp = async (happEntry: HappEntry): Promise<string> => {
+  const masterClient = S.getMasterClient(false)
+  const happId = await HH.SHIMS.registerHapp(masterClient, {
+    uiHash: happEntry.ui ? happEntry.ui.hash : null,
+    dnaHashes: happEntry.dnas.map(dna => dna.hash)
+  })
+  console.log("registered hApp: ", happId)
+
+  const hostResult = await HH.enableHapp(masterClient, happId)
+  console.log(`enabled ${happId}: `, hostResult)
+
+  masterClient.close()
+
+  return happId
+}
+
+export const doAppSetup = async (happNick: string) => {
+  const happEntry = shimHappByNick(happNick)!
+  const dnaHashes = happEntry.dnas.map(dna => dna.hash)
+  const uiHash = happEntry.ui ? happEntry.ui.hash : null
+
+  const happId = await doRegisterApp(happEntry)
+
+  const happResult = await adminHostCall('holo/happs/install', {happId: happId, agentId: Config.hostAgentId})
+  console.log(`installed ${happId}: `, happResult.statusText, happResult.status)
+
+  return {happId, dnaHashes, uiHash}
+}
+
+export const zomeCaller = (client, {happId, agentId, dnaHash, zome}) => (func, params) => {
+  return callWhenConnected(client, 'holo/call', {
+    happId, agentId, dnaHash,
+    zome: zome,
+    function: func,
+    params: params,
+    signature: 'TODO',
+  })
+}
+
+
+/**
+ * TODO: REMOVE, because what we really want is hClient!
+ *
+ * Encodes the process of upgrading from anonymous to holo-hosted client ("holofication").
+ * In this function, an anonymous client is created on the fly, but this is not necessary in the real world,
+ * i.e. it is fine to use an existing client to call holo/identify.
+ * It's just that by starting with a fresh new client, we ensure that we can't holofy a client twice.
+ *
+ * The real process is:
+ * 1. start with connected ws client
+ * 2. generate new permanent keypair
+ * 3. call `holo/identify`, using new permanent agentId
+ * 4. client.subscribe('agent/<agentId>/sign')
+ * 5. listen for signing requests via client.on('agent/<agentId>/sign')
+ */
+const holofiedClient = async (agentId): Promise<any> => {
+  const eventName = `agent/${agentId}/sign`
+  const client = await getTestClient()
+  await client.call('holo/identify', {agentId})
+  await client.subscribe(eventName)
+  client.on(eventName, (params) => {
+    console.debug('*** on agent/_/sign:', params)
+    const {entry, id} = params
+    client.call('holo/wormholeSignature', {
+      signature: 'TODO-real-signature',
+      requestId: id,
+    })
+  })
+  console.debug('*** Subscribed to', eventName)
+  return client
+}
+
