@@ -6,7 +6,8 @@ import * as path from 'path'
 import {exec} from 'child_process'
 import {Client, Server} from 'rpc-websockets'
 import * as rimraf from 'rimraf'
-
+import * as HC from '@holo-host/hclient'
+import * as holochainClient from "@holochain/hc-web-client"
 
 import * as HH from '../src/flows/holo-hosting'
 import * as Config from '../src/config'
@@ -141,7 +142,12 @@ sinonTest.only('can do hosted zome call', async T => {
     // (do nothing with it)
 
     // start hosted session
-    const holoClient = await holofiedClient(agentId)
+    // const holoClient = await holofiedClient(agentId)
+    const holo = await HC.makeWebClient(holochainClient, happId, {
+      url: `ws://localhost:${Config.PORTS.intrceptr}`,
+      dnaHash
+    })
+    const {call, close, ws: holoClient} = await holo.connect()
 
     // TODO: expects error, make real signature
     // thread 'jsonrpc-eventloop-0' panicked at 'called `Result::unwrap()` on an `Err` value: ErrorGeneric("Signature syntactically invalid")', src/libcore/result.rs:997:5
@@ -149,7 +155,7 @@ sinonTest.only('can do hosted zome call', async T => {
     const newAgentResponse = await holoClient.call('holo/agents/new', {agentId, happId})
     T.deepEqual(newAgentResponse, {success: true})
 
-    const call = zomeCaller(holoClient, {happId, agentId, dnaHash, zome: 'chat'})
+    // const call = zomeCaller(holoClient, {happId, agentId, dnaHash, zome: 'chat'})
 
     const address = await call('register', {
       name: 'chat noir',
@@ -163,6 +169,8 @@ sinonTest.only('can do hosted zome call', async T => {
     T.callOrder(spySigningStart, spySigningEnd)
     T.calledWith(spySigningStart, 0)
     T.calledWith(spySigningEnd, 0)
+
+    holoClient.close()
   })
 })
 
