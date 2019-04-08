@@ -68,19 +68,51 @@ Finally, to run the intrceptr itself, you can run:
 
 Upon which it will immediately connect to the Conductor at the admin websocket interface specified in the Conductor config, and run its own servers for incoming connections and requests.
 
-## Running basic-chat
+If the Conductor interfaces go down, Intrceptr will shut down its servers as well, but the process will remain running. It will monitor the Conductor interfaces, and when they are back online, it will restart its own servers. So, the Intrceptr can remain running even when starting and stopping the Conductor.
 
-Ensure the intrceptr and conductor are both running and install the chat dna and UI by running the following
+## Simulating the Holo Hosting App
 
-```
-yarn run cmd install 'basic-chat'
-```
+There is a file `command.ts` which includes some helpful commands for setting up Providers, Hosts, and hApps. You can run these commands with `yarn run cmd <command-name> [args...]`
 
-It should respond with `install basic-chat:  OK 200`.
+For instance, to set up an hApp starting with an empty conductor config, you would have to register as a Provider through the HHA UI, then register as a Host, install the hApp, and enable it. You can perform all these steps right from the command line.
+
+Currently some of these commands take a "happNick", which is the name given in [src/shims/happ-server.ts](src/shims/happ-server.ts). This is just a convenient way to refer to some pre-bundled apps for development purposes only.
+
+Let's go through the flow of installing holochain-basic-chat (happNick = "basic-chat") from scratch
+
+Before anything else, make sure the conductor is initialized and running, as well as the intrceptr:
+
+	yarn run init
+	yarn run conductor
+	yarn start
+
+As the first intrceptr action, **register as a provider**:
+
+	yarn run cmd register-provider
+
+Now **register the app** and **enable it**:
+
+	yarn run cmd register-happ basic-chat
+
+Finally, **install the hApp**:
+
+	yarn run cmd install basic-chat
+
+This last step should respond with `install basic-chat:  OK 200`.
 
 This will automatically start running the chat instance but **it will not host the UI until you restart the intrceptr**. (hopefully will fix this soon)
 
 Navigate to `localhost:3000/basic-chat` to start chatting.
+
+## Troubleshooting
+
+#### DNA hash mismatch
+
+If you get an error like this:
+
+	DNA hash does not match expected hash! QmYY7S4xKtFsvG3uqtDwBBv96dEH77GT3yMfd7KBsYYJhL != QmRft46moC7PLDtjrZVd3DhRe99mTBETdvpCMSkJZwhzgW
+
+That's because either one of the baked-in DNAs, or one of the "shim" DNAs has updated and its hash changed. To fix this, find the reference to the old DNA hash (on the right) and update it with the new one (on the left). The reference will either be in [src/config.ts](src/config.ts) or in [src/shims/happ-server.ts](src/shims/happ-server.ts).
 
 ## More info
 
