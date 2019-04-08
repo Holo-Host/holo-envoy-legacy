@@ -41,12 +41,12 @@ export const commandInstall = async (happNick) => {
   client.close()
 }
 
-const commandNewAgent = (dir, cmd) => withIntrceptrClient(agentId, async client => {
+const commandNewAgent = (dir, cmd) => withIntrceptrClient(async client => {
   await client.call('holo/identify', {agentId})
   await client.call('holo/agents/new', {agentId, happId: simpleApp.happId})
 })
 
-const commandZomeCallPublic = (dir, cmd) => withIntrceptrClient(agentId, async client => {
+const commandZomeCallPublic = (dir, cmd) => withIntrceptrClient(async client => {
   const result = await client.call('holo/call', {
     agentId: C.hostAgentId,
     happId: simpleApp.happId,
@@ -59,7 +59,7 @@ const commandZomeCallPublic = (dir, cmd) => withIntrceptrClient(agentId, async c
   console.log("how about that! ", result)
 })
 
-const commandZomeCallHosted = (dir, cmd) => withIntrceptrClient(agentId, async client => {
+const commandZomeCallHosted = (dir, cmd) => withIntrceptrClient(async client => {
   const result = await client.call('holo/call', {
     agentId,
     happId: simpleApp.happId,
