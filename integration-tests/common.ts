@@ -8,10 +8,13 @@ import * as rimraf from 'rimraf'
 import {Client} from 'rpc-websockets'
 import * as T from '../src/types'
 import {serializeError, whenReady} from '../src/common'
+import * as HH from '../src/flows/holo-hosting'
+import {HappEntry} from '../src/shims/happ-server'
 
 import * as Config from '../src/config'
 import {initializeConductorConfig, cleanConductorStorage, spawnConductor, keygen} from '../src/conductor'
 import startIntrceptr from '../src/server'
+import * as S from '../src/server'
 
 
 export const adminHostCall = (uri, data) => {
@@ -97,3 +100,33 @@ const getOrCreateKeyData = (): T.KeyData => {
 }
 
 const deleteKeyData = () => rimraf.sync(Config.testKeyDir)
+
+////////////////////////////////////////////
+
+export const doRegisterHost = async () => {
+  const client = S.getMasterClient(false)
+  await HH.SHIMS.registerAsProvider(client)
+  await HH.registerAsHost(client)
+  client.close()
+  await delay(1000)
+}
+
+export const doRegisterApp = async (happEntry: HappEntry): Promise<string> => {
+  const masterClient = S.getMasterClient(false)
+  const happId = await HH.SHIMS.registerHapp(masterClient, {
+    uiHash: happEntry.ui ? happEntry.ui.hash : null,
+    dnaHashes: happEntry.dnas.map(dna => dna.hash)
+  })
+  console.log("registered hApp: ", happId)
+
+  const hostResult = await HH.enableHapp(masterClient, happId)
+  console.log(`enabled ${happId}: `, hostResult)
+
+  masterClient.close()
+
+  return happId
+}
+
+export const doInstallApp = (happId) => {
+  return adminHostCall('holo/happs/install', {happId: happId})
+}

@@ -14,34 +14,12 @@ import * as S from '../src/server'
 import {callWhenConnected} from '../src/common'
 import {sinonTest} from '../test/common'
 import {shimHappById, shimHappByNick, HappEntry} from '../src/shims/happ-server'
-import {withConductor, getTestClient, adminHostCall, delay} from './common'
+import {withConductor, getTestClient, adminHostCall, delay, doRegisterHost, doRegisterApp, doInstallApp} from './common'
 
 import startWormholeServer from '../src/wormhole-server'
 import startAdminHostServer from '../src/admin-host-server'
 import startShimServers from '../src/shims/happ-server'
 
-
-const doRegisterHost = async () => {
-  await HH.SHIMS.registerAsProvider(S.getMasterClient(false))
-  await HH.registerAsHost(S.getMasterClient(false))
-  await delay(1000)
-}
-
-const doRegisterApp = async (happEntry: HappEntry): Promise<string> => {
-  const masterClient = S.getMasterClient(false)
-  const happId = await HH.SHIMS.registerHapp(masterClient, {
-    uiHash: happEntry.ui ? happEntry.ui.hash : null,
-    dnaHashes: happEntry.dnas.map(dna => dna.hash)
-  })
-  console.log("registered hApp: ", happId)
-
-  const hostResult = await HH.enableHapp(masterClient, happId)
-  console.log(`enabled ${happId}: `, hostResult)
-
-  masterClient.close()
-
-  return happId
-}
 
 const doAppSetup = async (happNick: string) => {
   const happEntry = shimHappByNick(happNick)!
@@ -50,11 +28,12 @@ const doAppSetup = async (happNick: string) => {
 
   const happId = await doRegisterApp(happEntry)
 
-  const happResult = await adminHostCall('holo/happs/install', {happId: happId, agentId: Config.hostAgentId})
+  const happResult = await doInstallApp(happId)
   console.log(`installed ${happId}: `, happResult.statusText, happResult.status)
 
   return {happId, dnaHashes, uiHash}
 }
+
 
 const zomeCaller = (client, {happId, agentId, dnaHash, zome}) => (func, params) => {
   return callWhenConnected(client, 'holo/call', {
@@ -122,7 +101,7 @@ test('can do public zome call', t => {
 })
 
 // TODO remove only
-sinonTest.only('can do hosted zome call', async T => {
+sinonTest('can do hosted zome call', async T => {
   const happNick = 'basic-chat'
   const agentId = 'hosted-agent'
   await withConductor(async (intrceptr) => {
