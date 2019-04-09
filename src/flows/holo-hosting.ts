@@ -24,7 +24,6 @@ export const disableHapp = (client, happId) => {
   })
 }
 
-
 export const registerAsHost = (client) => {
   return zomeCallByInstance(client, {
     instanceId: C.holoHostingAppId,

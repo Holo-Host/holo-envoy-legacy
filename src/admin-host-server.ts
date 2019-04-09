@@ -21,14 +21,14 @@ export default (port, baseDir: string, masterClient) => {
   app.post('/holo/happs/enable', async (req, res, next) => {
     const {happId}: InstallHappRequest = req.body
     HH.enableHapp(masterClient, happId)
-      .then(() => res.send("Installation successful"))
+      .then(() => res.send("App enabled successfully"))
       .catch(catchHttp(next))
   })
 
   app.post('/holo/happs/disable', async (req, res, next) => {
     const {happId}: InstallHappRequest = req.body
     HH.disableHapp(masterClient, happId)
-      .then(() => res.send("Installation successful"))
+      .then(() => res.send("App disabled successfully"))
       .catch(catchHttp(next))
   })
 
