@@ -7,19 +7,49 @@ import {exec} from 'child_process'
 import {Client, Server} from 'rpc-websockets'
 import * as rimraf from 'rimraf'
 
+import {callWhenConnected} from '../src/common'
 import * as Config from '../src/config'
 import * as S from '../src/server'
 import {shimHappById, shimHappByNick, HappEntry} from '../src/shims/happ-server'
-import {withConductor, getTestClient, adminHostCall, delay, doRegisterApp, doRegisterHost, doAppSetup, zomeCaller} from './common'
+import {withConductor, getTestClient, adminHostCall, delay, doRegisterHost, doRegisterApp, doInstallAndEnableApp, doAppSetup, zomeCaller} from './common'
 
 import startWormholeServer from '../src/wormhole-server'
 import startAdminHostServer from '../src/admin-host-server'
 import startShimServers from '../src/shims/happ-server'
 
 
-
 require('./test-hosted-zome-call')
 
+
+/**
+ * Encodes the process of upgrading from anonymous to holo-hosted client ("holofication").
+ * In this function, an anonymous client is created on the fly, but this is not necessary in the real world,
+ * i.e. it is fine to use an existing client to call holo/identify.
+ * It's just that by starting with a fresh new client, we ensure that we can't holofy a client twice.
+ *
+ * The real process is:
+ * 1. start with connected ws client
+ * 2. generate new permanent keypair
+ * 3. call `holo/identify`, using new permanent agentId
+ * 4. client.subscribe('agent/<agentId>/sign')
+ * 5. listen for signing requests via client.on('agent/<agentId>/sign')
+ */
+const holofiedClient = async (agentId): Promise<any> => {
+  const eventName = `agent/${agentId}/sign`
+  const client = await getTestClient()
+  await client.call('holo/identify', {agentId})
+  await client.subscribe(eventName)
+  client.on(eventName, (params) => {
+    console.debug('*** on agent/_/sign:', params)
+    const {entry, id} = params
+    client.call('holo/wormholeSignature', {
+      signature: 'TODO-real-signature',
+      requestId: id,
+    })
+  })
+  console.debug('*** Subscribed to', eventName)
+  return client
+}
 
 
 test('can do public zome call', t => {
@@ -44,6 +74,7 @@ test('can do public zome call', t => {
     t.end()
   })
 })
+
 
 test('all components shut themselves down properly', async t => {
   const intrceptr = new S.IntrceptrServer({

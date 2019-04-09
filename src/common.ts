@@ -113,7 +113,7 @@ export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName
   try {
     console.info("Calling zome...", payload)
     resultRaw = await callWhenConnected(client, 'call', payload)
-    const result = resultRaw && typeof resultRaw === 'string' ? JSON.parse(resultRaw) : resultRaw
+    const result = (resultRaw && typeof resultRaw === 'string') ? JSON.parse(resultRaw) : resultRaw
     if (!result) {
       throw `falsy result! (${resultRaw})`
     } else if (!("Ok" in result)) {
@@ -168,7 +168,7 @@ export const lookupHoloInstance = async (client, {dnaHash, agentId}): Promise<In
 export const callWhenConnected = async (client, method, payload) => {
   if(client.ready) {
     console.info("calling (already connected)", method, payload)
-    return await client.call(method, payload)
+    return client.call(method, payload)
   } else {
     console.info("waiting to connect, so as to call...")
     return new Promise((resolve, reject) => {
