@@ -6,7 +6,7 @@ import {getMasterClient} from '../src/server'
 import {shimHappById, shimHappByNick} from '../src/shims/happ-server'
 import * as HH from '../src/flows/holo-hosting'
 
-import {withIntrceptrClient, adminHostCall, doRegisterHost, doRegisterApp, doInstallApp} from './common'
+import {withIntrceptrClient, adminHostCall, doRegisterHost, doRegisterApp, doInstallAndEnableApp} from './common'
 
 process.on('unhandledRejection', (reason, p) => {
   console.log("UNHANDLED REJECTION:", reason)
@@ -31,9 +31,10 @@ const commandRegisterHapp = async (happNick) => {
 }
 
 const commandInstall = async (happNick) => {
+  const client = getMasterClient(false)
   const {happId} = shimHappByNick(happNick)!
-  const happResult = await doInstallApp(happId)
-  console.log(`installed ${happId}: `, happResult.statusText, happResult.status)
+  const happResult = await doInstallAndEnableApp(client, happId)
+  client.close()
 }
 
 const commandNewAgent = (dir, cmd) => withIntrceptrClient(async client => {
@@ -60,5 +61,12 @@ commander.command('register-happ <happNick>').action(commandRegisterHapp)
 commander.command('install <happNick>').action(commandInstall)
 commander.command('new-agent').action(commandNewAgent)
 commander.command('zome-call-public').action(commandZomeCallPublic)
-
 commander.parse(process.argv)
+
+// there is no nice way to print help statements if a command is invalid >:(
+const cmdValid = (cmd, name) => cmd === name || typeof cmd === 'object' && cmd._name === name
+const commandNames = commander.commands.map(c => c._name)
+if (!commandNames.some(name => commander.args.some(cmd => cmdValid(cmd, name)))) {
+  console.log("Invalid usage.\n")
+  commander.help()
+}

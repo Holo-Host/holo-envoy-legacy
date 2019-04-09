@@ -13,6 +13,17 @@ export const enableHapp = (client, happId) => {
   })
 }
 
+export const disableHapp = (client, happId) => {
+  return zomeCallByInstance(client, {
+    instanceId: C.holoHostingAppId,
+    zomeName: 'host',
+    funcName: 'disable_app',
+    params: {
+      app_hash: happId
+    }
+  })
+}
+
 
 export const registerAsHost = (client) => {
   return zomeCallByInstance(client, {
