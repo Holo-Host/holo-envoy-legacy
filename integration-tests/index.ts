@@ -14,7 +14,7 @@ import * as S from '../src/server'
 import {callWhenConnected} from '../src/common'
 import {sinonTest} from '../test/common'
 import {shimHappById, shimHappByNick, HappEntry} from '../src/shims/happ-server'
-import {withConductor, getTestClient, adminHostCall, delay, doRegisterHost, doRegisterApp, doInstallApp} from './common'
+import {withConductor, getTestClient, adminHostCall, delay, doRegisterHost, doRegisterApp, doInstallAndEnableApp} from './common'
 
 import startWormholeServer from '../src/wormhole-server'
 import startAdminHostServer from '../src/admin-host-server'
@@ -25,11 +25,12 @@ const doAppSetup = async (happNick: string) => {
   const happEntry = shimHappByNick(happNick)!
   const dnaHashes = happEntry.dnas.map(dna => dna.hash)
   const uiHash = happEntry.ui ? happEntry.ui.hash : null
+  const client = S.getMasterClient(false)
 
   const happId = await doRegisterApp(happEntry)
 
-  const happResult = await doInstallApp(happId)
-  console.log(`installed ${happId}: `, happResult.statusText, happResult.status)
+  const happResult = await doInstallAndEnableApp(client, happId)
+  client.close()
 
   return {happId, dnaHashes, uiHash}
 }

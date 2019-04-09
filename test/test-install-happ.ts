@@ -4,7 +4,7 @@ import * as path from 'path'
 import * as sinon from 'sinon'
 import {EventEmitter} from 'events'
 
-import {mockResponse, sinonTest, testIntrceptr} from './common'
+import {mockResponse, sinonTest, testIntrceptr, getEnabledAppArgs, isAppRegisteredArgs} from './common'
 import {bundleUI, unbundleUI, instanceIdFromAgentAndDna, serviceLoggerInstanceIdFromHappId} from '../src/common'
 import * as Common from '../src/common'
 import * as Config from '../src/config'
@@ -37,13 +37,6 @@ const axiosResponse = (status) => {
     }
   }
 }
-
-const enabledAppCall = ({
-  instance_id: Config.holoHostingAppId,
-  function: "get_enabled_app",
-  zome: "host",
-  params: { },
-})
 
 sinonTest('can install dnas', async T => {
   const {masterClient} = testIntrceptr()
@@ -99,7 +92,7 @@ sinonTest('can install dnas and ui for hApp', async T => {
   await T.doesNotReject(result)
   T.callCount(masterClient.call, 3)
 
-  T.calledWith(masterClient.call.getCall(0), 'call', enabledAppCall)
+  T.calledWith(masterClient.call.getCall(0), 'call', isAppRegisteredArgs(happId))
   T.calledWith(masterClient.call.getCall(1), 'admin/dna/list')
   T.calledWith(masterClient.call.getCall(2), 'admin/dna/install_from_file', {
     copy: true,
@@ -132,7 +125,7 @@ sinonTest('can setup instances', async T => {
   await T.doesNotReject(result)
   T.callCount(masterClient.call, 5)
 
-  T.calledWith(masterClient.call.getCall(0), 'call', enabledAppCall)
+  T.calledWith(masterClient.call.getCall(0), 'call', isAppRegisteredArgs(happId))
   T.calledWith(masterClient.call.getCall(1), 'admin/instance/list')
   T.calledWith(masterClient.call.getCall(2), 'admin/instance/add', {
     agent_id: agentId,

@@ -33,11 +33,14 @@ See [src/server.ts](src/server.ts) for implementations of both the UI server and
 
 #### Admin server
 
-A separate HTTP server exists to perform certain admin functionality, used only by the Host on their own machine. Currently there is only one endpoint, used to actually install a new hApp on this system, `POST holo/happs/install`. This endpoint:
+A separate HTTP server exists to perform certain admin functionality, used only by the Host on their own machine. 
 
-* Downloads DNAs and UI for the hApp from the web onto the filesystem
-* Installs them via admin calls to the Conductor, modifying the Conductor config
-* Creates instances of the hosted hApp DNAs, as well as a new instance of the servicelogger
+* `POST holo/happs/install` - The is most significant admin endpoint, used to actually install a new hApp on this system,  This endpoint:
+	- Downloads DNAs and UI for the hApp from the web onto the filesystem
+	- Installs them via admin calls to the Conductor, modifying the Conductor config
+	- Creates instances of the hosted hApp DNAs, as well as a new instance of the servicelogger
+* `POST holo/happs/enable` - Update HHA to show that this app is enabled
+* `POST holo/happs/disable` - Update HHA to show that this app is disabled
 
 See [src/server.ts](src/admin-host-server.ts) for implementation
 

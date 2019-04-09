@@ -50,12 +50,16 @@ export const withConductor = async (fn) => {
   fs.mkdirSync(tmpBase, {recursive: true})
   const baseDir = fs.mkdtempSync(path.join(tmpBase, 'test-storage-'))
   console.log('Created directory for integration tests: ', baseDir)
+
   cleanConductorStorage(baseDir)
   console.log("Cleared storage.")
+
   const keyData = getOrCreateKeyData()
   console.log("Generated keys.")
+
   initializeConductorConfig(baseDir, keyData)
   console.log("Generated config.")
+
   const conductor = spawnConductor(Config.conductorConfigPath(baseDir))
   await delay(1000)
 
@@ -67,7 +71,7 @@ export const withConductor = async (fn) => {
   await intrceptr.connections.ready()
 
   fn(intrceptr)
-  .catch(e => console.error(e))
+  .catch(e => console.error("intrceptr error:", e))
   .finally(() => {
     console.log("Shutting down everything...")
     intrceptr.close()
@@ -119,14 +123,17 @@ export const doRegisterApp = async (happEntry: HappEntry): Promise<string> => {
   })
   console.log("registered hApp: ", happId)
 
-  const hostResult = await HH.enableHapp(masterClient, happId)
-  console.log(`enabled ${happId}: `, hostResult)
-
   masterClient.close()
 
   return happId
 }
 
-export const doInstallApp = (happId) => {
-  return adminHostCall('holo/happs/install', {happId: happId})
+export const doInstallAndEnableApp = async (masterClient, happId) => {
+  const {status, statusText} = await adminHostCall('holo/happs/install', {happId: happId})
+  if (status != 200) {
+    throw `Could not install hApp ${happId}, got status ${status} ${statusText}`
+  }
+  const enableResult = await HH.enableHapp(masterClient, happId)
+  console.log(`enabled ${happId}: `, enableResult)
+
 }
