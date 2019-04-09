@@ -8,6 +8,43 @@ Its primary function is as a websocket server which allows browser users to conn
 
 It also provides an interface to the Holo Host, allowing them to manage installed hApps and view metrics on service activity.
 
+## Architecture
+
+Intrceptr is essentially a collection of independent web services that interact with a running Holochain Conductor as well as the filesystem.
+
+### UI server
+
+*port 3000*
+
+Hosts currently serve both the UIs and the DNAs for the hApps they are hosting. A simple web server runs, allowing UI assets to be fetched at the URL based at the hApp ID. For instance, if a UI refers to a resource at the relative path `images/goku.jpg`, it can be retrieved via `GET http://localhost:3000/<happId>/images/goku.jpg`.
+
+#### Websocket server
+
+*port 3000*
+
+One of the services is a websocket server, which is the main interface to outside world. This is the service that clients (i.e. web UIs) use to instruct a Holo Host to call zome functions on their behalf. It runs on the same port as the websocket server, by design.
+
+* `holo/call` - call a zome function, initiating a service request
+* `holo/serviceSignature` - called subconsciously by hClient as the final step of the servicelogger request cycle, this is for providing the signature of the response after being served a zome call's results
+* `holo/agents/new` - request this Host to create a source chain and host the remote agent
+* `holo/wormholeSignature` - temporary hack, allowing the client to respond to signature requests from the Host. This will be obsoleted after the "web conductor" (light client) is implemented.
+
+See [src/server.ts](src/server.ts) for implementations of both the UI server and websocket server 
+
+#### Admin server
+
+A separate HTTP server exists to perform certain admin functionality, used only by the Host on their own machine. Currently there is only one endpoint, used to actually install a new hApp on this system, `POST holo/happs/install`. This endpoint:
+
+* Downloads DNAs and UI for the hApp from the web onto the filesystem
+* Installs them via admin calls to the Conductor, modifying the Conductor config
+* Creates instances of the hosted hApp DNAs, as well as a new instance of the servicelogger
+
+See [src/server.ts](src/admin-host-server.ts) for implementation
+
+#### Shim server
+
+A temporary server useful for development, this service mimics distributions of certain hApp DNAs and UI bundles. These apps are found in [src/shims/happ-data](src/shims/happ-data), are identified in [src/shims/happ-server.ts](src/shims/happ-server.ts), and are built via `yarn run build-happs`
+
 ## Getting Started
 
 Currently under development, so there is no production mode yet, only development mode. The rest of Holo is also in development, and since intrceptr connects several pieces of Holo together, there are several temporary "shims" in place. As those pieces are built, the shims will go away.
