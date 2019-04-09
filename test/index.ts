@@ -1,5 +1,5 @@
 console.debug = () => {}
-console.info = () => {}
+// console.info = () => {}
 
 require('./test-install-happ')
 require('./test-new-agent')

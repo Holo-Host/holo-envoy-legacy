@@ -201,7 +201,7 @@ export const lookupHoloApp = async (client, {happId}: LookupHappRequest): Promis
   // assuming DNAs are served as JSON packages
   // and UIs are served as ZIP archives
 
-  if (! await happIsEnabled(client, happId)) {
+  if (! await happIsRegistered(client, happId)) {
     throw `hApp is not registered by a provider! (happId = ${happId})`
   }
 
@@ -214,15 +214,20 @@ export const lookupHoloApp = async (client, {happId}: LookupHappRequest): Promis
   }
 }
 
-export const happIsEnabled = async (client, happId) => {
-  const happEntries = await zomeCallByInstance(client, {
-    instanceId: Config.holoHostingAppId,
-    zomeName: 'host',
-    funcName: 'get_enabled_app',
-    params: {}
-  })
-  console.log("Enabled hApps:", happEntries)
-  return Boolean(happEntries.find(happ => happ.address === happId))
+const happIsRegistered = async (client, happId) => {
+  try {
+    await zomeCallByInstance(client, {
+      instanceId: Config.holoHostingAppId,
+      zomeName: 'provider',
+      funcName: 'get_app_details',
+      params: {app_hash: happId}
+    })
+    return true
+  } catch (e) {
+    console.error("happIsRegistered returned error: ", e)
+    console.error("This might be a real error or it could simply mean that the entry was not found. TODO: differentiate the two.")
+    return false
+  }
 }
 
 export const listHoloApps = () => {

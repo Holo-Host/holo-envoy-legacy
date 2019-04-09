@@ -14,12 +14,19 @@ export const mockResponse = {Ok: 'mock response'}
 
 const success = {success: true}
 
-const getEnabledAppArgs = {
+export const getEnabledAppArgs = {
   instance_id: Config.holoHostingAppId,
   zome: 'host',
   function: 'get_enabled_app',
   params: {}
 }
+
+export const isAppRegisteredArgs = happId => ({
+  instance_id: Config.holoHostingAppId,
+  zome: 'provider',
+  function: 'get_app_details',
+  params: {app_hash: happId}
+})
 
 const testDnas = []
 
@@ -64,6 +71,9 @@ export const testMasterClient = () => {
   client.call.withArgs('admin/interface/add_instance').resolves(success)
   client.call.withArgs('admin/instance/start').resolves(success)
   client.call.withArgs('call', getEnabledAppArgs).resolves({Ok: testApps})
+  testApps.forEach(({address}) => {
+    client.call.withArgs('call', isAppRegisteredArgs(address)).resolves({Ok: 'whatever'})
+  })
   return client
 }
 
