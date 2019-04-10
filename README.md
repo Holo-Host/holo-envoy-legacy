@@ -42,6 +42,8 @@ A separate HTTP server exists to perform certain admin functionality, used only 
 * `POST holo/happs/enable` - Update HHA to show that this app is enabled
 * `POST holo/happs/disable` - Update HHA to show that this app is disabled
 
+All requests should be JSON, i.e. use `Content-Type: application/json`. Currently CORS access is set to fully open.
+
 See [src/server.ts](src/admin-host-server.ts) for implementation
 
 #### Shim server

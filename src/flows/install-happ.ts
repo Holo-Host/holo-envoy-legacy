@@ -62,11 +62,7 @@ export const installDnasAndUi = async (client, baseDir, opts: {happId: string, p
   }
 
   const dnaResults = await Promise.all(
-    dnas.map(async (dna) => {
-      if (await isDnaInstalled(client, dna.hash)) {
-        console.log(`DNA with ID ${dna.hash} already installed; skipping.`)
-        return {success: true}
-      }
+    dnas.map(dna => {
       return installDna(client, {
         hash: dna.hash,
         path: dna.path,
@@ -107,14 +103,19 @@ const isDnaInstalled = async (client, dnaId) => {
   return (installedDnas.find(({id}) => id === dnaId))
 }
 
-export const installDna = (client, {hash, path, properties}) => {
-  return callWhenConnected(client, 'admin/dna/install_from_file', {
-    id: hash,
-    path: path,
-    expected_hash: hash,
-    copy: true,
-    properties,
-  })
+export const installDna = async (client, {hash, path, properties}) => {
+  if (await isDnaInstalled(client, hash)) {
+    console.log(`DNA with ID ${hash} already installed; skipping.`)
+    return {success: true}
+  } else {
+    return callWhenConnected(client, 'admin/dna/install_from_file', {
+      id: hash,
+      path: path,
+      expected_hash: hash,
+      copy: true,
+      properties,
+    })
+  }
 }
 
 export const setupInstance = async (client, {instanceId, agentId, dnaId, conductorInterface}) => {

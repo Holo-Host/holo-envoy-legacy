@@ -28,6 +28,7 @@ const commandRegisterHapp = async (happNick) => {
   const happEntry = shimHappByNick(happNick)!
   const happId = await doRegisterApp(happEntry)
   console.log("registered hApp: ", happId)
+  return happId
 }
 
 const commandInstall = async (happNick) => {
@@ -35,6 +36,16 @@ const commandInstall = async (happNick) => {
   const {happId} = shimHappByNick(happNick)!
   const happResult = await doInstallAndEnableApp(client, happId)
   client.close()
+  return happResult
+}
+
+const commandBootstrap = async (happNick) => {
+  const client = getMasterClient(false)
+  await commandRegisterAsProvider()
+  await commandRegisterHapp(happNick)
+  await commandInstall(happNick)
+  client.close()
+  console.log("Bootstrap successful! Start using the hApp")
 }
 
 const commandNewAgent = (dir, cmd) => withIntrceptrClient(async client => {
@@ -56,11 +67,30 @@ const commandZomeCallPublic = (dir, cmd) => withIntrceptrClient(async client => 
 })
 
 commander.version('0.0.1')
-commander.command('register-provider').action(commandRegisterAsProvider)
-commander.command('register-happ <happNick>').action(commandRegisterHapp)
-commander.command('install <happNick>').action(commandInstall)
-commander.command('new-agent').action(commandNewAgent)
-commander.command('zome-call-public').action(commandZomeCallPublic)
+commander
+  .command('register-provider')
+  .description("Register host agent as both provider and host")
+  .action(commandRegisterAsProvider)
+commander
+  .command('register-happ <happNick>')
+  .description("Register hApp as hosted")
+  .action(commandRegisterHapp)
+commander
+  .command('install <happNick>')
+  .description("Install app to filesystem and set up instances (/holo/happs/install)")
+  .action(commandInstall)
+commander
+  .command('bootstrap <happNick>')
+  .description("Perform all registration and installation necessary to get a hApp up and running immediately")
+  .action(commandBootstrap)
+commander
+  .command('new-agent')
+  .description("Request a new instance to be created to host an outside agent")
+  .action(commandNewAgent)
+commander
+  .command('zome-call-public')
+  .description("Make a sample zome call")
+  .action(commandZomeCallPublic)
 commander.parse(process.argv)
 
 // there is no nice way to print help statements if a command is invalid >:(
