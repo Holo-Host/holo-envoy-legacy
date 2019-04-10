@@ -39,12 +39,12 @@ export const HAPP_DATABASE = [
     },
   },
   {
-    happId: 'QmY8bukKS7BStWq4ivv29ijePnUavfdCAnHEmJ6QuVspmg',
+    happId: 'QmXjsSgswP3Kknp2XVfmcsqFVdZ8mxva1gifYFmzNDv6EC',
     nick: 'basic-chat',
     dnas: [
       {
-        location: 'http://localhost:3333/holochain-basic-chat/dna/holo-chat.hcpkg',
-        hash: 'Qmd3zeMA5S5YWQ4QAZ6JTBPEEAEJwGmoSxkYn6y2Pm4PNV'
+        location: 'http://localhost:3333/holochain-basic-chat/dna-src/dist/dna-src.dna.json',
+        hash: 'QmbPqQJzvWR3sT4ixHqB4cJ6v96Fy3zGNY5svpXnpBHLm6'
       }
     ],
     ui: {
