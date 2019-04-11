@@ -70,7 +70,7 @@ export const withConductor = async (fn) => {
   const intrceptr = startIntrceptr(Config.PORTS.intrceptr)
   await intrceptr.connections.ready()
 
-  fn(intrceptr)
+  await fn(intrceptr)
   .catch(e => console.error("intrceptr error:", e))
   .finally(() => {
     console.log("Shutting down everything...")

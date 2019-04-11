@@ -55,6 +55,7 @@ sinonTest.only('can do hosted zome call', async T => {
     const spyIntrceptrEmit = sinon.spy(intrceptr.server, 'emit')
     const spySigningStart = sinon.spy(intrceptr, 'startHoloSigningRequest')
     const spySigningEnd = sinon.spy(intrceptr, 'wormholeSignature')
+    const spyZomeCall = sinon.spy(intrceptr, 'zomeCall')
 
     // start anonymous browser session
     const holo = await HC.makeWebClient(holochainClient, happId, {
@@ -64,8 +65,10 @@ sinonTest.only('can do hosted zome call', async T => {
     const {call, close, ws: holoClient} = await holo.connect()
 
     // start hosted session
-    HC.requestHosting()
+    const hostingResponse = await HC.requestHosting()
+    T.equal(hostingResponse.success, true)
 
+    const agentId = await HC.getCurrentAgentId()
     const zomeCall = (func, params) => call(`IGNORED/chat/${func}`)(params)
 
     const address = await zomeCall('register', {
@@ -74,14 +77,33 @@ sinonTest.only('can do hosted zome call', async T => {
     })
     const result = await zomeCall('get_all_public_streams', {})
 
-
     T.callOrder(spySigningStart, spySigningEnd)
-    T.calledWith(spySigningStart, 0)
-    T.calledWith(spySigningEnd, 0)
+
+    // Test that agent signs their own agent entry
+    T.calledWith(spySigningStart, agentId, agentId, sinon.match.func)
+
+    // TODO: test other expected signing requests
+
+    T.calledWith(spySigningEnd, sinon.match({requestId: 0}))
+    T.calledWith(spySigningEnd, sinon.match.has('signature'))
+
+    T.equal(spySigningStart.callCount, spySigningEnd.callCount)
+
+    T.calledWith(spyZomeCall, sinon.match({
+      agentId,
+      // TODO: what is this DNA hash?
+      dnaHash: "QmbPqQJzvWR3sT4ixHqB4cJ6v96Fy3zGNY5svpXnpBHLm6",
+      function: "get_all_public_streams",
+      happId,
+      params: {},
+      zome: "chat"
+    }))
 
     T.ok(address)
     T.deepEqual(result, [])
 
     holoClient.close()
+
+    await delay(500)
   })
 })

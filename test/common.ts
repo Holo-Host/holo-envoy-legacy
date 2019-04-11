@@ -111,15 +111,14 @@ const _sinonTest = (tapeRunner, description, testFn) => {
     s.fail = t.fail
     let promise
     try {
-      promise = testFn(s)
+      await testFn(s)
     } catch (e) {
       console.error("test function threw exception:", e)
-      throw e
+      t.fail(e)
     } finally {
-      promise.catch(t.fail).then(() => {
-        s.pass = s.fail = () => { throw "sinon.assert has been tainted by `sinonTest`" }
-        t.end()
-      })
+      s.pass = () => { throw "sinon.assert has been tainted by `sinonTest` (s.pass)" }
+      s.fail = () => { throw "sinon.assert has been tainted by `sinonTest` (s.fail)" }
+      t.end()
     }
   })
 }
