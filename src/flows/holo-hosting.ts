@@ -4,7 +4,7 @@ import {zomeCallByInstance} from '../common'
 
 export const enableHapp = (client, happId) => {
   return zomeCallByInstance(client, {
-    instanceId: C.holoHostingAppId,
+    instanceId: C.holoHostingAppId.instance,
     zomeName: 'host',
     funcName: 'enable_app',
     params: {
@@ -15,7 +15,7 @@ export const enableHapp = (client, happId) => {
 
 export const disableHapp = (client, happId) => {
   return zomeCallByInstance(client, {
-    instanceId: C.holoHostingAppId,
+    instanceId: C.holoHostingAppId.instance,
     zomeName: 'host',
     funcName: 'disable_app',
     params: {
@@ -26,7 +26,7 @@ export const disableHapp = (client, happId) => {
 
 export const registerAsHost = (client) => {
   return zomeCallByInstance(client, {
-    instanceId: C.holoHostingAppId,
+    instanceId: C.holoHostingAppId.instance,
     zomeName: 'host',
     funcName: 'register_as_host',
     params: {
@@ -41,7 +41,7 @@ export const SHIMS = {
 
   registerAsProvider: (client) => {
     return zomeCallByInstance(client, {
-      instanceId: C.holoHostingAppId,
+      instanceId: C.holoHostingAppId.instance,
       zomeName: 'provider',
       funcName: 'register_as_provider',
       params: {
@@ -54,7 +54,7 @@ export const SHIMS = {
 
   registerHapp: (client, {uiHash, dnaHashes}) => {
     return zomeCallByInstance(client, {
-      instanceId: C.holoHostingAppId,
+      instanceId: C.holoHostingAppId.instance,
       zomeName: 'provider',
       funcName: 'register_app',
       params: {

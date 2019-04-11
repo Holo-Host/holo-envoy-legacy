@@ -21,7 +21,7 @@ export default (masterClient) => async ({
 }: NewAgentRequest): Promise<NewAgentResponse> => {
 
   const enabledApps = await zomeCallByInstance(masterClient, {
-    instanceId: Config.holoHostingAppId,
+    instanceId: Config.holoHostingAppId.instance,
     zomeName: 'host',
     funcName: 'get_enabled_app',
     params: {}

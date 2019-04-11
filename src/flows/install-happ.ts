@@ -147,6 +147,14 @@ export const setupInstance = async (client, {instanceId, agentId, dnaId, conduct
   ])
 }
 
+export const setupHolofuelBridge = async (client, {callerInstanceId}) => {
+  return callWhenConnected(client, 'admin/bridge/add', {
+    handle: 'holofuel-bridge',
+    caller_id: callerInstanceId,
+    callee_id: Config.holofuelId.instance,
+  })
+}
+
 export const setupInstances = async (client, opts: {happId: string, agentId: string, conductorInterface: Config.ConductorInterface}): Promise<void> => {
   const {happId, agentId, conductorInterface} = opts
   // NB: we don't actually use the UI info because we never install it into the conductor
@@ -177,30 +185,31 @@ export const setupInstances = async (client, opts: {happId: string, agentId: str
   console.log("Instance setup successful!")
 }
 
-export const setupServiceLogger = async (internalClient, {hostedHappId}) => {
+export const setupServiceLogger = async (masterClient, {hostedHappId}) => {
   const {hash, path} = Config.DNAS.serviceLogger
   const instanceId = serviceLoggerInstanceIdFromHappId(hostedHappId)
   const agentId = Config.hostAgentId
   const properties = {
     forApp: hostedHappId
   }
-  await installDna(internalClient, {hash, path, properties})
-  await setupInstance(internalClient, {
+  await installDna(masterClient, {hash, path, properties})
+  await setupInstance(masterClient, {
     instanceId,
     dnaId: hash,
     agentId,
     conductorInterface: Config.ConductorInterface.Internal
   })
+  await setupHolofuelBridge(masterClient, {callerInstanceId: instanceId})
 
-  // TODO:
-  // - Open client to Internal interface
-  // - Make initial call to serviceLogger
+  // TODO: make initial call to serviceLogger to set up preferences?
 }
 
 export const lookupHoloApp = async (client, {happId}: LookupHappRequest): Promise<HappEntry> => {
   // this is a shim response for now
   // assuming DNAs are served as JSON packages
   // and UIs are served as ZIP archives
+
+  // TODO: rewrite when using real App Store
 
   if (! await happIsRegistered(client, happId)) {
     throw `hApp is not registered by a provider! (happId = ${happId})`
@@ -218,7 +227,7 @@ export const lookupHoloApp = async (client, {happId}: LookupHappRequest): Promis
 const happIsRegistered = async (client, happId) => {
   try {
     await zomeCallByInstance(client, {
-      instanceId: Config.holoHostingAppId,
+      instanceId: Config.holoHostingAppId.instance,
       zomeName: 'provider',
       funcName: 'get_app_details',
       params: {app_hash: happId}

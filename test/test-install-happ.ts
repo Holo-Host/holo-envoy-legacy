@@ -47,7 +47,8 @@ sinonTest('can install dnas', async T => {
     properties: null,
   })
 
-  T.callCount(masterClient.call, 1)
+  T.callCount(masterClient.call, 2)
+  T.calledWith(masterClient.call, 'admin/dna/list', {})
   T.calledWith(masterClient.call, 'admin/dna/install_from_file', {
     id: 'hash',
     path: 'path',
@@ -152,8 +153,9 @@ sinonTest('can setup servicelogger', async T => {
   const serviceLoggerId = serviceLoggerInstanceIdFromHappId(happId)
   const result = M.setupServiceLogger(masterClient, {hostedHappId: happId})
   await T.doesNotReject(result)
-  T.callCount(masterClient.call, 5)
+  T.callCount(masterClient.call, 7)
 
+  T.calledWith(masterClient.call, 'admin/dna/list', {})
   T.calledWith(masterClient.call, 'admin/dna/install_from_file', {
     copy: true,
     expected_hash: serviceLogger.hash,
@@ -173,5 +175,10 @@ sinonTest('can setup servicelogger', async T => {
   })
   T.calledWith(masterClient.call, 'admin/instance/start', {
     id: serviceLoggerId,
+  })
+  T.calledWith(masterClient.call, 'admin/bridge/add', {
+    handle: 'holofuel-bridge',
+    caller_id: serviceLoggerId,
+    callee_id: Config.holofuelId.instance,
   })
 })

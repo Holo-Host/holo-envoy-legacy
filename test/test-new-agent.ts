@@ -48,7 +48,7 @@ sinonTest('can only host agent for enabled app', async T => {
   // NB: the particulars of setupInstance are tested in test-install-happ
   T.callCount(masterClient.call, 16)
   T.calledWith(masterClient.call.firstCall, 'call', {
-    instance_id: Config.holoHostingAppId,
+    instance_id: Config.holoHostingAppId.instance,
     zome: 'host',
     function: 'get_enabled_app',
     params: {}
