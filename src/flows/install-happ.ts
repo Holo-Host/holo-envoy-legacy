@@ -227,7 +227,7 @@ export const lookupHoloApp = async (client, {happId}: LookupHappRequest): Promis
 const happIsRegistered = async (client, happId) => {
   try {
     await zomeCallByInstance(client, {
-      instanceId: Config.holoHostingAppId,
+      instanceId: Config.holoHostingAppId.instance,
       zomeName: 'provider',
       funcName: 'get_app_details',
       params: {app_hash: happId}

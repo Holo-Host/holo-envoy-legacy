@@ -77,7 +77,7 @@ public_address = "${publicAddress}"
 [[dnas]]
 file = "${Config.DNAS.holoHosting.path}"
 hash = "${Config.DNAS.holoHosting.hash}"
-id = "${Config.DNAS.holoHosting.hash}"
+id = "${Config.holoHostingAppId.dna}"
 
 [[dnas]]
 file = "${Config.DNAS.holofuel.path}"
@@ -87,10 +87,10 @@ id = "${Config.holofuelId.dna}"
 
 [[instances]]
 agent = "${Config.hostAgentId}"
-dna = "${Config.DNAS.holoHosting.hash}"
-id = "${Config.holoHostingAppId}"
+dna = "${Config.holoHostingAppId.dna}"
+id = "${Config.holoHostingAppId.instance}"
 [instances.storage]
-path = "${path.join(Config.chainStorageDir(baseDir), Config.holoHostingAppId)}"
+path = "${path.join(Config.chainStorageDir(baseDir), Config.holoHostingAppId.instance)}"
 type = "file"
 
 [[instances]]
@@ -107,7 +107,7 @@ id = "${Config.ConductorInterface.Master}"
 admin = true
 
 [[interfaces.instances]]
-id = "${Config.holoHostingAppId}"
+id = "${Config.holoHostingAppId.instance}"
 
 [interfaces.driver]
 port = ${Config.PORTS.masterInterface}
