@@ -11,3 +11,6 @@
 	path = src/shims/happ-data/holochain-basic-chat
 	url = https://github.com/holochain/holochain-basic-chat
 	branch = holofy
+[submodule "src/dnas/holofuel"]
+	path = src/dnas/holofuel
+	url = git@github.com:Holo-Host/holofuel.git
