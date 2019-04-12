@@ -77,6 +77,10 @@ test('can do public zome call', t => {
 
 
 test('all components shut themselves down properly', async t => {
+
+  // Give intrceptr time to shut down (TODO, remove)
+  await delay(1000)
+
   const intrceptr = new S.IntrceptrServer({
     masterClient: null,
     publicClient: null,
@@ -102,6 +106,9 @@ test('all components shut themselves down properly', async t => {
       t.fail("At least one component took too long to shut down!")
     }
   }, 5000)
+
+  // Give intrceptr time to shut down (TODO, remove)
+  await delay(1000)
 
   t.end()
 })

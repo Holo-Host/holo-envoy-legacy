@@ -74,9 +74,11 @@ export const withConductor = async (fn) => {
   .catch(e => console.error("intrceptr error:", e))
   .finally(() => {
     console.log("Shutting down everything...")
-    intrceptr.close()
     conductor.kill()
+    intrceptr.close()
   })
+  // Give intrceptr time to shut down (TODO, remove)
+  await delay(1000)
 }
 
 export const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
