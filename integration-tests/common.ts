@@ -1,20 +1,20 @@
-import * as test from 'tape'
 import axios from 'axios'
+import * as test from 'tape'
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
 import {exec} from 'child_process'
 import * as rimraf from 'rimraf'
 import {Client} from 'rpc-websockets'
+import * as S from '../src/server'
 import * as T from '../src/types'
-import {serializeError, whenReady} from '../src/common'
+import {serializeError, whenReady, callWhenConnected} from '../src/common'
+import {shimHappById, shimHappByNick, HappEntry} from '../src/shims/happ-server'
 import * as HH from '../src/flows/holo-hosting'
-import {HappEntry} from '../src/shims/happ-server'
 
 import * as Config from '../src/config'
 import {initializeConductorConfig, cleanConductorStorage, spawnConductor, keygen} from '../src/conductor'
 import startIntrceptr from '../src/server'
-import * as S from '../src/server'
 
 
 export const adminHostCall = (uri, data) => {
@@ -70,13 +70,15 @@ export const withConductor = async (fn) => {
   const intrceptr = startIntrceptr(Config.PORTS.intrceptr)
   await intrceptr.connections.ready()
 
-  fn(intrceptr)
+  await fn(intrceptr)
   .catch(e => console.error("intrceptr error:", e))
   .finally(() => {
     console.log("Shutting down everything...")
-    intrceptr.close()
     conductor.kill()
+    intrceptr.close()
   })
+  // Give intrceptr time to shut down (TODO, remove)
+  await delay(1000)
 }
 
 export const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -135,5 +137,31 @@ export const doInstallAndEnableApp = async (masterClient, happId) => {
   }
   const enableResult = await HH.enableHapp(masterClient, happId)
   console.log(`enabled ${happId}: `, enableResult)
-
 }
+
+
+export const doAppSetup = async (happNick: string) => {
+  const happEntry = shimHappByNick(happNick)!
+  const dnaHashes = happEntry.dnas.map(dna => dna.hash)
+  const uiHash = happEntry.ui ? happEntry.ui.hash : null
+  const client = S.getMasterClient(false)
+
+  const happId = await doRegisterApp(happEntry)
+
+  const happResult = await doInstallAndEnableApp(client, happId)
+  client.close()
+
+  return {happId, dnaHashes, uiHash}
+}
+
+
+export const zomeCaller = (client, {happId, agentId, dnaHash, zome}) => (func, params) => {
+  return callWhenConnected(client, 'holo/call', {
+    happId, agentId, dnaHash,
+    zome: zome,
+    function: func,
+    params: params,
+    signature: 'TODO',
+  })
+}
+

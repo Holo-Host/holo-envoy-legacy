@@ -11,7 +11,7 @@ export default (port, icServer) => {
     console.log("WORMHOLE REQUEST: ", req.body)
     const {agent_id: agentId, payload: entry} = req.body
     const callback = (signature) => {
-      console.log("Got signature: ", signature)
+      console.log("Got signature from wormhole: ", signature)
       res.send(signature)
     }
     icServer.startHoloSigningRequest(agentId, entry, callback)

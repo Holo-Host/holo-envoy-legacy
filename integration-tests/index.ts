@@ -7,44 +7,18 @@ import {exec} from 'child_process'
 import {Client, Server} from 'rpc-websockets'
 import * as rimraf from 'rimraf'
 
-
-import * as HH from '../src/flows/holo-hosting'
+import {callWhenConnected} from '../src/common'
 import * as Config from '../src/config'
 import * as S from '../src/server'
-import {callWhenConnected} from '../src/common'
-import {sinonTest} from '../test/common'
 import {shimHappById, shimHappByNick, HappEntry} from '../src/shims/happ-server'
-import {withConductor, getTestClient, adminHostCall, delay, doRegisterHost, doRegisterApp, doInstallAndEnableApp} from './common'
+import {withConductor, getTestClient, adminHostCall, delay, doRegisterHost, doRegisterApp, doInstallAndEnableApp, doAppSetup, zomeCaller} from './common'
 
 import startWormholeServer from '../src/wormhole-server'
 import startAdminHostServer from '../src/admin-host-server'
 import startShimServers from '../src/shims/happ-server'
 
 
-const doAppSetup = async (happNick: string) => {
-  const happEntry = shimHappByNick(happNick)!
-  const dnaHashes = happEntry.dnas.map(dna => dna.hash)
-  const uiHash = happEntry.ui ? happEntry.ui.hash : null
-  const client = S.getMasterClient(false)
-
-  const happId = await doRegisterApp(happEntry)
-
-  const happResult = await doInstallAndEnableApp(client, happId)
-  client.close()
-
-  return {happId, dnaHashes, uiHash}
-}
-
-
-const zomeCaller = (client, {happId, agentId, dnaHash, zome}) => (func, params) => {
-  return callWhenConnected(client, 'holo/call', {
-    happId, agentId, dnaHash,
-    zome: zome,
-    function: func,
-    params: params,
-    signature: 'TODO',
-  })
-}
+require('./test-hosted-zome-call')
 
 
 /**
@@ -101,52 +75,12 @@ test('can do public zome call', t => {
   })
 })
 
-// TODO remove only
-sinonTest('can do hosted zome call', async T => {
-  const happNick = 'basic-chat'
-  const agentId = 'hosted-agent'
-  await withConductor(async (intrceptr) => {
-    // setup host
-    await doRegisterHost()
-    const {happId, dnaHashes} = await doAppSetup(happNick)
-    const dnaHash = dnaHashes[0]!
-
-    // setup some spies
-    const spyIntrceptrEmit = sinon.spy(intrceptr.server, 'emit')
-    const spySigningStart = sinon.spy(intrceptr, 'startHoloSigningRequest')
-    const spySigningEnd = sinon.spy(intrceptr, 'wormholeSignature')
-
-    // start anonymous browser session
-    // const anonymousSocket = await getTestClient()
-    // (do nothing with it)
-
-    // start hosted session
-    const holoClient = await holofiedClient(agentId)
-
-    // TODO: expects error, make real signature
-    // thread 'jsonrpc-eventloop-0' panicked at 'called `Result::unwrap()` on an `Err` value: ErrorGeneric("Signature syntactically invalid")', src/libcore/result.rs:997:5
-    // make PR to hClient.js so real signing can be easily imported?
-    const newAgentResponse = await holoClient.call('holo/agents/new', {agentId, happId})
-    T.deepEqual(newAgentResponse, {success: true})
-
-    const call = zomeCaller(holoClient, {happId, agentId, dnaHash, zome: 'chat'})
-
-    const address = await call('register', {
-      name: 'chat noir',
-      avatar_url: null,
-    })
-    const result = await call('get_all_public_streams', {})
-
-    T.ok(address)
-    T.deepEqual(result, [])
-
-    T.callOrder(spySigningStart, spySigningEnd)
-    T.calledWith(spySigningStart, 0)
-    T.calledWith(spySigningEnd, 0)
-  })
-})
 
 test('all components shut themselves down properly', async t => {
+
+  // Give intrceptr time to shut down (TODO, remove)
+  await delay(1000)
+
   const intrceptr = new S.IntrceptrServer({
     masterClient: null,
     publicClient: null,
@@ -172,6 +106,9 @@ test('all components shut themselves down properly', async t => {
       t.fail("At least one component took too long to shut down!")
     }
   }, 5000)
+
+  // Give intrceptr time to shut down (TODO, remove)
+  await delay(1000)
 
   t.end()
 })

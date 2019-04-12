@@ -56,23 +56,33 @@ Currently under development, so there is no production mode yet, only developmen
 
 ## Installation
 
-One shim is a sample DNA to work with, included as a git submodule, so to start with:
-
-	git submodule init && git submodule update
-
-Now, install NPM dependencies:
+Let's start with the NPM dependencies:
 
 	yarn install
 
-To get the necessary DNAs and UIs ready, including shims, run the following script **in a holochain-core nix-shell**:
+### Core and "shim" hApp installation 
+
+For now, the core hApps that will come as part of the nixOS image later are present as submodules in [src/dnas](src/dnas). Also, there are a collection of sample hApps that will eventually be installable, present also as submodules at [src/shims/happ-data](src/shims/happ-data). To build these apps, perform the following:
+
+First grab the submodules
+
+	git submodule init && git submodule update
+
+To build the necessary DNAs and UIs, run the following script **in a holochain-core nix-shell**:
 
 	yarn run build-happs
+
+You will want to perform this step any time any of these apps are updated.
+
+### Key generation
 
 To enable the intrceptr to generate the initial Conductor configuration including host keys, you need to create some keys and let intrceptr know about them. As a temporary step, please use the following script to generate keys:
 
 	yarn run keygen
 
 This calls `hc keygen` under the hood, and also produces a special file that helps intrceptr locate the key later. If you want to use intrceptr with an existing keypair, please see the section on **Using existing keypairs** below
+
+### Config generation
 
 Finally, to create the initial Conductor configuration needed by intrceptr, run this handy script:
 

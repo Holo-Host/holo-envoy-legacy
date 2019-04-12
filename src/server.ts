@@ -170,17 +170,21 @@ export class IntrceptrServer {
   buildWebsocketServer = async (httpServer) => {
     const wss = new RpcServer({server: httpServer})
 
-    wss.register('holo/identify', this.identifyAgent)
+    // NB: the following closures are intentional, i.e. just passing the
+    // member function to wss.register causes sinon to not correctly be able
+    // to spy on the function calls. Don't simplify!
 
-    wss.register('holo/clientSignature', this.wormholeSignature)  // TODO: deprecated
-    wss.register('holo/wormholeSignature', this.wormholeSignature)
+    wss.register('holo/identify', a => this.identifyAgent(a))
 
-    wss.register('holo/serviceSignature', this.serviceSignature)
+    wss.register('holo/clientSignature', a => this.wormholeSignature(a))  // TODO: deprecated
+    wss.register('holo/wormholeSignature', a => this.wormholeSignature(a))
 
-    wss.register('holo/call', this.zomeCall)
+    wss.register('holo/serviceSignature', a => this.serviceSignature(a))
+
+    wss.register('holo/call', a => this.zomeCall(a))
 
     // TODO: something in here to update the agent key subscription? i.e. re-identify?
-    wss.register('holo/agents/new', this.newHostedAgent)
+    wss.register('holo/agents/new', a => this.newHostedAgent(a))
 
     return wss
   }
@@ -206,6 +210,7 @@ export class IntrceptrServer {
   }
 
   wormholeSignature = ({signature, requestId}) => {
+    console.log("Totally gettin' called...", {signature, requestId})
     requiredFields(requestId)
     const {entry, callback} = this.signingRequests[requestId]
     verifySignature(entry, signature)  // TODO: really?

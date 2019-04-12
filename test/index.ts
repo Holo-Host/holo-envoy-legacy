@@ -1,4 +1,4 @@
-console.debug = () => {}
+// console.debug = () => {}
 // console.info = () => {}
 
 require('./test-install-happ')
