@@ -8,6 +8,9 @@ const happs = [
     dnas: ['./src/dnas/servicelogger/']
   },
   {
+    dnas: ['./src/dnas/holofuel/']
+  },
+  {
     dnas: ['./src/dnas/Holo-Hosting-App/dna-src/']
   },
   // {

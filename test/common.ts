@@ -15,14 +15,14 @@ export const mockResponse = {Ok: 'mock response'}
 const success = {success: true}
 
 export const getEnabledAppArgs = {
-  instance_id: Config.holoHostingAppId,
+  instance_id: Config.holoHostingAppId.instance,
   zome: 'host',
   function: 'get_enabled_app',
   params: {}
 }
 
 export const isAppRegisteredArgs = happId => ({
-  instance_id: Config.holoHostingAppId,
+  instance_id: Config.holoHostingAppId.instance,
   zome: 'provider',
   function: 'get_app_details',
   params: {app_hash: happId}

@@ -64,7 +64,6 @@ const initialTomlConfig = (baseDir, {keyFile, publicAddress}) => {
   // TODO: add DNA for HCHC when available
   return `
 bridges = []
-
 persistence_dir = "${baseDir}"
 signing_service_uri = "http://localhost:${Config.PORTS.wormhole}"
 
@@ -74,26 +73,41 @@ name = "Intrceptr Host"
 keystore_file = "${keyFile}"
 public_address = "${publicAddress}"
 
+
 [[dnas]]
 file = "${Config.DNAS.holoHosting.path}"
 hash = "${Config.DNAS.holoHosting.hash}"
-id = "${Config.DNAS.holoHosting.hash}"
+id = "${Config.holoHostingAppId.dna}"
+
+[[dnas]]
+file = "${Config.DNAS.holofuel.path}"
+hash = "${Config.DNAS.holofuel.hash}"
+id = "${Config.holofuelId.dna}"
+
 
 [[instances]]
 agent = "${Config.hostAgentId}"
-dna = "${Config.DNAS.holoHosting.hash}"
-id = "${Config.holoHostingAppId}"
-
+dna = "${Config.holoHostingAppId.dna}"
+id = "${Config.holoHostingAppId.instance}"
 [instances.storage]
-path = "${path.join(Config.chainStorageDir(baseDir), Config.holoHostingAppId)}"
+path = "${path.join(Config.chainStorageDir(baseDir), Config.holoHostingAppId.instance)}"
 type = "file"
+
+[[instances]]
+agent = "${Config.hostAgentId}"
+dna = "${Config.holofuelId.dna}"
+id = "${Config.holofuelId.instance}"
+[instances.storage]
+path = "${path.join(Config.chainStorageDir(baseDir), Config.holofuelId.instance)}"
+type = "file"
+
 
 [[interfaces]]
 id = "${Config.ConductorInterface.Master}"
 admin = true
 
 [[interfaces.instances]]
-id = "${Config.holoHostingAppId}"
+id = "${Config.holoHostingAppId.instance}"
 
 [interfaces.driver]
 port = ${Config.PORTS.masterInterface}
@@ -113,18 +127,17 @@ id = "${Config.ConductorInterface.Internal}"
 port = ${Config.PORTS.internalInterface}
 type = "websocket"
 
+
 [logger]
 type = "debug"
 [[logger.rules.rules]]
 color = "red"
 exclude = false
 pattern = "^err/"
-
 [[logger.rules.rules]]
 color = "white"
 exclude = false
 pattern = "^debug/dna"
-
 [[logger.rules.rules]]
 exclude = false
 pattern = ".*"

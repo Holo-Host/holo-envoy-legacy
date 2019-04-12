@@ -19,7 +19,14 @@ export const testAgentAddressPath = path.join(testKeyDir, 'INTRCEPTR_AGENT_ADDRE
 export const testKeyPassphrase = ''  // TODO: can go away once `hc keygen --nullpass` fully works
 
 export const hostAgentId = 'host-agent'
-export const holoHostingAppId = 'holo-hosting-app'
+export const holoHostingAppId = {
+  instance: 'instance-holo-hosting-app',
+  dna: 'dna-holo-hosting-app',
+}
+export const holofuelId = {
+  instance: 'instance-holofuel',
+  dna: 'dna-holofuel',
+}
 export const keyConfigFile = 'src/shims/intrceptr-host-key.json'
 
 export enum ConductorInterface {
@@ -36,7 +43,11 @@ export const DNAS = {
   holoHosting: {
     path: 'src/dnas/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
     hash: 'QmXuPFimMCoYQrXqX9vr1vve8JtpQ7smfkw1LugqEhyWTr',
-  }
+  },
+  holofuel: {
+    path: 'src/dnas/holofuel/dist/holofuel.dna.json',
+    hash: 'QmNzGsdcvMymfbToJSNb8891XMzfF6QJAgZKX5HvakDHAp',
+  },
 }
 
 export const PORTS = {
