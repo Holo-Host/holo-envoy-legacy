@@ -32,7 +32,7 @@ test('can calculate metrics', t => {
 
 test('lookupHoloInstance can find an instance', async t => {
   const instances = [
-    {agent: Config.hostAgentId, dna: 'new-dna'},  // the public instance
+    {agent: Config.hostAgentName, dna: 'new-dna'},  // the public instance
     {agent: 'hosted-agent', dna: 'new-dna'},  // the hosted instance
   ]
   const client = baseClient()
@@ -42,7 +42,7 @@ test('lookupHoloInstance can find an instance', async t => {
   t.equal(resultHosted.type, InstanceType.Hosted)
   t.equal(resultHosted.agentId, 'hosted-agent')
   t.equal(resultPublic.type, InstanceType.Public)
-  t.equal(resultPublic.agentId, Config.hostAgentId)
+  t.equal(resultPublic.agentId, Config.hostAgentName)
   t.end()
 })
 
@@ -111,7 +111,7 @@ sinonTest('can call public zome function', async T => {
 
   // NB: the instance is called with the host agent ID, not the ad-hoc one!!
   T.calledWith(publicClient.call, 'call', {
-    instance_id: instanceIdFromAgentAndDna(Config.hostAgentId, dnaHash),
+    instance_id: instanceIdFromAgentAndDna(Config.hostAgentName, dnaHash),
     params: request,
     function: 'function',
     zome: 'zome',

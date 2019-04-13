@@ -45,7 +45,7 @@ export const testInstances = (() => {
     })
   })
   return dnaHashes.map(hash => ({
-    agent: Config.hostAgentId,
+    agent: Config.hostAgentName,
     dna: hash
   }))
 })()

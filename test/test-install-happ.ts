@@ -165,7 +165,7 @@ sinonTest('can setup servicelogger', async T => {
   })
   T.calledWith(masterClient.call, 'admin/instance/list')
   T.calledWith(masterClient.call, 'admin/instance/add', {
-    agent_id: Config.hostAgentId,
+    agent_id: Config.hostAgentName,
     dna_id: serviceLogger.hash,
     id: serviceLoggerId,
   })

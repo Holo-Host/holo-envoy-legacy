@@ -39,7 +39,7 @@ type DownloadResult = {
 export type InstallHappResponse = void
 
 export default (masterClient, baseDir) => async ({happId}: InstallHappRequest): Promise<InstallHappResponse> => {
-  const agentId = Config.hostAgentId
+  const agentId = Config.hostAgentName
   await installDnasAndUi(masterClient, baseDir, {happId})
   await setupInstances(masterClient, {
     happId,
@@ -188,7 +188,7 @@ export const setupInstances = async (client, opts: {happId: string, agentId: str
 export const setupServiceLogger = async (masterClient, {hostedHappId}) => {
   const {hash, path} = Config.DNAS.serviceLogger
   const instanceId = serviceLoggerInstanceIdFromHappId(hostedHappId)
-  const agentId = Config.hostAgentId
+  const agentId = Config.hostAgentName
   const properties = {
     forApp: hostedHappId
   }

@@ -18,7 +18,7 @@ export const testKeybundlePath = path.join(testKeyDir, 'keybundle.json')
 export const testAgentAddressPath = path.join(testKeyDir, 'INTRCEPTR_AGENT_ADDRESS')
 export const testKeyPassphrase = ''  // TODO: can go away once `hc keygen --nullpass` fully works
 
-export const hostAgentId = 'host-agent'
+export const hostAgentName = 'host-agent'
 export const holoHostingAppId = {
   instance: 'instance-holo-hosting-app',
   dna: 'dna-holo-hosting-app',

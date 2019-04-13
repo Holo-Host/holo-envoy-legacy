@@ -146,13 +146,13 @@ export const lookupHoloInstance = async (client, {dnaHash, agentId}): Promise<In
     console.debug("Found instance for hosted agent: ", hosted)
     return Object.assign(hosted, {type: InstanceType.Hosted})
   } else {
-    const pub = instances.find(inst => inst.dnaHash === dnaHash && inst.agentId === Config.hostAgentId)
+    const pub = instances.find(inst => inst.dnaHash === dnaHash && inst.agentId === Config.hostAgentName)
     if (pub) {
       console.debug("Found public instance: ", pub)
       return Object.assign(pub, {type: InstanceType.Public})
     } else {
       throw `No instance found
-        where agentId == '${agentId}' || agentId == '${Config.hostAgentId}'
+        where agentId == '${agentId}' || agentId == '${Config.hostAgentName}'
         and   dnaHash == '${dnaHash}'
       `
     }

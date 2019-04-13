@@ -55,7 +55,7 @@ const commandNewAgent = (dir, cmd) => withIntrceptrClient(async client => {
 
 const commandZomeCallPublic = (dir, cmd) => withIntrceptrClient(async client => {
   const result = await client.call('holo/call', {
-    agentId: C.hostAgentId,
+    agentId: C.hostAgentName,
     happId: simpleApp.happId,
     dnaHash: simpleAppDnaHash,
     zome: 'simple',

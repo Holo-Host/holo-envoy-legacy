@@ -68,7 +68,7 @@ persistence_dir = "${baseDir}"
 signing_service_uri = "http://localhost:${Config.PORTS.wormhole}"
 
 [[agents]]
-id = "${Config.hostAgentId}"
+id = "${Config.hostAgentName}"
 name = "Intrceptr Host"
 keystore_file = "${keyFile}"
 public_address = "${publicAddress}"
@@ -86,7 +86,7 @@ id = "${Config.holofuelId.dna}"
 
 
 [[instances]]
-agent = "${Config.hostAgentId}"
+agent = "${Config.hostAgentName}"
 dna = "${Config.holoHostingAppId.dna}"
 id = "${Config.holoHostingAppId.instance}"
 [instances.storage]
@@ -94,7 +94,7 @@ path = "${path.join(Config.chainStorageDir(baseDir), Config.holoHostingAppId.ins
 type = "file"
 
 [[instances]]
-agent = "${Config.hostAgentId}"
+agent = "${Config.hostAgentName}"
 dna = "${Config.holofuelId.dna}"
 id = "${Config.holofuelId.instance}"
 [instances.storage]

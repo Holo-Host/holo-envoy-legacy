@@ -18,7 +18,7 @@ test('can install app', async t => {
   withIntrceptrClient(agentId, async client => {
     // TODO: conductor panics if installing the same app twice!
     console.log('installing happ...')
-    await client.call('holo/happs/install', {happId: 'TODO', agentId: C.hostAgentId})
+    await client.call('holo/happs/install', {happId: 'TODO', agentId: C.hostAgentName})
 
     const newAgent = await client.call('holo/agents/new', {agentId, happId: 'TODO NOT REAL HAPPID'})
 
@@ -29,7 +29,7 @@ test('can install app', async t => {
 test('end to end test (assuming app is installed)', async t => {
   withIntrceptrClient(agentId, async (client) => {
     console.log('identifying...')
-    const agentName = C.hostAgentId
+    const agentName = C.hostAgentName
     const agentId = await client.call('holo/identify', {agentId: agentName})
     t.equal(agentId, agentName)
     console.log('identified!')
