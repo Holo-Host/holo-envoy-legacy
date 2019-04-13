@@ -6,8 +6,11 @@ import * as Config from '../src/config'
 import {IntrceptrServer} from '../src/server'
 import * as M from '../src/flows/new-agent'
 import newAgentFlow from '../src/flows/new-agent'
+import {shimHappByNick} from '../src/shims/happ-server'
 
 // TODO: add tests for failure cases
+
+const simpleApp = shimHappByNick('simple-app')!
 
 sinonTest('can host new agent', async T => {
   const {intrceptr, masterClient, publicClient, internalClient} = testIntrceptr()
@@ -32,11 +35,12 @@ sinonTest('can idempotently add existing agent', async T => {
   T.calledWith(masterClient.call.firstCall, 'admin/agent/list')
 })
 
-sinonTest('can only host agent for enabled app', async T => {
+sinonTest.only('can only host agent for enabled app', async T => {
   const {intrceptr, masterClient, publicClient, internalClient} = testIntrceptr()
+  const agentId = 'agentId'
   await newAgentFlow(masterClient)({
-    agentId: 'agentId',
-    happId: 'test-app-3',
+    agentId,
+    happId: simpleApp.happId,
     signature: 'TODO unused signature'
   })
 
@@ -52,5 +56,10 @@ sinonTest('can only host agent for enabled app', async T => {
     zome: 'host',
     function: 'get_enabled_app',
     params: {}
+  })
+  T.calledWith(masterClient.call, 'admin/instance/add', {
+    id: `${agentId}::simple-app`,
+    dna_id: simpleApp.dnas[0].hash,
+    agent_id: agentId,
   })
 })
