@@ -20,12 +20,12 @@ export const testKeyPassphrase = ''  // TODO: can go away once `hc keygen --null
 
 export const hostAgentName = 'host-agent'
 export const holoHostingAppId = {
-  instance: 'instance-holo-hosting-app',
-  dna: 'dna-holo-hosting-app',
+  instance: 'holo-hosting-app',
+  dna: 'holo-hosting-app',
 }
 export const holofuelId = {
-  instance: 'instance-holofuel',
-  dna: 'dna-holofuel',
+  instance: 'holofuel',
+  dna: 'holofuel',
 }
 export const keyConfigFile = 'src/shims/intrceptr-host-key.json'
 
@@ -39,14 +39,17 @@ export const DNAS = {
   serviceLogger: {
     path: 'src/dnas/servicelogger/dist/servicelogger.dna.json',
     hash: 'QmQVBMotvRcGD28kr3XJ7LvMfzEqpBfNi3DoCLP6wqr8As',
+    nick: 'servicelogger'
   },
   holoHosting: {
     path: 'src/dnas/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
     hash: 'QmXuPFimMCoYQrXqX9vr1vve8JtpQ7smfkw1LugqEhyWTr',
+    nick: 'holo-hosting-app'
   },
   holofuel: {
     path: 'src/dnas/holofuel/dist/holofuel.dna.json',
     hash: 'QmNzGsdcvMymfbToJSNb8891XMzfF6QJAgZKX5HvakDHAp',
+    nick: 'holofuel'
   },
 }
 
@@ -58,4 +61,9 @@ export const PORTS = {
   masterInterface: 7777,
   publicInterface: 4444,
   internalInterface: 2222,
+}
+
+export const getNickByDna = dnaHash => {
+  const found = Object.values(DNAS).find(dna => dna.hash === dnaHash)
+  return found ? found.nick : null
 }
