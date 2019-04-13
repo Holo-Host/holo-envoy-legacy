@@ -182,3 +182,33 @@ sinonTest('can setup servicelogger', async T => {
     callee_id: Config.holofuelId.instance,
   })
 })
+
+sinonTest('can perform entire installation flow', async T => {
+  const {masterClient} = testIntrceptr()
+  const serviceLogger = Config.DNAS.serviceLogger
+  const happId = simpleApp.happId
+  const dnaHash = simpleApp.dnas[0].hash
+  const agentId = 'fake-agent-id'
+  const instanceId = instanceIdFromAgentAndDna(agentId, dnaHash)
+  const serviceLoggerId = serviceLoggerInstanceIdFromHappId(happId)
+
+  const spyInstallDnasAndUi = sinon.spy(M, 'installDnasAndUi')
+  const spySetupInstances = sinon.spy(M, 'setupInstances')
+  const spySetupServiceLogger = sinon.spy(M, 'setupServiceLogger')
+  const axiosStub = sinon.stub(axios, 'request').resolves(axiosResponse(200))
+
+  const promise = installHapp(masterClient, 'test-dir')({happId})
+  await T.doesNotReject(promise)
+  axiosStub.restore()
+
+  T.callCount(spyInstallDnasAndUi, 1)
+  T.callCount(spySetupInstances, 1)
+  T.callCount(spySetupServiceLogger, 1)
+
+  T.calledWith(masterClient.call, 'admin/instance/add', {
+    id: 'simple-app',
+    agent_id: Config.hostAgentName,
+    dna_id: dnaHash,
+  })
+
+})

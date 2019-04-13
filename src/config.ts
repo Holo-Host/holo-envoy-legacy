@@ -1,6 +1,7 @@
 import * as path from 'path'
 import * as fs from 'fs'
 import * as os from 'os'
+import {nickDatabase} from './shims/nick-database'
 
 const devUI = process.env.INTRCEPTR_UI || ""
 
@@ -64,6 +65,7 @@ export const PORTS = {
 }
 
 export const getNickByDna = dnaHash => {
-  const found = Object.values(DNAS).find(dna => dna.hash === dnaHash)
-  return found ? found.nick : null
+  const coreApp = Object.values(DNAS).find(entry => entry.hash === dnaHash)
+  const externalApp = nickDatabase.find(entry => Boolean(entry.knownDnaHashes.find(hash => hash === dnaHash)))
+  return coreApp ? coreApp.nick : externalApp ? externalApp.nick : null
 }

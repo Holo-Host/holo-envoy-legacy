@@ -52,16 +52,6 @@ export const HAPP_DATABASE = [
       hash: 'QmBasicChatFakeHash'
     },
   },
-  {
-    happId: 'holo-hosting',
-    nick: 'holo-hosting',
-    dnas: [
-      {
-        location: 'http://localhost:3333/Holo-Hosting-App/dist/Holo-Hosting-App.dna.json',
-        hash: 'QmXuPFimMCoYQrXqX9vr1vve8JtpQ7smfkw1LugqEhyWTr'
-      }
-    ]
-  },
 
   // The following are for testing only
   {
