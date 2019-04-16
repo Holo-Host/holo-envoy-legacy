@@ -55,14 +55,18 @@ export const DNAS = {
 }
 
 export const PORTS = {
-  wormhole: 8888,
+  // Actual server ports, visible outside of this machine
+  external: 48080,
   admin: 9999,
-  shim: 3333,
-  external: 3000,
 
-  masterInterface: 7777,
-  publicInterface: 4444,
-  internalInterface: 2222,
+  // These will eventually go away
+  wormhole: 8888,
+  shim: 5555,
+
+  // Websocket ports, interfaces into the running conductor
+  masterInterface: 1111,
+  publicInterface: 2222,
+  internalInterface: 3333,
 }
 
 export const getNickByDna = dnaHash => {
