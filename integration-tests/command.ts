@@ -6,7 +6,7 @@ import {getMasterClient} from '../src/server'
 import {shimHappById, shimHappByNick} from '../src/shims/happ-server'
 import * as HH from '../src/flows/holo-hosting'
 
-import {withIntrceptrClient, adminHostCall, doRegisterHost, doRegisterApp, doInstallAndEnableApp} from './common'
+import {withEnvoyClient, adminHostCall, doRegisterHost, doRegisterApp, doInstallAndEnableApp} from './common'
 
 process.on('unhandledRejection', (reason, p) => {
   console.log("UNHANDLED REJECTION:", reason)
@@ -48,12 +48,12 @@ const commandBootstrap = async (happNick) => {
   console.log("Bootstrap successful! Start using the hApp")
 }
 
-const commandNewAgent = (dir, cmd) => withIntrceptrClient(async client => {
+const commandNewAgent = (dir, cmd) => withEnvoyClient(async client => {
   await client.call('holo/identify', {agentId})
   await client.call('holo/agents/new', {agentId, happId: simpleApp.happId})
 })
 
-const commandZomeCallPublic = (dir, cmd) => withIntrceptrClient(async client => {
+const commandZomeCallPublic = (dir, cmd) => withEnvoyClient(async client => {
   const result = await client.call('holo/call', {
     agentId: C.hostAgentName,
     happId: simpleApp.happId,

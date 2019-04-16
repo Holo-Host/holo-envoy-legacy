@@ -9,13 +9,13 @@ import {testInstances, baseClient} from './common'
 import {
   mockResponse,
   sinonTest,
-  testIntrceptr,
+  testEnvoyServer,
 } from './common'
 import {
   instanceIdFromAgentAndDna,
   serviceLoggerInstanceIdFromHappId,
 } from '../src/common'
-import {IntrceptrServer} from '../src/server'
+import {EnvoyServer} from '../src/server'
 import * as Z from '../src/flows/zome-call'
 
 test('can calculate metrics', t => {
@@ -49,7 +49,7 @@ test('lookupHoloInstance can find an instance', async t => {
 // TODO: add tests for failure cases
 
 sinonTest('can call public zome function', async T => {
-  const {intrceptr, masterClient, publicClient, internalClient} = testIntrceptr()
+  const {envoy, masterClient, publicClient, internalClient} = testEnvoyServer()
 
   internalClient.call.withArgs('call').onFirstCall().returns({Ok: "requestHash"})
   internalClient.call.withArgs('call').onSecondCall().returns({Ok: "responseHash"})
@@ -68,7 +68,7 @@ sinonTest('can call public zome function', async T => {
     params: request,
     signature: 'signature',
   }
-  const response = await intrceptr.zomeCall(call)
+  const response = await envoy.zomeCall(call)
   const requestPackage = Z.buildServiceLoggerRequestPackage(call)
   const responsePackage = Z.buildServiceLoggerResponsePackage(response)
   const metrics = Z.calcMetrics(requestPackage, responsePackage)
@@ -119,29 +119,29 @@ sinonTest('can call public zome function', async T => {
 })
 
 sinonTest('can sign things across the wormhole', async T => {
-  const {intrceptr} = testIntrceptr()
+  const {envoy} = testEnvoyServer()
   const agentId = 'agentId'
   const entry = {entry: 'whatever'}
   const spy0 = sinon.spy()
   const spy1 = sinon.spy()
-  intrceptr.startHoloSigningRequest(agentId, entry, spy0)
-  intrceptr.startHoloSigningRequest(agentId, entry, spy1)
+  envoy.startHoloSigningRequest(agentId, entry, spy0)
+  envoy.startHoloSigningRequest(agentId, entry, spy1)
   T.callCount(spy0, 0)
   T.callCount(spy1, 0)
-  T.deepEqual(Object.keys(intrceptr.signingRequests), ['0', '1'])
+  T.deepEqual(Object.keys(envoy.signingRequests), ['0', '1'])
 
-  intrceptr.wormholeSignature({signature: 'sig 1', requestId: 0})
+  envoy.wormholeSignature({signature: 'sig 1', requestId: 0})
   T.calledWith(spy0, 'sig 1')
   T.callCount(spy1, 0)
-  T.deepEqual(Object.keys(intrceptr.signingRequests), ['1'])
+  T.deepEqual(Object.keys(envoy.signingRequests), ['1'])
 
-  intrceptr.wormholeSignature({signature: 'sig 2', requestId: 1})
+  envoy.wormholeSignature({signature: 'sig 2', requestId: 1})
   T.calledWith(spy1, 'sig 2')
-  T.deepEqual(Object.keys(intrceptr.signingRequests), [])
+  T.deepEqual(Object.keys(envoy.signingRequests), [])
 })
 
 sinonTest('can sign responses for servicelogger later', async T => {
-  const {intrceptr, internalClient} = testIntrceptr()
+  const {envoy, internalClient} = testEnvoyServer()
   const happId = 'happId'
 
   internalClient.call.withArgs('call', {
@@ -154,7 +154,7 @@ sinonTest('can sign responses for servicelogger later', async T => {
     }
   }).resolves({Ok: 'whatever'})
 
-  await intrceptr.serviceSignature({
+  await envoy.serviceSignature({
     happId,
     responseEntryHash: 'hash',
     signature: 'signature',

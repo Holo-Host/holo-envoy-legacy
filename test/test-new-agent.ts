@@ -1,9 +1,9 @@
 import * as test from 'tape'
 import * as sinon from 'sinon'
 
-import {mockResponse, sinonTest, testIntrceptr} from './common'
+import {mockResponse, sinonTest, testEnvoyServer} from './common'
 import * as Config from '../src/config'
-import {IntrceptrServer} from '../src/server'
+import {EnvoyServer} from '../src/server'
 import * as M from '../src/flows/new-agent'
 import newAgentFlow from '../src/flows/new-agent'
 import {shimHappByNick} from '../src/shims/happ-server'
@@ -13,7 +13,7 @@ import {shimHappByNick} from '../src/shims/happ-server'
 const simpleApp = shimHappByNick('simple-app')!
 
 sinonTest('can host new agent', async T => {
-  const {intrceptr, masterClient, publicClient, internalClient} = testIntrceptr()
+  const {envoy, masterClient, publicClient, internalClient} = testEnvoyServer()
   await M.createAgent(masterClient, 'agentId')
 
   T.callCount(masterClient.call, 2)
@@ -28,7 +28,7 @@ sinonTest('can host new agent', async T => {
 })
 
 sinonTest('can idempotently add existing agent', async T => {
-  const {intrceptr, masterClient, publicClient, internalClient} = testIntrceptr()
+  const {envoy, masterClient, publicClient, internalClient} = testEnvoyServer()
   await M.createAgent(masterClient, 'existing-agent-id')
 
   T.callCount(masterClient.call, 1)
@@ -36,7 +36,7 @@ sinonTest('can idempotently add existing agent', async T => {
 })
 
 sinonTest.only('can only host agent for enabled app', async T => {
-  const {intrceptr, masterClient, publicClient, internalClient} = testIntrceptr()
+  const {envoy, masterClient, publicClient, internalClient} = testEnvoyServer()
   const agentId = 'agentId'
   await newAgentFlow(masterClient)({
     agentId,

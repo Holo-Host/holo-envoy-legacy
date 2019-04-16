@@ -26,9 +26,9 @@ export default (port) => {
   const internalClient = getInternalClient(true)
   console.debug("Connecting to admin and happ interfaces...")
 
-  const intrceptr = new IntrceptrServer({masterClient, publicClient, internalClient})
-  intrceptr.start(port)
-  return intrceptr
+  const server = new EnvoyServer({masterClient, publicClient, internalClient})
+  server.start(port)
+  return server
 }
 
 const clientOpts = reconnect => ({ max_reconnects: 0, reconnect })  // zero reconnects means unlimited
@@ -44,7 +44,7 @@ type SigningRequest = {
 const verifySignature = (entry, signature) => true
 
 const fail = (e) => {
-  console.error("intrceptr request failure:", e)
+  console.error("envoy server request failure:", e)
   return e
 }
 
@@ -60,7 +60,7 @@ const requiredFields = (...fields) => {
  * the browser user and the Conductor. The browser communicates with the Server, and the Client
  * is used to make calls to the Conductor's Websocket interface.
  */
-export class IntrceptrServer {
+export class EnvoyServer {
   server: any
   clients: {[s: string]: any}  // TODO: move masterClient to separate admin-only server that's not publicly exposed!??
   nextCallId = 0
@@ -77,7 +77,7 @@ export class IntrceptrServer {
 
   start = async (port) => {
     let wss, httpServer, shimServer, adminServer, wormholeServer
-    const intrceptr = this
+    const server = this
     const importantConnections = ['master']
     this.connections = new ConnectionManager({
       connections: importantConnections,
@@ -89,8 +89,8 @@ export class IntrceptrServer {
         console.log("WS server initialized")
 
         shimServer = startShimServers(Config.PORTS.shim)
-        adminServer = startAdminHostServer(Config.PORTS.admin, Config.defaultIntrceptrHome, intrceptr.clients.master)
-        wormholeServer = startWormholeServer(Config.PORTS.wormhole, intrceptr)
+        adminServer = startAdminHostServer(Config.PORTS.admin, Config.defaultEnvoyHome, server.clients.master)
+        wormholeServer = startWormholeServer(Config.PORTS.wormhole, server)
 
         await httpServer.listen(port, () => console.log('HTTP server running on port', port))
         wss.on('listening', () => console.log("Websocket server listening on port", port))
@@ -162,7 +162,7 @@ export class IntrceptrServer {
     // Simply rely on the fact that UIs are installed in a directory
     // named after their happId
     // TODO: check access to prevent cross-UI requests?
-    app.use(`/`, express.static(Config.uiStorageDir(Config.defaultIntrceptrHome)))
+    app.use(`/`, express.static(Config.uiStorageDir(Config.defaultEnvoyHome)))
 
     return require('http').createServer(app)
   }
@@ -241,7 +241,7 @@ export class IntrceptrServer {
    */
   startHoloSigningRequest(agentId: string, entry: Object, callback: (Object) => void) {
     const id = this.nextCallId++
-    console.debug('intrceptr emitting sign request event: ', `agent/${agentId}/sign`, {entry, id})
+    console.debug('envoy server emitting sign request event: ', `agent/${agentId}/sign`, {entry, id})
     this.server.emit(`agent/${agentId}/sign`, {entry, id})
     this.signingRequests[id] = {entry, callback}
   }

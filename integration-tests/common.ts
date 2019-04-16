@@ -14,7 +14,7 @@ import * as HH from '../src/flows/holo-hosting'
 
 import * as Config from '../src/config'
 import {initializeConductorConfig, cleanConductorStorage, spawnConductor, keygen} from '../src/conductor'
-import startIntrceptr from '../src/server'
+import startEnvoy from '../src/server'
 
 
 export const adminHostCall = (uri, data) => {
@@ -22,7 +22,7 @@ export const adminHostCall = (uri, data) => {
 }
 
 export const getTestClient = async (): Promise<any> => {
-  const client = new Client(`ws://localhost:${Config.PORTS.intrceptr}`, {
+  const client = new Client(`ws://localhost:${Config.PORTS.external}`, {
     reconnect: false
   })
   client.on('error', msg => console.error("WS Client error: ", msg))
@@ -33,7 +33,7 @@ export const getTestClient = async (): Promise<any> => {
 /**
  * @deprecated
  */
-export const withIntrceptrClient = async (fn) => {
+export const withEnvoyClient = async (fn) => {
   const client = await getTestClient()
   return fn(client).finally(() => client.close())
 }
@@ -46,7 +46,7 @@ export const withIntrceptrClient = async (fn) => {
 export const withConductor = async (fn) => {
   // TODO: how to shut down last run properly in case of failure?
   exec('killall holochain')
-  const tmpBase = path.join(os.tmpdir(), 'holo-intrceptr')
+  const tmpBase = path.join(os.tmpdir(), 'holo-envoy')
   fs.mkdirSync(tmpBase, {recursive: true})
   const baseDir = fs.mkdtempSync(path.join(tmpBase, 'test-storage-'))
   console.log('Created directory for integration tests: ', baseDir)
@@ -67,17 +67,17 @@ export const withConductor = async (fn) => {
   conductor.stdin.write(Config.testKeyPassphrase + '\n')
   conductor.stdin.end()
 
-  const intrceptr = startIntrceptr(Config.PORTS.intrceptr)
-  await intrceptr.connections.ready()
+  const envoy = startEnvoy(Config.PORTS.external)
+  await envoy.connections.ready()
 
-  await fn(intrceptr)
-  .catch(e => console.error("intrceptr error:", e))
+  await fn(envoy)
+  .catch(e => console.error("envoy error:", e))
   .finally(() => {
     console.log("Shutting down everything...")
     conductor.kill()
-    intrceptr.close()
+    envoy.close()
   })
-  // Give intrceptr time to shut down (TODO, remove)
+  // Give envoy time to shut down (TODO, remove)
   await delay(1000)
 }
 

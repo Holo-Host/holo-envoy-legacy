@@ -11,10 +11,10 @@ process.on('unhandledRejection', (reason, p) => {
 })
 
 const init = async () => {
-  await cleanConductorStorage(Config.defaultIntrceptrHome)
+  await cleanConductorStorage(Config.defaultEnvoyHome)
   // TODO: actually generate new key, this is just here because keygen is so (intentionally) slow
   const {keyFile, publicAddress} = JSON.parse(fs.readFileSync(Config.keyConfigFile, 'utf8'))
-  await initializeConductorConfig(Config.defaultIntrceptrHome, {keyFile, publicAddress})
+  await initializeConductorConfig(Config.defaultEnvoyHome, {keyFile, publicAddress})
   console.log("Conductor initialization complete.")
 }
 
