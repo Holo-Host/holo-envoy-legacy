@@ -17,4 +17,4 @@ process.on('unhandledRejection', (reason, p) => {
   console.log("reason: ", reason)
 })
 
-startServer(C.PORTS.intrceptr)
+startServer(C.PORTS.external)

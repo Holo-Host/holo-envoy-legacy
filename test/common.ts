@@ -4,7 +4,7 @@ import * as sinon from 'sinon'
 import {Client as RpcClient, Server as RpcServer} from 'rpc-websockets'
 
 import * as Config from '../src/config'
-import {IntrceptrServer} from '../src/server'
+import {EnvoyServer} from '../src/server'
 import {instanceIdFromAgentAndDna} from '../src/common'
 import {HAPP_DATABASE} from '../src/shims/happ-server'
 
@@ -92,13 +92,13 @@ export const testPublicClient = () => {
 
 export const testRpcServer = () => sinon.stub(new RpcServer({noServer: true}))
 
-export const testIntrceptr = () => {
+export const testEnvoyServer = () => {
   const masterClient = testMasterClient()
   const publicClient = testPublicClient()
   const internalClient = testInternalClient()
-  const intrceptr = new IntrceptrServer({masterClient, publicClient, internalClient})
-  intrceptr.server = testRpcServer()
-  return {intrceptr, masterClient, publicClient, internalClient}
+  const envoy = new EnvoyServer({masterClient, publicClient, internalClient})
+  envoy.server = testRpcServer()
+  return {envoy, masterClient, publicClient, internalClient}
 }
 
 const _sinonTest = (tapeRunner, description, testFn) => {

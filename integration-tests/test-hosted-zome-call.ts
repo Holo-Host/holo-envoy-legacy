@@ -45,21 +45,21 @@ setupDpki()
 // TODO remove only
 sinonTest('can do hosted zome call', async T => {
   const happNick = 'basic-chat'
-  return withConductor(async (intrceptr) => {
+  return withConductor(async (envoy) => {
     // setup host
     await doRegisterHost()
     const {happId, dnaHashes} = await doAppSetup(happNick)
     const dnaHash = dnaHashes[0]!
 
     // setup some spies
-    const spyIntrceptrEmit = sinon.spy(intrceptr.server, 'emit')
-    const spySigningStart = sinon.spy(intrceptr, 'startHoloSigningRequest')
-    const spySigningEnd = sinon.spy(intrceptr, 'wormholeSignature')
-    const spyZomeCall = sinon.spy(intrceptr, 'zomeCall')
+    const spyEnvoyEmit = sinon.spy(envoy.server, 'emit')
+    const spySigningStart = sinon.spy(envoy, 'startHoloSigningRequest')
+    const spySigningEnd = sinon.spy(envoy, 'wormholeSignature')
+    const spyZomeCall = sinon.spy(envoy, 'zomeCall')
 
     // start anonymous browser session
     const holo = await HC.makeWebClient(holochainClient, happId, {
-      url: `ws://localhost:${Config.PORTS.intrceptr}`,
+      url: `ws://localhost:${Config.PORTS.external}`,
       dnaHash
     })
     const {call, close, ws: holoClient} = await holo.connect()

@@ -4,7 +4,7 @@ import * as path from 'path'
 import * as sinon from 'sinon'
 import {EventEmitter} from 'events'
 
-import {mockResponse, sinonTest, testIntrceptr, getEnabledAppArgs, isAppRegisteredArgs} from './common'
+import {mockResponse, sinonTest, testEnvoyServer, getEnabledAppArgs, isAppRegisteredArgs} from './common'
 import {bundleUI, unbundleUI, instanceIdFromAgentAndDna, serviceLoggerInstanceIdFromHappId} from '../src/common'
 import * as Common from '../src/common'
 import * as Config from '../src/config'
@@ -39,7 +39,7 @@ const axiosResponse = (status) => {
 }
 
 sinonTest('can install dnas', async T => {
-  const {masterClient} = testIntrceptr()
+  const {masterClient} = testEnvoyServer()
 
   await M.installDna(masterClient, {
     hash: 'hash',
@@ -59,7 +59,7 @@ sinonTest('can install dnas', async T => {
 })
 
 sinonTest('throws error for non-hosted happId', async T => {
-  const {masterClient} = testIntrceptr()
+  const {masterClient} = testEnvoyServer()
   await T.rejects(
     M.installDnasAndUi(masterClient, 'test-dir', {happId: 'invalid'}),
     /hApp is not registered.*/
@@ -68,7 +68,7 @@ sinonTest('throws error for non-hosted happId', async T => {
 })
 
 sinonTest('throws error for unreachable resources', async T => {
-  const {masterClient} = testIntrceptr()
+  const {masterClient} = testEnvoyServer()
 
   const axiosStub = sinon.stub(axios, 'request').resolves(axiosResponse(404))
   const happId = simpleApp.happId
@@ -83,7 +83,7 @@ sinonTest('throws error for unreachable resources', async T => {
 })
 
 sinonTest('can install dnas and ui for hApp', async T => {
-  const {masterClient} = testIntrceptr()
+  const {masterClient} = testEnvoyServer()
 
   const axiosStub = sinon.stub(axios, 'request').resolves(axiosResponse(200))
   const happId = simpleApp.happId
@@ -116,7 +116,7 @@ sinonTest('can install dnas and ui for hApp', async T => {
 })
 
 sinonTest('can setup instances', async T => {
-  const {masterClient} = testIntrceptr()
+  const {masterClient} = testEnvoyServer()
 
   const happId = simpleApp.happId
   const dnaHash = simpleApp.dnas[0].hash
@@ -143,7 +143,7 @@ sinonTest('can setup instances', async T => {
 })
 
 sinonTest('can setup servicelogger', async T => {
-  const {masterClient} = testIntrceptr()
+  const {masterClient} = testEnvoyServer()
 
   const serviceLogger = Config.DNAS.serviceLogger
   const happId = simpleApp.happId
@@ -184,7 +184,7 @@ sinonTest('can setup servicelogger', async T => {
 })
 
 sinonTest('can perform entire installation flow', async T => {
-  const {masterClient} = testIntrceptr()
+  const {masterClient} = testEnvoyServer()
   const serviceLogger = Config.DNAS.serviceLogger
   const happId = simpleApp.happId
   const dnaHash = simpleApp.dnas[0].hash

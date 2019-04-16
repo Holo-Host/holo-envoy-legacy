@@ -78,21 +78,21 @@ test('can do public zome call', t => {
 
 test('all components shut themselves down properly', async t => {
 
-  // Give intrceptr time to shut down (TODO, remove)
+  // Give envoy time to shut down (TODO, remove)
   await delay(1000)
 
-  const intrceptr = new S.IntrceptrServer({
+  const envoy = new S.EnvoyServer({
     masterClient: null,
     publicClient: null,
     internalClient: null,
   })
 
   const client = S.getMasterClient(false)
-  const httpServer = await intrceptr.buildHttpServer(null)
-  const wss = await intrceptr.buildWebsocketServer(httpServer)
+  const httpServer = await envoy.buildHttpServer(null)
+  const wss = await envoy.buildWebsocketServer(httpServer)
   const shimServer = startShimServers(Config.PORTS.shim)
   const adminServer = startAdminHostServer(Config.PORTS.admin, 'testdir', null)
-  const wormholeServer = startWormholeServer(Config.PORTS.wormhole, intrceptr)
+  const wormholeServer = startWormholeServer(Config.PORTS.wormhole, envoy)
 
   httpServer.close()
   wss.close()
@@ -107,7 +107,7 @@ test('all components shut themselves down properly', async t => {
     }
   }, 5000)
 
-  // Give intrceptr time to shut down (TODO, remove)
+  // Give envoy time to shut down (TODO, remove)
   await delay(1000)
 
   t.end()

@@ -9,12 +9,12 @@ if (devUI) {
   console.log("Using dev UI hash: ", devUI)
 }
 
-export const defaultIntrceptrHome = process.env.INTRCEPTR_PATH || path.join(os.homedir(), '.holochain/holo')
-export const conductorConfigPath = (dir?) => path.join(dir || defaultIntrceptrHome, 'conductor-config.toml')
-export const uiStorageDir = (dir?) => path.join(dir || defaultIntrceptrHome, 'ui-store', devUI)
-export const chainStorageDir = (dir?) => path.join(dir || defaultIntrceptrHome, 'storage')
+export const defaultEnvoyHome = process.env.INTRCEPTR_PATH || path.join(os.homedir(), '.holochain/holo')
+export const conductorConfigPath = (dir?) => path.join(dir || defaultEnvoyHome, 'conductor-config.toml')
+export const uiStorageDir = (dir?) => path.join(dir || defaultEnvoyHome, 'ui-store', devUI)
+export const chainStorageDir = (dir?) => path.join(dir || defaultEnvoyHome, 'storage')
 
-export const testKeyDir = path.join(os.tmpdir(), 'holo-intrceptr', 'test-keydata')
+export const testKeyDir = path.join(os.tmpdir(), 'holo-envoy', 'test-keydata')
 export const testKeybundlePath = path.join(testKeyDir, 'keybundle.json')
 export const testAgentAddressPath = path.join(testKeyDir, 'INTRCEPTR_AGENT_ADDRESS')
 export const testKeyPassphrase = ''  // TODO: can go away once `hc keygen --nullpass` fully works
@@ -28,7 +28,7 @@ export const holofuelId = {
   instance: 'holofuel',
   dna: 'holofuel',
 }
-export const keyConfigFile = 'src/shims/intrceptr-host-key.json'
+export const keyConfigFile = 'src/shims/envoy-host-key.json'
 
 export enum ConductorInterface {
   Master = 'master-interface',
@@ -58,7 +58,8 @@ export const PORTS = {
   wormhole: 8888,
   admin: 9999,
   shim: 3333,
-  intrceptr: 3000,
+  external: 3000,
+
   masterInterface: 7777,
   publicInterface: 4444,
   internalInterface: 2222,

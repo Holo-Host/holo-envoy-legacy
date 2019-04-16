@@ -69,7 +69,7 @@ signing_service_uri = "http://localhost:${Config.PORTS.wormhole}"
 
 [[agents]]
 id = "${Config.hostAgentName}"
-name = "Intrceptr Host"
+name = "Envoy Host"
 keystore_file = "${keyFile}"
 public_address = "${publicAddress}"
 
