@@ -2,7 +2,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "rootDir": "src",
-    "outDir": "lib",
+    "outDir": "dist/lib",
     "module": "commonjs",
     "target": "es6",
     "sourceMap": true,
@@ -25,7 +25,7 @@
   ],
   "exclude": [
     "node_modules",
-    "lib",
+    "dist/lib",
     "src/__tests__"
   ]
 }
