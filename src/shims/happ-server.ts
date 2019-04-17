@@ -1,4 +1,5 @@
 import * as StaticServer from 'static-server'
+import * as Config from '../config'
 
 export type HappResource = {
   location: string,
@@ -29,7 +30,7 @@ export const HAPP_DATABASE = [
     nick: 'simple-app',
     dnas: [
       {
-        location: 'http://localhost:3333/simple-app/dist/simple-app.dna.json',
+        location: `http://localhost:${Config.PORTS.shim}/simple-app/dist/simple-app.dna.json`,
         hash: 'QmSKxN3FGVrf1vVMav6gohJVi7GcF4jFcKVDhDcjiAnveo'
       }
     ],
@@ -43,12 +44,12 @@ export const HAPP_DATABASE = [
     nick: 'basic-chat',
     dnas: [
       {
-        location: 'http://localhost:3333/holochain-basic-chat/dna-src/dist/dna-src.dna.json',
+        location: `http://localhost:${Config.PORTS.shim}/holochain-basic-chat/dna-src/dist/dna-src.dna.json`,
         hash: 'QmbPqQJzvWR3sT4ixHqB4cJ6v96Fy3zGNY5svpXnpBHLm6'
       }
     ],
     ui: {
-      location: 'http://localhost:3333/holochain-basic-chat/ui.zip',
+      location: `http://localhost:${Config.PORTS.shim}/holochain-basic-chat/ui.zip`,
       hash: 'QmBasicChatFakeHash'
     },
   },
