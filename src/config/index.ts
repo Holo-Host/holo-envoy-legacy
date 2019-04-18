@@ -58,19 +58,19 @@ try {
 
       export default {
         serviceLogger: {
-          path: '~/happs/servicelogger/dist/servicelogger.dna.json',
+          path: '/home/me/happs/servicelogger/dist/servicelogger.dna.json',
           hash: 'QmQVBMotvRcGD28kr3XJ7LvMfzEqpBfNi3DoCLP6wqr8As',
         },
         holoHosting: {
-          path: '~/happs/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
+          path: '/home/me/happs/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
           hash: 'QmXuPFimMCoYQrXqX9vr1vve8JtpQ7smfkw1LugqEhyWTr',
         },
         holofuel: {
-          path: '~/happs/holofuel/dist/holofuel.dna.json',
+          path: '/home/me/happs/holofuel/dist/holofuel.dna.json',
           hash: 'QmNzGsdcvMymfbToJSNb8891XMzfF6QJAgZKX5HvakDHAp',
         },
         happStore: {
-          path: '~/happs/happs-store/dist/happs-store.dna.json',
+          path: '/home/me/happs/happs-store/dist/happs-store.dna.json',
           hash: 'QmafwPQ9HjBDM9QUw4MhW7ivcSpQoY2d5JomqFca4QBySF',
         }
       }
