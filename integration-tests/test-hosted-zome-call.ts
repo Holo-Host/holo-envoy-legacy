@@ -2,9 +2,10 @@
 import * as sinon from 'sinon'
 
 import * as Config from '../src/config'
-import * as HC from '@holo-host/hclient'
 import * as holochainClient from "@holochain/hc-web-client"
 import {sinonTest} from '../test/common'
+
+const HC = require('@holo-host/hclient')
 
 import {withConductor, getTestClient, adminHostCall, delay, doRegisterApp, doRegisterHost, doAppSetup, zomeCaller} from './common'
 
@@ -43,7 +44,7 @@ setupDpki()
 
 
 // TODO remove only
-sinonTest('can do hosted zome call', async T => {
+sinonTest.only('can do hosted zome call', async T => {
   const happNick = 'basic-chat'
   return withConductor(async (envoy) => {
     // setup host
