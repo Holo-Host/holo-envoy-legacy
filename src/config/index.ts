@@ -1,12 +1,17 @@
 import * as path from 'path'
 import * as fs from 'fs'
 import * as os from 'os'
-import {nickDatabase} from './shims/nick-database'
+import {nickDatabase} from '../shims/nick-database'
 
 const devUI = process.env.INTRCEPTR_UI || ""
 
 if (devUI) {
   console.log("Using dev UI hash: ", devUI)
+}
+
+type DnaConfig = {
+  path: string,
+  hash: string,
 }
 
 export const defaultEnvoyHome = process.env.INTRCEPTR_PATH || path.join(os.homedir(), '.holochain/holo')
@@ -36,22 +41,42 @@ export enum ConductorInterface {
   Internal = 'internal-interface',
 }
 
-export const DNAS = {
-  serviceLogger: {
-    path: 'src/dnas/servicelogger/dist/servicelogger.dna.json',
-    hash: 'QmQVBMotvRcGD28kr3XJ7LvMfzEqpBfNi3DoCLP6wqr8As',
-    nick: 'servicelogger'
-  },
-  holoHosting: {
-    path: 'src/dnas/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
-    hash: 'QmXuPFimMCoYQrXqX9vr1vve8JtpQ7smfkw1LugqEhyWTr',
-    nick: 'holo-hosting-app'
-  },
-  holofuel: {
-    path: 'src/dnas/holofuel/dist/holofuel.dna.json',
-    hash: 'QmNzGsdcvMymfbToJSNb8891XMzfF6QJAgZKX5HvakDHAp',
-    nick: 'holofuel'
-  },
+let dnaConfig
+try {
+  dnaConfig = require('./dna-config').default
+} catch (e) {
+  console.error(`You must provide a src/config/dna-config.ts file pointing to your core DNAs.
+Example:
+
+    export default {
+      serviceLogger: {
+        path: '~/happs/servicelogger/dist/servicelogger.dna.json',
+        hash: 'QmQVBMotvRcGD28kr3XJ7LvMfzEqpBfNi3DoCLP6wqr8As',
+      },
+      holoHosting: {
+        path: '~/happs/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
+        hash: 'QmXuPFimMCoYQrXqX9vr1vve8JtpQ7smfkw1LugqEhyWTr',
+      },
+      holofuel: {
+        path: '~/happs/holofuel/dist/holofuel.dna.json',
+        hash: 'QmNzGsdcvMymfbToJSNb8891XMzfF6QJAgZKX5HvakDHAp',
+      },
+      happStore: {
+        path: '~/happs/happs-store/dist/happs-store.dna.json',
+        hash: 'QmafwPQ9HjBDM9QUw4MhW7ivcSpQoY2d5JomqFca4QBySF',
+      }
+    }
+`)
+  throw e
+}
+
+export const DNAS: {[handle: string]: DnaConfig} = dnaConfig
+
+const dnaNicks = {
+  servicelogger: 'servicelogger',
+  holoHosting: 'holo-hosting-app',
+  holofuel: 'holofuel',
+  happStore: 'happ-store',
 }
 
 export const PORTS = {
@@ -70,7 +95,7 @@ export const PORTS = {
 }
 
 export const getNickByDna = dnaHash => {
-  const coreApp = Object.values(DNAS).find(entry => entry.hash === dnaHash)
+  const coreApp = Object.entries(DNAS).find(entry => entry[1].hash === dnaHash)
   const externalApp = nickDatabase.find(entry => Boolean(entry.knownDnaHashes.find(hash => hash === dnaHash)))
-  return coreApp ? coreApp.nick : externalApp ? externalApp.nick : null
+  return coreApp ? dnaNicks[coreApp[0]] : externalApp ? externalApp.nick : null
 }
