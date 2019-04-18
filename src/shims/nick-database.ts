@@ -10,6 +10,7 @@ export const nickDatabase = [
     nick: 'basic-chat',
     knownDnaHashes: [
       'QmbPqQJzvWR3sT4ixHqB4cJ6v96Fy3zGNY5svpXnpBHLm6',
+      'QmS7TuxiFwmGRig9b7v8mhXqT5LPz9ZSTmkwSpWyovDVkW',
     ],
   },
   {

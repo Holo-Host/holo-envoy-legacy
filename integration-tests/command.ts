@@ -3,7 +3,7 @@ import * as commander from 'commander'
 import * as C from '../src/config'
 import {fail, zomeCallByInstance} from '../src/common'
 import {getMasterClient} from '../src/server'
-import {shimHappById, shimHappByNick} from '../src/shims/happ-server'
+import {shimHappByNick} from '../src/shims/happ-server'
 import * as HH from '../src/flows/holo-hosting'
 
 import {withEnvoyClient, adminHostCall, doRegisterHost, doRegisterApp, doInstallAndEnableApp} from './common'
@@ -24,7 +24,7 @@ const commandRegisterAsProvider = async () => {
   return await doRegisterHost()
 }
 
-const commandRegisterHapp = async (happNick) => {
+const commandcreateAndRegisterHapp = async (happNick) => {
   const happEntry = shimHappByNick(happNick)!
   const happId = await doRegisterApp(happEntry)
   console.log("registered hApp: ", happId)
@@ -42,7 +42,7 @@ const commandInstall = async (happNick) => {
 const commandBootstrap = async (happNick) => {
   const client = getMasterClient(false)
   await commandRegisterAsProvider()
-  await commandRegisterHapp(happNick)
+  await commandcreateAndRegisterHapp(happNick)
   await commandInstall(happNick)
   client.close()
   console.log("Bootstrap successful! Start using the hApp")
@@ -74,7 +74,7 @@ commander
 commander
   .command('register-happ <happNick>')
   .description("Register hApp as hosted")
-  .action(commandRegisterHapp)
+  .action(commandcreateAndRegisterHapp)
 commander
   .command('install <happNick>')
   .description("Install app to filesystem and set up instances (/holo/happs/install)")

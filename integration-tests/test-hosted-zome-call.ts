@@ -46,7 +46,7 @@ setupDpki()
 // TODO remove only
 sinonTest.only('can do hosted zome call', async T => {
   const happNick = 'basic-chat'
-  return withConductor(async (envoy) => {
+  return withConductor(T, async (envoy) => {
     // setup host
     await doRegisterHost()
     const {happId, dnaHashes} = await doAppSetup(happNick)
@@ -92,8 +92,7 @@ sinonTest.only('can do hosted zome call', async T => {
 
     T.calledWith(spyZomeCall, sinon.match({
       agentId,
-      // TODO: what is this DNA hash?
-      dnaHash: "QmbPqQJzvWR3sT4ixHqB4cJ6v96Fy3zGNY5svpXnpBHLm6",
+      dnaHash,
       function: "get_all_public_streams",
       happId,
       params: {},

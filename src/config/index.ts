@@ -29,6 +29,10 @@ export const holoHostingAppId = {
   instance: 'holo-hosting-app',
   dna: 'holo-hosting-app',
 }
+export const happStoreId = {
+  instance: 'happ-store',
+  dna: 'happ-store',
+}
 export const holofuelId = {
   instance: 'holofuel',
   dna: 'holofuel',
@@ -72,6 +76,8 @@ Example:
 
 export const DNAS: {[handle: string]: DnaConfig} = dnaConfig
 
+// The nicknames are a temporary thing, to complement the nicknames in
+// `src/shims/nick-database`. They'll go away when we have "app bundles".
 const dnaNicks = {
   servicelogger: 'servicelogger',
   holoHosting: 'holo-hosting-app',
@@ -94,6 +100,9 @@ export const PORTS = {
   internalInterface: 3333,
 }
 
+// Get the nick for a DNA from either
+// - the `dnaNicks` object above, if a core DNA
+// - or the nickDatabase, if a DNA from the app store
 export const getNickByDna = dnaHash => {
   const coreApp = Object.entries(DNAS).find(entry => entry[1].hash === dnaHash)
   const externalApp = nickDatabase.find(entry => Boolean(entry.knownDnaHashes.find(hash => hash === dnaHash)))

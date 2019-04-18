@@ -6,8 +6,9 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "prod": "tsc && node lib/index.js",
-    "build-happs": "ts-node src/scripts/build.ts",
-    "build": "yarn run build-happs & tsc",
+    "happs:build": "ts-node src/scripts/build-happs.ts build",
+    "happs:clean": "ts-node src/scripts/build-happs.ts clean",
+    "build": "yarn run happs:build & tsc",
     "clean": "rm -fr lib",
     "init": "ts-node -T init-conductor.ts",
     "keygen": "ts-node -T keygen-cached.ts",
@@ -30,7 +31,7 @@
   },
   "devDependencies": {
     "@babel/runtime": "^7.4.3",
-    "@holo-host/hclient": "https://github.com/Holo-Host/hClient.js.git#re-add-extras",
+    "@holo-host/hclient": "git+https://github.com/Holo-Host/hClient.js.git#re-add-extras",
     "@holochain/hc-web-client": "^0.1.3",
     "@types/node": "^11.9.4",
     "commander": "^2.19.0",

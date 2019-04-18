@@ -17,7 +17,7 @@ const success = {success: true}
 export const getEnabledAppArgs = {
   instance_id: Config.holoHostingAppId.instance,
   zome: 'host',
-  function: 'get_enabled_app',
+  function: 'get_enabled_app_list',
   params: {}
 }
 
