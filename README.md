@@ -14,13 +14,13 @@ Envoy is essentially a collection of independent web services that interact with
 
 ### UI server
 
-*port 3000*
+*port 48080*
 
-Hosts currently serve both the UIs and the DNAs for the hApps they are hosting. A simple web server runs, allowing UI assets to be fetched at the URL based at the hApp ID. For instance, if a UI refers to a resource at the relative path `images/goku.jpg`, it can be retrieved via `GET http://localhost:3000/<happId>/images/goku.jpg`.
+Hosts currently serve both the UIs and the DNAs for the hApps they are hosting. A simple web server runs, allowing UI assets to be fetched at the URL based at the hApp ID. For instance, if a UI refers to a resource at the relative path `images/goku.jpg`, it can be retrieved via `GET http://localhost:48080/<happId>/images/goku.jpg`.
 
 #### Websocket server
 
-*port 3000*
+*port 48080*
 
 One of the services is a websocket server, which is the main interface to outside world. This is the service that clients (i.e. web UIs) use to instruct a Holo Host to call zome functions on their behalf. It runs on the same port as the websocket server, by design.
 
@@ -154,7 +154,7 @@ This last step should respond with `install basic-chat:  OK 200`.
 
 This will automatically start running the chat instance but **it will not host the UI until you restart the Envoy**. (hopefully will fix this soon)
 
-Navigate to `localhost:3000/basic-chat` to start chatting.
+Navigate to `localhost:48080/basic-chat` to start chatting.
 
 ## Troubleshooting
 
