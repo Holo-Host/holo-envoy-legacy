@@ -3,7 +3,8 @@ import * as fs from 'fs'
 import * as os from 'os'
 import {nickDatabase} from '../shims/nick-database'
 
-const devUI = process.env.INTRCEPTR_UI || ""
+const devUI = process.env.ENVOY_UI || ""
+const testMode = Boolean(process.env.ENVOY_TEST)
 
 if (devUI) {
   console.log("Using dev UI hash: ", devUI)
@@ -14,14 +15,14 @@ type DnaConfig = {
   hash: string,
 }
 
-export const defaultEnvoyHome = process.env.INTRCEPTR_PATH || path.join(os.homedir(), '.holochain/holo')
+export const defaultEnvoyHome = process.env.ENVOY_PATH || path.join(os.homedir(), '.holochain/holo')
 export const conductorConfigPath = (dir?) => path.join(dir || defaultEnvoyHome, 'conductor-config.toml')
 export const uiStorageDir = (dir?) => path.join(dir || defaultEnvoyHome, 'ui-store', devUI)
 export const chainStorageDir = (dir?) => path.join(dir || defaultEnvoyHome, 'storage')
 
 export const testKeyDir = path.join(os.tmpdir(), 'holo-envoy', 'test-keydata')
 export const testKeybundlePath = path.join(testKeyDir, 'keybundle.json')
-export const testAgentAddressPath = path.join(testKeyDir, 'INTRCEPTR_AGENT_ADDRESS')
+export const testAgentAddressPath = path.join(testKeyDir, 'ENVOY_AGENT_ADDRESS')
 export const testKeyPassphrase = ''  // TODO: can go away once `hc keygen --nullpass` fully works
 
 export const hostAgentName = 'host-agent'
@@ -49,29 +50,33 @@ let dnaConfig
 try {
   dnaConfig = require('./dna-config').default
 } catch (e) {
-  console.error(`You must provide a src/config/dna-config.ts file pointing to your core DNAs.
-Example:
+  if (testMode) {
+    dnaConfig = {}
+  } else {
+    console.error(`You must provide a src/config/dna-config.ts file pointing to your core DNAs.
+  Example:
 
-    export default {
-      serviceLogger: {
-        path: '~/happs/servicelogger/dist/servicelogger.dna.json',
-        hash: 'QmQVBMotvRcGD28kr3XJ7LvMfzEqpBfNi3DoCLP6wqr8As',
-      },
-      holoHosting: {
-        path: '~/happs/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
-        hash: 'QmXuPFimMCoYQrXqX9vr1vve8JtpQ7smfkw1LugqEhyWTr',
-      },
-      holofuel: {
-        path: '~/happs/holofuel/dist/holofuel.dna.json',
-        hash: 'QmNzGsdcvMymfbToJSNb8891XMzfF6QJAgZKX5HvakDHAp',
-      },
-      happStore: {
-        path: '~/happs/happs-store/dist/happs-store.dna.json',
-        hash: 'QmafwPQ9HjBDM9QUw4MhW7ivcSpQoY2d5JomqFca4QBySF',
+      export default {
+        serviceLogger: {
+          path: '~/happs/servicelogger/dist/servicelogger.dna.json',
+          hash: 'QmQVBMotvRcGD28kr3XJ7LvMfzEqpBfNi3DoCLP6wqr8As',
+        },
+        holoHosting: {
+          path: '~/happs/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
+          hash: 'QmXuPFimMCoYQrXqX9vr1vve8JtpQ7smfkw1LugqEhyWTr',
+        },
+        holofuel: {
+          path: '~/happs/holofuel/dist/holofuel.dna.json',
+          hash: 'QmNzGsdcvMymfbToJSNb8891XMzfF6QJAgZKX5HvakDHAp',
+        },
+        happStore: {
+          path: '~/happs/happs-store/dist/happs-store.dna.json',
+          hash: 'QmafwPQ9HjBDM9QUw4MhW7ivcSpQoY2d5JomqFca4QBySF',
+        }
       }
-    }
-`)
-  throw e
+  `)
+    throw e
+  }
 }
 
 export const DNAS: {[handle: string]: DnaConfig} = dnaConfig

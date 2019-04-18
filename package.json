@@ -14,8 +14,8 @@
     "keygen": "ts-node -T keygen-cached.ts",
     "conductor": "holochain -c ~/.holochain/holo/conductor-config.toml",
     "test": "yarn run test:unit",
-    "test:unit": "ts-node test/index.ts | faucet",
-    "test:unit:raw": "ts-node test/index.ts",
+    "test:unit": "ENVOY_TEST=1 ts-node test/index.ts | faucet",
+    "test:unit:raw": "ENVOY_TEST=1 ts-node test/index.ts",
     "integration": "ts-node integration-tests/index.ts",
     "cmd": "ts-node integration-tests/command.ts"
   },
