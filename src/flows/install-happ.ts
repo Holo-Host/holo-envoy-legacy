@@ -136,7 +136,9 @@ export const installCoreDna = async (client, {dnaId, path, properties}) => {
   }
 }
 
-export const setupInstance = async (client, {instanceId, agentId, dnaId, conductorInterface, replace}) => {
+type SetupInstanceArgs = {instanceId: string, agentId: string, dnaId: string, conductorInterface: Config.ConductorInterface, replace?: string}
+
+export const setupInstance = async (client, {instanceId, agentId, dnaId, conductorInterface, replace}: SetupInstanceArgs) => {
 
   const instanceList = await callWhenConnected(client, 'admin/instance/list', {})
   if (instanceList.find(({id}) => id === instanceId)) {
