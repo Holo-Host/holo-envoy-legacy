@@ -91,6 +91,13 @@ export const serviceLoggerInstanceIdFromHappId = hostedHappId => (
   `servicelogger-${hostedHappId}`
 )
 
+
+/**
+ * The DNA ID for the per-hApp servicelogger
+ */
+export const serviceLoggerDnaIdFromHappId = serviceLoggerInstanceIdFromHappId
+
+
 /**
  * The string used in servicelogger requests to specify the zome function called
  */

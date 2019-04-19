@@ -76,17 +76,14 @@ public_address = "${publicAddress}"
 
 [[dnas]]
 file = "${Config.DNAS.holoHosting.path}"
-hash = "${Config.DNAS.holoHosting.hash}"
 id = "${Config.holoHostingAppId.dna}"
 
 [[dnas]]
 file = "${Config.DNAS.happStore.path}"
-hash = "${Config.DNAS.happStore.hash}"
 id = "${Config.happStoreId.dna}"
 
 [[dnas]]
 file = "${Config.DNAS.holofuel.path}"
-hash = "${Config.DNAS.holofuel.hash}"
 id = "${Config.holofuelId.dna}"
 
 

@@ -53,29 +53,25 @@ try {
   if (testMode) {
     dnaConfig = {}
   } else {
-    console.error(`You must provide a src/config/dna-config.ts file pointing to your core DNAs.
-  Example:
+    console.error(`You must provide a src/config/dna-config.ts file pointing to the core DNA packages.
+Example:
 
-      export default {
-        serviceLogger: {
-          path: '/home/me/happs/servicelogger/dist/servicelogger.dna.json',
-          hash: 'QmQVBMotvRcGD28kr3XJ7LvMfzEqpBfNi3DoCLP6wqr8As',
-        },
-        holoHosting: {
-          path: '/home/me/happs/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
-          hash: 'QmXuPFimMCoYQrXqX9vr1vve8JtpQ7smfkw1LugqEhyWTr',
-        },
-        holofuel: {
-          path: '/home/me/happs/holofuel/dist/holofuel.dna.json',
-          hash: 'QmNzGsdcvMymfbToJSNb8891XMzfF6QJAgZKX5HvakDHAp',
-        },
-        happStore: {
-          path: '/home/me/happs/happs-store/dist/happs-store.dna.json',
-          hash: 'QmafwPQ9HjBDM9QUw4MhW7ivcSpQoY2d5JomqFca4QBySF',
-        }
-      }
+export default {
+  serviceLogger: {
+    path: '/home/me/happs/servicelogger/dist/servicelogger.dna.json'
+  },
+  holoHosting: {
+    path: '/home/me/happs/Holo-Hosting-App/dna-src/dist/dna-src.dna.json'
+  },
+  holofuel: {
+    path: '/home/me/happs/holofuel/dist/holofuel.dna.json'
+  },
+  happStore: {
+    path: '/home/me/happs/happs-store/dist/happs-store.dna.json'
+  },
+}
   `)
-    throw e
+    process.exit(-1)
   }
 }
 
