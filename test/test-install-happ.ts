@@ -5,7 +5,7 @@ import * as sinon from 'sinon'
 import {EventEmitter} from 'events'
 
 import {mockResponse, sinonTest, testEnvoyServer, getEnabledAppArgs, isAppRegisteredArgs} from './common'
-import {bundleUI, unbundleUI, instanceIdFromAgentAndDna, serviceLoggerInstanceIdFromHappId} from '../src/common'
+import {bundleUI, unbundleUI, instanceIdFromAgentAndDna, serviceLoggerDnaIdFromHappId, serviceLoggerInstanceIdFromHappId} from '../src/common'
 import * as Common from '../src/common'
 import * as Config from '../src/config'
 import {shimHappByNick} from '../src/shims/happ-server'
@@ -150,6 +150,7 @@ sinonTest('can setup servicelogger', async T => {
   const dnaHash = simpleApp.dnas[0].hash
   const agentId = 'fake-agent-id'
   const instanceId = instanceIdFromAgentAndDna(agentId, dnaHash)
+  const serviceLoggerDnaId = serviceLoggerDnaIdFromHappId(happId)
   const serviceLoggerId = serviceLoggerInstanceIdFromHappId(happId)
   const result = M.setupServiceLogger(masterClient, {hostedHappId: happId})
   await T.doesNotReject(result)
@@ -158,15 +159,14 @@ sinonTest('can setup servicelogger', async T => {
   T.calledWith(masterClient.call, 'admin/dna/list', {})
   T.calledWith(masterClient.call, 'admin/dna/install_from_file', {
     copy: true,
-    expected_hash: serviceLogger.hash,
-    id: serviceLogger.hash,
+    id: serviceLoggerDnaId,
     path: serviceLogger.path,
     properties: { forApp: simpleApp.happId }
   })
   T.calledWith(masterClient.call, 'admin/instance/list')
   T.calledWith(masterClient.call, 'admin/instance/add', {
     agent_id: Config.hostAgentName,
-    dna_id: serviceLogger.hash,
+    dna_id: serviceLoggerDnaId,
     id: serviceLoggerId,
   })
   T.calledWith(masterClient.call, 'admin/interface/add_instance', {

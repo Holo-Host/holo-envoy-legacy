@@ -76,12 +76,14 @@ public_address = "${publicAddress}"
 
 [[dnas]]
 file = "${Config.DNAS.holoHosting.path}"
-hash = "${Config.DNAS.holoHosting.hash}"
 id = "${Config.holoHostingAppId.dna}"
 
 [[dnas]]
+file = "${Config.DNAS.happStore.path}"
+id = "${Config.happStoreId.dna}"
+
+[[dnas]]
 file = "${Config.DNAS.holofuel.path}"
-hash = "${Config.DNAS.holofuel.hash}"
 id = "${Config.holofuelId.dna}"
 
 
@@ -91,6 +93,14 @@ dna = "${Config.holoHostingAppId.dna}"
 id = "${Config.holoHostingAppId.instance}"
 [instances.storage]
 path = "${path.join(Config.chainStorageDir(baseDir), Config.holoHostingAppId.instance)}"
+type = "file"
+
+[[instances]]
+agent = "${Config.hostAgentName}"
+dna = "${Config.happStoreId.dna}"
+id = "${Config.happStoreId.instance}"
+[instances.storage]
+path = "${path.join(Config.chainStorageDir(baseDir), Config.happStoreId.instance)}"
 type = "file"
 
 [[instances]]
@@ -108,6 +118,8 @@ admin = true
 
 [[interfaces.instances]]
 id = "${Config.holoHostingAppId.instance}"
+[[interfaces.instances]]
+id = "${Config.happStoreId.instance}"
 
 [interfaces.driver]
 port = ${Config.PORTS.masterInterface}
@@ -139,7 +151,7 @@ color = "white"
 exclude = false
 pattern = "^debug/dna"
 [[logger.rules.rules]]
-exclude = false
+exclude = true
 pattern = ".*"
 `
 }

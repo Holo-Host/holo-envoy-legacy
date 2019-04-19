@@ -23,7 +23,7 @@ export default (masterClient) => async ({
   const enabledApps = await zomeCallByInstance(masterClient, {
     instanceId: Config.holoHostingAppId.instance,
     zomeName: 'host',
-    funcName: 'get_enabled_app',
+    funcName: 'get_enabled_app_list',
     params: {}
   })
   if (enabledApps.find(app => app.address === happId)) {

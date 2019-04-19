@@ -9,7 +9,7 @@ import {Client} from 'rpc-websockets'
 import * as S from '../src/server'
 import * as T from '../src/types'
 import {serializeError, whenReady, callWhenConnected} from '../src/common'
-import {shimHappById, shimHappByNick, HappEntry} from '../src/shims/happ-server'
+import {shimHappByNick, HappEntry} from '../src/shims/happ-server'
 import * as HH from '../src/flows/holo-hosting'
 
 import * as Config from '../src/config'
@@ -43,7 +43,7 @@ export const withEnvoyClient = async (fn) => {
  * NB: there cannot be more than one conductor running at a time since they currently occupy
  * a fixed set of ports and a fixed config file path, etc.
  */
-export const withConductor = async (fn) => {
+export const withConductor = async (t, fn) => {
   // TODO: how to shut down last run properly in case of failure?
   exec('killall holochain')
   const tmpBase = path.join(os.tmpdir(), 'holo-envoy')
@@ -71,14 +71,43 @@ export const withConductor = async (fn) => {
   await envoy.connections.ready()
 
   await fn(envoy)
-  .catch(e => console.error("envoy error:", e))
-  .finally(() => {
-    console.log("Shutting down everything...")
-    conductor.kill()
-    envoy.close()
-  })
+    .catch(e => {
+      const axiosErr = parseAxiosError(e)
+      if (axiosErr) {
+        console.error("envoy error! (axios error detected, limiting output)")
+        console.error(axiosErr)
+      } else {
+        console.error("envoy error:", e)
+      }
+      t.fail("Exception was thrown during test execution")
+    })
+    .finally(() => {
+      console.log("Shutting down everything...")
+      conductor.kill()
+      envoy.close()
+    })
   // Give envoy time to shut down (TODO, remove)
   await delay(1000)
+}
+
+// print less of the enormous axios error object
+const parseAxiosError = e => {
+  if (e.config && e.request && e.response) {
+    return {
+      request: {
+        method: e.config.method,
+        url: e.config.url,
+        data: e.config.data,
+      },
+      response: {
+        status: e.response.status,
+        statusText: e.response.statusText,
+        data: e.response.data,
+      }
+    }
+  } else {
+    return null
+  }
 }
 
 export const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
@@ -119,10 +148,7 @@ export const doRegisterHost = async () => {
 
 export const doRegisterApp = async (happEntry: HappEntry): Promise<string> => {
   const masterClient = S.getMasterClient(false)
-  const happId = await HH.SHIMS.registerHapp(masterClient, {
-    uiHash: happEntry.ui ? happEntry.ui.hash : null,
-    dnaHashes: happEntry.dnas.map(dna => dna.hash)
-  })
+  const happId = await HH.SHIMS.createAndRegisterHapp(masterClient, happEntry)
   console.log("registered hApp: ", happId)
 
   masterClient.close()

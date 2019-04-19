@@ -48,7 +48,7 @@ See [src/server.ts](src/admin-host-server.ts) for implementation
 
 #### Shim server
 
-A temporary server useful for development, this service mimics distributions of certain hApp DNAs and UI bundles. These apps are found in [src/shims/happ-data](src/shims/happ-data), are identified in [src/shims/happ-server.ts](src/shims/happ-server.ts), and are built via `yarn run build-happs`
+A temporary server useful for development, this service mimics distributions of certain hApp DNAs and UI bundles. These apps are found in [src/shims/happ-data](src/shims/happ-data), are identified in [src/shims/happ-server.ts](src/shims/happ-server.ts), and are built via `yarn run happs:build`
 
 ## Getting Started
 
@@ -70,7 +70,7 @@ First grab the submodules
 
 To build the necessary DNAs and UIs, run the following script **in a holochain-core nix-shell**:
 
-	yarn run build-happs
+	yarn run happs:build
 
 You will want to perform this step any time any of these apps are updated.
 

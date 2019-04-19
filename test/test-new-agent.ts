@@ -46,7 +46,7 @@ sinonTest('can only host agent for enabled app (1 DNA)', async T => {
   })
 
   // 8 calls:
-  // 1 for get_enabled_app
+  // 1 for get_enabled_app_list
   // 2 for createAgent
   // 1 for lookupHoloApp
   // 4 for each DNA (x1)
@@ -55,7 +55,7 @@ sinonTest('can only host agent for enabled app (1 DNA)', async T => {
   T.calledWith(masterClient.call.firstCall, 'call', {
     instance_id: Config.holoHostingAppId.instance,
     zome: 'host',
-    function: 'get_enabled_app',
+    function: 'get_enabled_app_list',
     params: {}
   })
   T.calledWith(masterClient.call, 'admin/instance/add', {
@@ -75,7 +75,7 @@ sinonTest('can only host agent for enabled app (3 DNAs)', async T => {
   })
 
   // 16 calls:
-  // 1 for get_enabled_app
+  // 1 for get_enabled_app_list
   // 2 for createAgent
   // 1 for lookupHoloApp
   // 4 for each DNA (x3)
@@ -84,7 +84,7 @@ sinonTest('can only host agent for enabled app (3 DNAs)', async T => {
   T.calledWith(masterClient.call.firstCall, 'call', {
     instance_id: Config.holoHostingAppId.instance,
     zome: 'host',
-    function: 'get_enabled_app',
+    function: 'get_enabled_app_list',
     params: {}
   })
   T.calledWith(masterClient.call, 'admin/instance/add', {

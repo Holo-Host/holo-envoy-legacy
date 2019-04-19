@@ -24,6 +24,9 @@ export default (shimPort) => {
 export const shimHappByNick = nick => HAPP_DATABASE.find(a => a.nick === nick)
 export const shimHappById = happId => HAPP_DATABASE.find(a => a.happId === happId)
 
+// NB: The only way to find out the hApp ID is register the hApp with Holo Hosting App
+// using register_app, and check its entry hash.
+
 export const HAPP_DATABASE = [
   {
     happId: 'QmYcfBXfbFJSWfeNC32oEUL1bKsYvXRVN56me4Q9tNHUH7',
@@ -39,13 +42,14 @@ export const HAPP_DATABASE = [
       hash: 'QmSimpleAppFakeHash'
     },
   },
+
   {
-    happId: 'QmXjsSgswP3Kknp2XVfmcsqFVdZ8mxva1gifYFmzNDv6EC',
+    happId: 'QmWhpNUrB6K4kcXp4rGqYtgb823zeabxRA6GUbuvk7TWgv',
     nick: 'basic-chat',
     dnas: [
       {
         location: `http://localhost:${Config.PORTS.shim}/holochain-basic-chat/dna-src/dist/dna-src.dna.json`,
-        hash: 'QmbPqQJzvWR3sT4ixHqB4cJ6v96Fy3zGNY5svpXnpBHLm6'
+        hash: 'QmS7TuxiFwmGRig9b7v8mhXqT5LPz9ZSTmkwSpWyovDVkW'
       }
     ],
     ui: {

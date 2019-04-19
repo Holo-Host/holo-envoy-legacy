@@ -11,6 +11,7 @@ import {
   uiIdFromHappId,
   zomeCallByInstance,
   instanceIdFromAgentAndDna,
+  serviceLoggerDnaIdFromHappId,
   serviceLoggerInstanceIdFromHappId,
 } from '../common'
 import * as Config from '../config'
@@ -118,6 +119,20 @@ export const installDna = async (client, {hash, path, properties}) => {
   }
 }
 
+export const installCoreDna = async (client, {dnaId, path, properties}) => {
+  if (await isDnaInstalled(client, dnaId)) {
+    console.log(`DNA with ID ${dnaId} already installed. Skipping for now. TODO: clear storage if this is an upgrade.`)
+    return {success: true}
+  } else {
+    return callWhenConnected(client, 'admin/dna/install_from_file', {
+      id: dnaId,
+      path: path,
+      copy: true,
+      properties,
+    })
+  }
+}
+
 export const setupInstance = async (client, {instanceId, agentId, dnaId, conductorInterface}) => {
 
   const instanceList = await callWhenConnected(client, 'admin/instance/list', {})
@@ -186,16 +201,17 @@ export const setupInstances = async (client, opts: {happId: string, agentId: str
 }
 
 export const setupServiceLogger = async (masterClient, {hostedHappId}) => {
-  const {hash, path} = Config.DNAS.serviceLogger
+  const {path} = Config.DNAS.serviceLogger
+  const dnaId = serviceLoggerDnaIdFromHappId(hostedHappId)
   const instanceId = serviceLoggerInstanceIdFromHappId(hostedHappId)
   const agentId = Config.hostAgentName
   const properties = {
     forApp: hostedHappId
   }
-  await installDna(masterClient, {hash, path, properties})
+  await installCoreDna(masterClient, {dnaId, path, properties})
   await setupInstance(masterClient, {
     instanceId,
-    dnaId: hash,
+    dnaId,
     agentId,
     conductorInterface: Config.ConductorInterface.Internal
   })

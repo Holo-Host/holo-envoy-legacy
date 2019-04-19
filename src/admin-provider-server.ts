@@ -2,28 +2,29 @@
  * An HTTP server for Providers, primarily for interacting with the Holo Hosting App
  * It's uncertain how this will actually show up in the world.
  * It's a temporary thing for now.
+ * In fact, it's entirely unused!
  */
 
-import * as express from 'express'
-import * as bodyParser from 'body-parser'
-import {Client} from 'rpc-websockets'
+// import * as express from 'express'
+// import * as bodyParser from 'body-parser'
+// import {Client} from 'rpc-websockets'
 
-import * as C from './config'
-import {catchHttp} from './common'
-import {SHIMS} from './flows/holo-hosting'
+// import * as C from './config'
+// import {catchHttp} from './common'
+// import {SHIMS} from './flows/holo-hosting'
 
-export default (port, masterClient) => {
-  const app = express()
-  app.use(bodyParser.json())
+// export default (port, masterClient) => {
+//   const app = express()
+//   app.use(bodyParser.json())
 
-  app.post('/holo/happs/register', async (req, res, next) => {
-    const {uiHash, dnaHashes} = req.body
-    SHIMS.registerHapp(masterClient, {uiHash, dnaHashes})
-      .then(() => res.send("Registration successful"))
-      .catch(catchHttp(next))
-  })
+//   app.post('/holo/happs/create-and-register', async (req, res, next) => {
+//     const {uiHash, dnaHashes} = req.body
+//     SHIMS.createAndRegisterHapp(masterClient, {uiHash, dnaHashes})
+//       .then(() => res.send("Registration successful"))
+//       .catch(catchHttp(next))
+//   })
 
-  const server = app.listen(port, () => console.log(`Admin HTTP server listening on port ${port}`))
+//   const server = app.listen(port, () => console.log(`Admin HTTP server listening on port ${port}`))
 
-  return server
-}
+//   return server
+// }
