@@ -51,7 +51,20 @@ try {
   dnaConfig = require('./dna-config').default
 } catch (e) {
   if (testMode) {
-    dnaConfig = {}
+    dnaConfig = {
+      serviceLogger: {
+        path: '/fake/path/to/servicelogger/dist/servicelogger.dna.json'
+      },
+      holoHosting: {
+        path: '/fake/path/to/Holo-Hosting-App/dna-src/dist/dna-src.dna.json'
+      },
+      holofuel: {
+        path: '/fake/path/to/holofuel/dist/holofuel.dna.json'
+      },
+      happStore: {
+        path: '/fake/path/to/happs-store/dist/happs-store.dna.json'
+      }
+    }
   } else {
     console.error(`You must provide a src/config/dna-config.ts file pointing to the core DNA packages.
 Example:
