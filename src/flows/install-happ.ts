@@ -119,9 +119,12 @@ export const installDna = async (client, {hash, path, properties}) => {
   }
 }
 
+/**
+ * Just like `installDna`, but without the expected_hash
+ */
 export const installCoreDna = async (client, {dnaId, path, properties}) => {
   if (await isDnaInstalled(client, dnaId)) {
-    console.log(`DNA with ID ${dnaId} already installed. Skipping for now. TODO: clear storage if this is an upgrade.`)
+    console.log(`DNA with ID ${dnaId} already installed; skipping.`)
     return {success: true}
   } else {
     return callWhenConnected(client, 'admin/dna/install_from_file', {
@@ -133,12 +136,16 @@ export const installCoreDna = async (client, {dnaId, path, properties}) => {
   }
 }
 
-export const setupInstance = async (client, {instanceId, agentId, dnaId, conductorInterface}) => {
+export const setupInstance = async (client, {instanceId, agentId, dnaId, conductorInterface, replace}) => {
 
   const instanceList = await callWhenConnected(client, 'admin/instance/list', {})
   if (instanceList.find(({id}) => id === instanceId)) {
-    console.log(`Instance with ID ${instanceId} already set up; skipping.`)
-    return {success: true}
+    if (replace) {
+      throw "Instance setup with replacement not yet supported"
+    } else {
+      console.log(`Instance with ID ${instanceId} already set up; skipping.`)
+      return {success: true}
+    }
   }
 
   // TODO handle case where instance exists

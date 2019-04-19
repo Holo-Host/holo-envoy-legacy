@@ -48,8 +48,10 @@ export enum ConductorInterface {
 
 let dnaConfig
 try {
+  // Load core DNA paths from special untracked file
   dnaConfig = require('./dna-config').default
 } catch (e) {
+  // In CI tests, we won't have this file, so just use a dummy object
   if (testMode) {
     dnaConfig = {
       serviceLogger: {

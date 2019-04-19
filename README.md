@@ -152,9 +152,13 @@ Finally, **install the hApp**:
 
 This last step should respond with `install basic-chat:  OK 200`.
 
-This will automatically start running the chat instance but **it will not host the UI until you restart the Envoy**. (hopefully will fix this soon)
+This will automatically start running the chat instance but **it will not host the UI until you restart the Envoy**. (may fix this some day)
 
 Navigate to `localhost:48080/basic-chat` to start chatting.
+
+**Shortcut**: To quickly get up and running with a particular app, you can condense the previous three steps (`register-provider`, `register-happ`, and `install`) with `bootstrap`:
+
+	yarn run cmd bootstrap basic-chat
 
 ## Troubleshooting
 
