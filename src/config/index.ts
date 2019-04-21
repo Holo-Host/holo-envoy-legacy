@@ -3,7 +3,7 @@ import * as fs from 'fs'
 import * as os from 'os'
 import {nickDatabase} from '../shims/nick-database'
 
-const devUI = process.env.ENVOY_UI || ""
+export const devUI = process.env.ENVOY_UI || ""
 const testMode = Boolean(process.env.ENVOY_TEST)
 
 if (devUI) {
@@ -17,7 +17,7 @@ type DnaConfig = {
 
 export const defaultEnvoyHome = process.env.ENVOY_PATH || path.join(os.homedir(), '.holochain/holo')
 export const conductorConfigPath = (dir?) => path.join(dir || defaultEnvoyHome, 'conductor-config.toml')
-export const uiStorageDir = (dir?) => path.join(dir || defaultEnvoyHome, 'ui-store', devUI)
+export const uiStorageDir = (dir?) => path.join(dir || defaultEnvoyHome, 'ui-store')
 export const chainStorageDir = (dir?) => path.join(dir || defaultEnvoyHome, 'storage')
 
 export const testKeyDir = path.join(os.tmpdir(), 'holo-envoy', 'test-keydata')

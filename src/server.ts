@@ -5,6 +5,7 @@
  */
 
 import * as express from 'express'
+import * as path from 'path'
 import {Client, Server as RpcServer} from 'rpc-websockets'
 
 import * as Config from './config'
@@ -162,7 +163,10 @@ export class EnvoyServer {
     // Simply rely on the fact that UIs are installed in a directory
     // named after their happId
     // TODO: check access to prevent cross-UI requests?
-    app.use(`/`, express.static(Config.uiStorageDir(Config.defaultEnvoyHome)))
+    const uiRoot = Config.uiStorageDir(Config.defaultEnvoyHome)
+    const uiDir = Config.devUI ? path.join(uiRoot, Config.devUI) : uiRoot
+    console.log("Serving UI from: ", uiDir)
+    app.use(`/`, express.static(uiDir))
 
     return require('http').createServer(app)
   }
