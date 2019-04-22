@@ -7,7 +7,7 @@ export const devUI = process.env.ENVOY_UI || ""
 const testMode = Boolean(process.env.ENVOY_TEST)
 
 if (devUI) {
-  console.log("Using dev UI hash: ", devUI)
+  console.log("Using hApp ID for dev UI: ", devUI)
 }
 
 type DnaConfig = {
