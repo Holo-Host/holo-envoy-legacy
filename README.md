@@ -20,7 +20,7 @@ Hosts currently serve both the UIs and the DNAs for the hApps they are hosting. 
 
 #### Websocket server
 
-*port 48080*
+*port 48080* (same as UI server)
 
 One of the services is a websocket server, which is the main interface to outside world. This is the service that clients (i.e. web UIs) use to instruct a Holo Host to call zome functions on their behalf. It runs on the same port as the websocket server, by design.
 
@@ -62,7 +62,50 @@ Let's start with the NPM dependencies:
 
 ### Core and "shim" hApp installation 
 
-For now, the core hApps that will come as part of the nixOS image later are present as submodules in [src/dnas](src/dnas). Also, there are a collection of sample hApps that will eventually be installable, present also as submodules at [src/shims/happ-data](src/shims/happ-data). To build these apps, perform the following:
+There are two sets of DNAs and UIs that you should install.
+
+#### Core DNAs
+
+The "core" DNAs are necessary for Envoy's operation. They are currently the DNAs found in:
+
+- [servicelogger](https://github.com/Holo-Host/servicelogger)
+- [Holo Hosting App](https://github.com/Holo-Host/Holo-Hosting-App)
+- [holofuel](https://github.com/Holo-Host/holofuel)
+- [hApp Store](https://github.com/holochain/HApps-Store)
+
+These will eventually come built into the NixOS image. For now, you must have packages of all of these DNAs somewhere on your local filesystem, and then point to them in a special config file named `src/config/dna-config.ts`.
+
+If you attempt to run Envoy without first creating this config file, it will exit with instructions similar to this:
+
+```
+You must provide a src/config/dna-config.ts file pointing to the core DNA packages.
+Example:
+
+export default {
+  serviceLogger: {
+    path: '/home/me/happs/servicelogger/dist/servicelogger.dna.json'
+  },
+  holoHosting: {
+    path: '/home/me/happs/Holo-Hosting-App/dna-src/dist/dna-src.dna.json'
+  },
+  holofuel: {
+    path: '/home/me/happs/holofuel/dist/holofuel.dna.json'
+  },
+  happStore: {
+    path: '/home/me/happs/happs-store/dist/happs-store.dna.json'
+  },
+}
+```
+
+If you follow these instructions, Envoy will start successfully next time.
+
+**Important**: you can point your `dna-config.ts` to packages anywhere on your filesystem, but it is highly recommended that you point to packages in the standard `dist/` directories of their respective repositories! (i.e. `git clone <repo> && cd <repo> && hc package`). If you do this, then you can use the handy `npm run happs:build` command, which will build the DNA packages that `dna-config.ts` expects, for you! In fact, if you don't do this, you will break the `happs:build` command, which is referenced in the next step!
+
+#### Hosted hApps
+
+In real life, hosted hApps get installed through the [Holo Hosting App GUI](https://github.com/Holo-Host/holo-hosting-app_GUI). For development purposes, there are a few submodules of hApps included at `src/shims/happ-data`. 
+
+There are a collection of sample hApps that will eventually be installable, present also as submodules at [src/shims/happ-data](src/shims/happ-data). To build these apps, perform the following:
 
 First grab the submodules
 
