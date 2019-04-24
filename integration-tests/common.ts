@@ -5,11 +5,10 @@ import * as os from 'os'
 import * as path from 'path'
 import {exec} from 'child_process'
 import * as rimraf from 'rimraf'
-import {Client} from 'rpc-websockets'
 import * as S from '../src/server'
 import * as T from '../src/types'
-import {serializeError, whenReady, callWhenConnected} from '../src/common'
-import {shimHappByNick, HappEntry} from '../src/shims/happ-server'
+import {serializeError, whenReady} from '../src/common'
+import {shimHappByNick} from '../src/shims/happ-server'
 import * as HH from '../src/flows/holo-hosting'
 
 import * as Config from '../src/config'
@@ -22,7 +21,7 @@ export const adminHostCall = (uri, data) => {
 }
 
 export const getTestClient = async (): Promise<any> => {
-  const client = new Client(`ws://localhost:${Config.PORTS.external}`, {
+  const client = S.makeClient(`ws://localhost:${Config.PORTS.external}`, {
     reconnect: false
   })
   client.on('error', msg => console.error("WS Client error: ", msg))
@@ -146,7 +145,7 @@ export const doRegisterHost = async () => {
   await delay(1000)
 }
 
-export const doRegisterApp = async (happEntry: HappEntry): Promise<string> => {
+export const doRegisterApp = async (happEntry: T.HappEntry): Promise<string> => {
   const masterClient = S.getMasterClient(false)
   const happId = await HH.SHIMS.createAndRegisterHapp(masterClient, happEntry)
   console.log("registered hApp: ", happId)
@@ -182,7 +181,7 @@ export const doAppSetup = async (happNick: string) => {
 
 
 export const zomeCaller = (client, {happId, agentId, dnaHash, zome}) => (func, params) => {
-  return callWhenConnected(client, 'holo/call', {
+  return client.call('holo/call', {
     happId, agentId, dnaHash,
     zome: zome,
     function: func,

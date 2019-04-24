@@ -1,6 +1,6 @@
 
 import {HappID} from '../types'
-import {callWhenConnected, errorResponse, fail, zomeCallByInstance} from '../common'
+import {errorResponse, fail, zomeCallByInstance} from '../common'
 import {ConductorInterface} from '../config'
 import * as Config from '../config'
 import {setupInstances, setupServiceLogger} from './install-happ'
@@ -39,11 +39,11 @@ export const createAgent = async (masterClient, agentId): Promise<void> => {
   // TODO: pick different id / name, or leave as agent public address?
   // TODO: deal with it if agent already exists (due to being hosted by another app)
 
-  const agents = await callWhenConnected(masterClient, 'admin/agent/list', {})
+  const agents = await masterClient.call('admin/agent/list', {})
   if (agents.find(agent => agent.id === agentId)) {
     console.warn(`Agent ${agentId} already exists, skipping...`)
   } else {
-    await callWhenConnected(masterClient, 'admin/agent/add', {
+    await masterClient.call('admin/agent/add', {
       id: agentId,
       name: agentId,
       public_address: agentId,

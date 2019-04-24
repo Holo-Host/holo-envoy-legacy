@@ -1,11 +1,11 @@
 import axios from 'axios'
+import * as colors from 'colors'
 import * as fs from 'fs-extra'
 import * as os from 'os'
 import * as path from 'path'
 
 import {HappID, HappResource, HappEntry} from '../types'
 import {
-  callWhenConnected,
   fail,
   unbundleUI,
   uiIdFromHappId,
@@ -98,7 +98,7 @@ const installUi = async (baseDir, {ui, happId}) => {
 }
 
 const isDnaInstalled = async (client, dnaId) => {
-  const installedDnas = await callWhenConnected(client, 'admin/dna/list', {})
+  const installedDnas = await client.call('admin/dna/list', {})
   // TODO: make sure the true DNA hash and ID really match here.
   // for now this is checking with ID since for testing I'm not using real DNA hashes
   return (installedDnas.find(({id}) => id === dnaId))
@@ -109,13 +109,19 @@ export const installDna = async (client, {hash, path, properties}) => {
     console.log(`DNA with ID ${hash} already installed; skipping.`)
     return {success: true}
   } else {
-    return callWhenConnected(client, 'admin/dna/install_from_file', {
+    let args: any = {
       id: hash,
       path: path,
-      expected_hash: hash,
       copy: true,
       properties,
-    })
+    }
+
+    if (hash === 'TODO-FIX-HAPP-STORE') {
+      console.log(colors.red.bgWhite.inverse("!!! Hash checking is temporarily disabled until hApp Store stores DNA hashes !!!"))
+    } else {
+      args.expected_hash = hash
+    }
+    return client.call('admin/dna/install_from_file', args)
   }
 }
 
@@ -127,7 +133,7 @@ export const installCoreDna = async (client, {dnaId, path, properties}) => {
     console.log(`DNA with ID ${dnaId} already installed; skipping.`)
     return {success: true}
   } else {
-    return callWhenConnected(client, 'admin/dna/install_from_file', {
+    return client.call('admin/dna/install_from_file', {
       id: dnaId,
       path: path,
       copy: true,
@@ -140,7 +146,7 @@ type SetupInstanceArgs = {instanceId: string, agentId: string, dnaId: string, co
 
 export const setupInstance = async (client, {instanceId, agentId, dnaId, conductorInterface, replace}: SetupInstanceArgs) => {
 
-  const instanceList = await callWhenConnected(client, 'admin/instance/list', {})
+  const instanceList = await client.call('admin/instance/list', {})
   if (instanceList.find(({id}) => id === instanceId)) {
     if (replace) {
       throw "Instance setup with replacement not yet supported"
@@ -151,18 +157,18 @@ export const setupInstance = async (client, {instanceId, agentId, dnaId, conduct
   }
 
   // TODO handle case where instance exists
-  const addInstance = await callWhenConnected(client, 'admin/instance/add', {
+  const addInstance = await client.call('admin/instance/add', {
     id: instanceId,
     agent_id: agentId,
     dna_id: dnaId,
   })
 
-  const addToInterface = await callWhenConnected(client, 'admin/interface/add_instance', {
+  const addToInterface = await client.call('admin/interface/add_instance', {
     instance_id: instanceId,
     interface_id: conductorInterface,
   })
 
-  const startInstance = await callWhenConnected(client, 'admin/instance/start', {
+  const startInstance = await client.call('admin/instance/start', {
     id: instanceId
   })
 
@@ -172,7 +178,7 @@ export const setupInstance = async (client, {instanceId, agentId, dnaId, conduct
 }
 
 export const setupHolofuelBridge = async (client, {callerInstanceId}) => {
-  return callWhenConnected(client, 'admin/bridge/add', {
+  return client.call('admin/bridge/add', {
     handle: 'holofuel-bridge',
     caller_id: callerInstanceId,
     callee_id: Config.holofuelId.instance,
@@ -237,9 +243,9 @@ export const lookupAppInHHA = async (client, {happId}: LookupHappRequest): Promi
   }
 
   // TODO: look up actual web 2.0 hApp store via HTTP
-  const happ = lookupAppInStore(client, appHash)
+  const happ = await lookupAppInStore(client, appHash)
   if (happ) {
-    return transformHappEntry(happ)
+    return transformIncorrectHappEntry(happ)
   } else {
     throw `happId not found in hApp Store: happId == ${happId}, app store hash == ${appHash}`
   }
@@ -250,15 +256,15 @@ export const lookupAppInHHA = async (client, {happId}: LookupHappRequest): Promi
  * only allows one DNA per entry, and does not record hashes
  * TODO: remove once happ store corrects this
  *  */
-const transformHappEntry = happ => {
+const transformIncorrectHappEntry = (happ: {dnaUrl: string, uiUrl: string}) => {
   return {
     dnas: [{
-      location: happ.dna_url,
-      hash: 'TODO',  // requires HApps-Store update
+      location: happ.dnaUrl,
+      hash: 'TODO-FIX-HAPP-STORE',  // requires HApps-Store update
     }],
     ui: {
-      location: happ.ui_url,
-      hash: 'TODO',  // requires HApps-Store update
+      location: happ.uiUrl,
+      hash: 'TODO-FIX-HAPP-STORE',  // requires HApps-Store update
     }
   }
 }
@@ -280,8 +286,7 @@ const getHappHashFromHHA = async (client, happId) => {
       funcName: 'get_app_details',
       params: {app_hash: happId}
     })
-    console.debug('ennntry', entry)
-    return entry.Ok.app_bundle.happ_hash
+    return entry.app_bundle.happ_hash
   } catch (e) {
     console.error("getHappHashFromHHA returned error: ", e)
     console.error("This might be a real error or it could simply mean that the entry was not found. TODO: differentiate the two.")

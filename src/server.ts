@@ -4,6 +4,7 @@
  * Accepts requests similar to what the Conductor
  */
 
+import * as colors from 'colors'
 import * as express from 'express'
 import * as path from 'path'
 import {Client, Server as RpcServer} from 'rpc-websockets'
@@ -32,10 +33,48 @@ export default (port) => {
   return server
 }
 
+export const makeClient = (url, opts) => {
+  const client = new Client(url, opts)
+  client._call = client.call
+  client.call = callWhenConnected
+  return client
+}
+
+/**
+ * If the WS client is connected to the server, make the RPC call immediately
+ * Otherwise, wait for connection, then make the call
+ * Return a promise that resolves when the call is complete
+ * TODO: may eventually be superseded by ConnectionManager
+ */
+async function callWhenConnected (this: any, method, payload) {
+  let promise
+  if(this.ready) {
+    promise = Promise.resolve(this._call(method, payload))
+  } else {
+    promise = new Promise((resolve, reject) => {
+      this.once('open', () => {
+        this._call(method, payload).then(resolve).catch(reject)
+      })
+    })
+  }
+
+  return promise.then(responseRaw => {
+    const response = (responseRaw && typeof responseRaw === 'string') ? JSON.parse(responseRaw) : responseRaw
+    console.log("")
+    console.log('websocket call:', colors.bold.underline(method))
+    console.log(colors.red('request '), colors.bold.red(`->`),  colors.italic.red(`(${typeof payload})`))
+    console.log(payload)
+    console.log(colors.blue('response'), colors.bold.blue(`<-`), colors.italic.blue(`(${typeof response})`))
+    console.log(response)
+    console.log("")
+    return response
+  })
+}
+
 const clientOpts = reconnect => ({ max_reconnects: 0, reconnect })  // zero reconnects means unlimited
-export const getMasterClient = (reconnect) => new Client(`ws://localhost:${Config.PORTS.masterInterface}`, clientOpts(reconnect))
-export const getPublicClient = (reconnect) => new Client(`ws://localhost:${Config.PORTS.publicInterface}`, clientOpts(reconnect))
-export const getInternalClient = (reconnect) => new Client(`ws://localhost:${Config.PORTS.internalInterface}`, clientOpts(reconnect))
+export const getMasterClient = (reconnect) => makeClient(`ws://localhost:${Config.PORTS.masterInterface}`, clientOpts(reconnect))
+export const getPublicClient = (reconnect) => makeClient(`ws://localhost:${Config.PORTS.publicInterface}`, clientOpts(reconnect))
+export const getInternalClient = (reconnect) => makeClient(`ws://localhost:${Config.PORTS.internalInterface}`, clientOpts(reconnect))
 
 type SigningRequest = {
   entry: Object,

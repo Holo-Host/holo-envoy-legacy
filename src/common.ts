@@ -124,13 +124,11 @@ export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName
     function: funcName,
     params
   }
-  let resultRaw
+  let result
   try {
-    console.info("Calling zome...", payload)
-    resultRaw = await callWhenConnected(client, 'call', payload)
-    const result = (resultRaw && typeof resultRaw === 'string') ? JSON.parse(resultRaw) : resultRaw
+    result = await client.call('call', payload)
     if (!result) {
-      throw `falsy result! (${resultRaw})`
+      throw `falsy result! (${result})`
     } else if (!("Ok" in result)) {
       throw result
     } else {
@@ -140,7 +138,7 @@ export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName
     console.error("ZOME CALL FAILED")
     console.error(e)
     console.error("payload:", payload)
-    console.error("raw result:", resultRaw)
+    console.error("result: ", result)
     throw e
   }
 }
@@ -151,7 +149,7 @@ export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName
  * If neither exist, reject the promise
  */
 export const lookupHoloInstance = async (client, {dnaHash, agentId}): Promise<InstanceInfo> => {
-  const instances: Array<InstanceInfo> = (await callWhenConnected(client, 'info/instances', {}))
+  const instances: Array<InstanceInfo> = (await client.call('info/instances', {}))
     .map(({dna, agent}) => ({
       dnaHash: dna,
       agentId: agent
@@ -171,27 +169,6 @@ export const lookupHoloInstance = async (client, {dnaHash, agentId}): Promise<In
         and   dnaHash == '${dnaHash}'
       `
     }
-  }
-}
-
-/**
- * If the WS client is connected to the server, make the RPC call immediately
- * Otherwise, wait for connection, then make the call
- * Return a promise that resolves when the call is complete
- * TODO: may eventually be superseded by ConnectionManager
- */
-export const callWhenConnected = async (client, method, payload) => {
-  if(client.ready) {
-    console.info("calling (already connected)", method, payload)
-    return client.call(method, payload)
-  } else {
-    console.info("waiting to connect, so as to call...")
-    return new Promise((resolve, reject) => {
-      client.once('open', () => {
-        console.info("connected, calling...", method, payload)
-        client.call(method, payload).then(resolve).catch(reject)
-      })
-    })
   }
 }
 
