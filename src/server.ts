@@ -9,7 +9,7 @@ import * as path from 'path'
 import {Client, Server as RpcServer} from 'rpc-websockets'
 
 import * as Config from './config'
-import installHapp, {InstallHappRequest, listHoloApps} from './flows/install-happ'
+import installHapp, {InstallHappRequest} from './flows/install-happ'
 import zomeCall, {CallRequest, logServiceSignature} from './flows/zome-call'
 import newAgent, {NewAgentRequest} from './flows/new-agent'
 import ConnectionManager from './connection-manager'

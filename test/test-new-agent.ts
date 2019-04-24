@@ -48,7 +48,7 @@ sinonTest('can only host agent for enabled app (1 DNA)', async T => {
   // 8 calls:
   // 1 for get_enabled_app_list
   // 2 for createAgent
-  // 1 for lookupHoloApp
+  // 1 for lookupAppInHHA
   // 4 for each DNA (x1)
   // NB: the particulars of setupInstance are tested in test-install-happ
   T.callCount(masterClient.call, 8)
@@ -77,7 +77,7 @@ sinonTest('can only host agent for enabled app (3 DNAs)', async T => {
   // 16 calls:
   // 1 for get_enabled_app_list
   // 2 for createAgent
-  // 1 for lookupHoloApp
+  // 1 for lookupAppInHHA
   // 4 for each DNA (x3)
   // NB: the particulars of setupInstance are tested in test-install-happ
   T.callCount(masterClient.call, 16)

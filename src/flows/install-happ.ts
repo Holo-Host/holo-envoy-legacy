@@ -182,7 +182,7 @@ export const setupHolofuelBridge = async (client, {callerInstanceId}) => {
 export const setupInstances = async (client, opts: {happId: string, agentId: string, conductorInterface: Config.ConductorInterface}): Promise<void> => {
   const {happId, agentId, conductorInterface} = opts
   // NB: we don't actually use the UI info because we never install it into the conductor
-  const {dnas, ui: _} = await lookupHoloApp(client, {happId})
+  const {dnas, ui: _} = await lookupAppInHHA(client, {happId})
 
   const dnaPromises = dnas.map(async (dna) => {
     const dnaId = dna.hash
@@ -229,54 +229,55 @@ export const setupServiceLogger = async (masterClient, {hostedHappId}) => {
   // TODO: make initial call to serviceLogger to set up preferences?
 }
 
-export const lookupHoloApp = async (client, {happId}: LookupHappRequest): Promise<HappEntry> => {
+export const lookupAppInHHA = async (client, {happId}: LookupHappRequest): Promise<HappEntry> => {
   // this is a shim response for now
   // assuming DNAs are served as JSON packages
   // and UIs are served as ZIP archives
 
-  // TODO: rewrite when using real App Store
+  // - [ ] TODO: rewrite when using real App Store
 
-  if (! await happIsRegistered(client, happId)) {
+  const appHash = await getHappHashFromHHA(client, happId)
+  if (! appHash) {
     throw `hApp is not registered by a provider! (happId = ${happId})`
   }
 
   // TODO: look up actual web 2.0 hApp store via HTTP
-  const happ = shimHappById(happId)
+  const happ = lookupAppInStore(client, appHash)
   if (happ) {
     return happ
   } else {
-    throw `happId not found in shim database: ${happId}`
+    throw `happId not found in hApp Store: happId == ${happId}, app store hash == ${hash}`
   }
 }
 
-const happIsRegistered = async (client, happId) => {
+export const lookupAppInStore = (client, appHash) => {
+  return zomeCallByInstance(client, {
+    instanceId: Config.happStoreId.instance,
+    zomeName: 'happs',
+    funcName: 'get_app',
+    params: {app_hash: appHash}
+  })
+
+}
+
+const getHappHashFromHHA = async (client, happId) => {
   try {
-    await zomeCallByInstance(client, {
+    const entry = await zomeCallByInstance(client, {
       instanceId: Config.holoHostingAppId.instance,
       zomeName: 'provider',
       funcName: 'get_app_details',
       params: {app_hash: happId}
     })
-    return true
+    return entry.Ok.app_bundle.happ_hash
   } catch (e) {
-    console.error("happIsRegistered returned error: ", e)
+    console.error("getHappHashFromHHA returned error: ", e)
     console.error("This might be a real error or it could simply mean that the entry was not found. TODO: differentiate the two.")
-    return false
+    return null
   }
-}
-
-export const listHoloApps = () => {
-  // TODO: call HHA's `get_my_registered_app` for real data
-  const fakeApps = ([] as any).concat(HAPP_DATABASE)
-  for (const i in fakeApps) {
-    fakeApps[i].ui_hash = fakeApps[i].ui
-    fakeApps[i].dna_list = fakeApps[i].dnas
-  }
-  return Promise.resolve(fakeApps)
 }
 
 const downloadAppResources = async (_client, happId): Promise<DownloadResult> => {
-  const {dnas, ui} = await lookupHoloApp(_client, {happId})
+  const {dnas, ui} = await lookupAppInHHA(_client, {happId})
 
   const baseDir = fs.mkdtempSync(path.join(os.tmpdir(), 'happ-bundle-'))
   console.debug('using tempdir ', baseDir)
