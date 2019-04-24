@@ -1,16 +1,6 @@
 import * as StaticServer from 'static-server'
 import * as Config from '../config'
 
-export type HappResource = {
-  location: string,
-  hash: string,
-}
-
-export type HappEntry = {
-  dnas: Array<HappResource>
-  ui?: HappResource | void
-}
-
 export default (shimPort) => {
   const shimServer = new StaticServer({
     rootPath: './src/shims/happ-data',

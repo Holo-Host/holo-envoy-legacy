@@ -1,7 +1,7 @@
 
 import * as C from '../config'
 import {zomeCallByInstance} from '../common'
-import {HappEntry} from '../shims/happ-server'
+import {HappEntry} from '../types'
 
 export const enableHapp = (client, happId) => {
   return zomeCallByInstance(client, {

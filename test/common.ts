@@ -6,6 +6,7 @@ import {Client as RpcClient, Server as RpcServer} from 'rpc-websockets'
 import * as Config from '../src/config'
 import {EnvoyServer} from '../src/server'
 import {instanceIdFromAgentAndDna} from '../src/common'
+import {HappEntry} from '../src/types'
 import {HAPP_DATABASE} from '../src/shims/happ-server'
 
 const tape = tapePromise(_tape)
@@ -72,10 +73,17 @@ export const testMasterClient = () => {
   client.call.withArgs('admin/instance/start').resolves(success)
   client.call.withArgs('call', getEnabledAppArgs).resolves({Ok: testApps})
   testApps.forEach(({address}) => {
-    client.call.withArgs('call', isAppRegisteredArgs(address)).resolves({Ok: 'whatever'})
+    client.call.withArgs('call', isAppRegisteredArgs(address)).resolves({
+      app_bundle: {Ok: testAppEntry}
+    })
   })
   return client
 }
+
+const testAppEntry: HappEntry = ({
+  dnas: [{location: 'wherever', hash: 'whatever'}],
+  ui: undefined
+})
 
 export const testInternalClient = () => {
   const client = baseClient()

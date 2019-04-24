@@ -3,7 +3,7 @@ import * as fs from 'fs-extra'
 import * as os from 'os'
 import * as path from 'path'
 
-import {HappID} from '../types'
+import {HappID, HappResource, HappEntry} from '../types'
 import {
   callWhenConnected,
   fail,
@@ -15,7 +15,7 @@ import {
   serviceLoggerInstanceIdFromHappId,
 } from '../common'
 import * as Config from '../config'
-import {HAPP_DATABASE, shimHappById, HappResource, HappEntry} from '../shims/happ-server'
+import {HAPP_DATABASE, shimHappById} from '../shims/happ-server'
 
 enum ResourceType {HappUi, HappDna}
 
@@ -230,23 +230,36 @@ export const setupServiceLogger = async (masterClient, {hostedHappId}) => {
 }
 
 export const lookupAppInHHA = async (client, {happId}: LookupHappRequest): Promise<HappEntry> => {
-  // this is a shim response for now
-  // assuming DNAs are served as JSON packages
-  // and UIs are served as ZIP archives
-
-  // - [ ] TODO: rewrite when using real App Store
 
   const appHash = await getHappHashFromHHA(client, happId)
   if (! appHash) {
-    throw `hApp is not registered by a provider! (happId = ${happId})`
+    throw `hApp is not registered by a provider! (happId == ${happId})`
   }
 
   // TODO: look up actual web 2.0 hApp store via HTTP
   const happ = lookupAppInStore(client, appHash)
   if (happ) {
-    return happ
+    return transformHappEntry(happ)
   } else {
-    throw `happId not found in hApp Store: happId == ${happId}, app store hash == ${hash}`
+    throw `happId not found in hApp Store: happId == ${happId}, app store hash == ${appHash}`
+  }
+}
+
+/**
+ * Temporarily finagle returned AppEntry shape to account for the fact that HApps-Store
+ * only allows one DNA per entry, and does not record hashes
+ * TODO: remove once happ store corrects this
+ *  */
+const transformHappEntry = happ => {
+  return {
+    dnas: [{
+      location: happ.dna_url,
+      hash: 'TODO',  // requires HApps-Store update
+    }],
+    ui: {
+      location: happ.ui_url,
+      hash: 'TODO',  // requires HApps-Store update
+    }
   }
 }
 
@@ -257,7 +270,6 @@ export const lookupAppInStore = (client, appHash) => {
     funcName: 'get_app',
     params: {app_hash: appHash}
   })
-
 }
 
 const getHappHashFromHHA = async (client, happId) => {
@@ -268,6 +280,7 @@ const getHappHashFromHHA = async (client, happId) => {
       funcName: 'get_app_details',
       params: {app_hash: happId}
     })
+    console.debug('ennntry', entry)
     return entry.Ok.app_bundle.happ_hash
   } catch (e) {
     console.error("getHappHashFromHHA returned error: ", e)
