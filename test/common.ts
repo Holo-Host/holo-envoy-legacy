@@ -29,6 +29,13 @@ export const isAppRegisteredArgs = happId => ({
   params: {app_hash: happId}
 })
 
+export const lookupAppInStoreArgs = appHash => ({
+  instance_id: Config.happStoreId.instance,
+  zome: 'happs',
+  function: 'get_app',
+  params: {app_hash: appHash}
+})
+
 const testDnas = []
 
 // Stub HHA to say that all available apps are enabled
@@ -72,9 +79,12 @@ export const testMasterClient = () => {
   client.call.withArgs('admin/interface/add_instance').resolves(success)
   client.call.withArgs('admin/instance/start').resolves(success)
   client.call.withArgs('call', getEnabledAppArgs).resolves({Ok: testApps})
-  testApps.forEach(({address}) => {
-    client.call.withArgs('call', isAppRegisteredArgs(address)).resolves({
-      app_bundle: {Ok: testAppEntry}
+  HAPP_DATABASE.forEach(entry => {
+    client.call.withArgs('call', isAppRegisteredArgs(entry.happId)).resolves({
+      Ok: {app_bundle: {happ_hash: entry.happId}}
+    })
+    client.call.withArgs('call', lookupAppInStoreArgs(entry.happId)).resolves({
+      Ok: {appEntry: entry}
     })
   })
   return client

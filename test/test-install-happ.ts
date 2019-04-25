@@ -4,7 +4,7 @@ import * as path from 'path'
 import * as sinon from 'sinon'
 import {EventEmitter} from 'events'
 
-import {mockResponse, sinonTest, testEnvoyServer, getEnabledAppArgs, isAppRegisteredArgs} from './common'
+import {mockResponse, sinonTest, testEnvoyServer, getEnabledAppArgs, isAppRegisteredArgs, lookupAppInStoreArgs} from './common'
 import {bundleUI, unbundleUI, instanceIdFromAgentAndDna, serviceLoggerDnaIdFromHappId, serviceLoggerInstanceIdFromHappId} from '../src/common'
 import * as Common from '../src/common'
 import * as Config from '../src/config'
@@ -65,37 +65,43 @@ sinonTest('throws error for non-hosted happId', async T => {
     /hApp is not registered.*/
   )
   T.callCount(masterClient.call, 1)
+  // TODO: explicitly test the call
 })
 
 sinonTest('throws error for unreachable resources', async T => {
   const {masterClient} = testEnvoyServer()
-
-  const axiosStub = sinon.stub(axios, 'request').resolves(axiosResponse(404))
+  const sandbox = sinon.createSandbox()
+  // sandbox.stub(M, 'lookupAppEntryInHHA').resolves(simpleApp)
+  sandbox.stub(axios, 'request').resolves(axiosResponse(404))
   const happId = simpleApp.happId
 
   await T.rejects(
     M.installDnasAndUi(masterClient, 'test-dir', {happId}),
     /Could not fetch.*404/
   )
-  T.callCount(masterClient.call, 1)
+  T.callCount(masterClient.call, 2)
+  // TODO: explicitly test the calls
 
-  axiosStub.restore()
+  sandbox.restore()
 })
 
 sinonTest('can install dnas and ui for hApp', async T => {
   const {masterClient} = testEnvoyServer()
 
-  const axiosStub = sinon.stub(axios, 'request').resolves(axiosResponse(200))
+  const sandbox = sinon.createSandbox()
+  // sandbox.stub(M, 'lookupAppEntryInHHA').resolves(simpleApp)
+  sandbox.stub(axios, 'request').resolves(axiosResponse(200))
   const happId = simpleApp.happId
   const dnaHash = simpleApp.dnas[0].hash
   const uiHash = simpleApp.ui!.hash
   const result = M.installDnasAndUi(masterClient, 'test-dir', {happId})
   await T.doesNotReject(result)
-  T.callCount(masterClient.call, 3)
+  T.callCount(masterClient.call, 4)
 
   T.calledWith(masterClient.call.getCall(0), 'call', isAppRegisteredArgs(happId))
-  T.calledWith(masterClient.call.getCall(1), 'admin/dna/list')
-  T.calledWith(masterClient.call.getCall(2), 'admin/dna/install_from_file', {
+  T.calledWith(masterClient.call.getCall(1), 'call', lookupAppInStoreArgs(happId))
+  T.calledWith(masterClient.call.getCall(2), 'admin/dna/list')
+  T.calledWith(masterClient.call.getCall(3), 'admin/dna/install_from_file', {
     copy: true,
     expected_hash: dnaHash,
     id: dnaHash,
@@ -112,7 +118,7 @@ sinonTest('can install dnas and ui for hApp', async T => {
     path.join(Config.uiStorageDir('test-dir'), happId)
   )
 
-  axiosStub.restore()
+  sandbox.restore()
 })
 
 sinonTest('can setup instances', async T => {
@@ -124,20 +130,21 @@ sinonTest('can setup instances', async T => {
   const instanceId = instanceIdFromAgentAndDna(agentId, dnaHash)
   const result = M.setupInstances(masterClient, {happId, agentId, conductorInterface: Config.ConductorInterface.Public})
   await T.doesNotReject(result)
-  T.callCount(masterClient.call, 5)
+  T.callCount(masterClient.call, 6)
 
   T.calledWith(masterClient.call.getCall(0), 'call', isAppRegisteredArgs(happId))
-  T.calledWith(masterClient.call.getCall(1), 'admin/instance/list')
-  T.calledWith(masterClient.call.getCall(2), 'admin/instance/add', {
+  T.calledWith(masterClient.call.getCall(1), 'call', lookupAppInStoreArgs(happId))
+  T.calledWith(masterClient.call.getCall(2), 'admin/instance/list')
+  T.calledWith(masterClient.call.getCall(3), 'admin/instance/add', {
     agent_id: agentId,
     dna_id: dnaHash,
     id: instanceId,
   })
-  T.calledWith(masterClient.call.getCall(3), 'admin/interface/add_instance', {
+  T.calledWith(masterClient.call.getCall(4), 'admin/interface/add_instance', {
     instance_id: instanceId,
     interface_id: Config.ConductorInterface.Public,
   })
-  T.calledWith(masterClient.call.getCall(4), 'admin/instance/start', {
+  T.calledWith(masterClient.call.getCall(5), 'admin/instance/start', {
     id: instanceId,
   })
 })
