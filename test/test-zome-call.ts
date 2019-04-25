@@ -36,7 +36,7 @@ test('lookupHoloInstance can find an instance', async t => {
     {agent: 'hosted-agent', dna: 'new-dna'},  // the hosted instance
   ]
   const client = baseClient()
-  client.call.withArgs('info/instances').resolves(instances)
+  client._call.withArgs('info/instances').resolves(instances)
   const resultHosted = await lookupHoloInstance(client, {agentId: 'hosted-agent', dnaHash: 'new-dna'}).catch(t.fail)
   const resultPublic = await lookupHoloInstance(client, {agentId: 'missing-agent', dnaHash: 'new-dna'}).catch(t.fail)
   t.equal(resultHosted.type, InstanceType.Hosted)
@@ -51,8 +51,8 @@ test('lookupHoloInstance can find an instance', async t => {
 sinonTest('can call public zome function', async T => {
   const {envoy, masterClient, publicClient, internalClient} = testEnvoyServer()
 
-  internalClient.call.withArgs('call').onFirstCall().returns({Ok: "requestHash"})
-  internalClient.call.withArgs('call').onSecondCall().returns({Ok: "responseHash"})
+  internalClient._call.withArgs('call').onFirstCall().returns({Ok: "requestHash"})
+  internalClient._call.withArgs('call').onSecondCall().returns({Ok: "responseHash"})
 
   const agentId = 'some-ad-hoc-agent-id'
   const dnaHash = 'test-dna-hash-1a'
@@ -144,7 +144,7 @@ sinonTest('can sign responses for servicelogger later', async T => {
   const {envoy, internalClient} = testEnvoyServer()
   const happId = 'happId'
 
-  internalClient.call.withArgs('call', {
+  internalClient._call.withArgs('call', {
     instance_id: serviceLoggerInstanceIdFromHappId(happId),
     zome: 'service',
     function: 'log_service',

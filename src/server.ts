@@ -33,6 +33,12 @@ export default (port) => {
   return server
 }
 
+/**
+ * Replace original rpc-websockets client's call function
+ * with one that waits for connection before calling and performs logging,
+ * renaming the original function to `_call`
+ * @type {[type]}
+ */
 export const makeClient = (url, opts) => {
   const client = new Client(url, opts)
   client._call = client.call
@@ -44,9 +50,12 @@ export const makeClient = (url, opts) => {
  * If the WS client is connected to the server, make the RPC call immediately
  * Otherwise, wait for connection, then make the call
  * Return a promise that resolves when the call is complete
+ * NB: `this._call` comes from `makeClient` above
  * TODO: may eventually be superseded by ConnectionManager
  */
 async function callWhenConnected (this: any, method, payload) {
+
+  // Do waiting
   let promise
   if(this.ready) {
     promise = Promise.resolve(this._call(method, payload))
@@ -58,6 +67,7 @@ async function callWhenConnected (this: any, method, payload) {
     })
   }
 
+  // Do snazzy logging
   return promise.then(responseRaw => {
     const response = (responseRaw && typeof responseRaw === 'string') ? JSON.parse(responseRaw) : responseRaw
     console.log("")

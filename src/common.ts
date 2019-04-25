@@ -120,6 +120,7 @@ export const zomeCallByDna = async (client, {agentId, dnaHash, zomeName, funcNam
 
 /**
  * Make a zome call through the WS client, identified by instance ID
+ * TODO: maybe keep the Ok/Err wrapping, to differentiate between zome error and true exception
  */
 export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName, params}) => {
   const payload = {
@@ -133,10 +134,6 @@ export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName
     result = await client.call('call', payload)
     if (!result) {
       throw `falsy result! (${result})`
-    } else if (!("Ok" in result)) {
-      throw result
-    } else {
-      return result.Ok
     }
   } catch(e) {
     console.error("ZOME CALL FAILED")
@@ -144,6 +141,11 @@ export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName
     console.error("payload:", payload)
     console.error("result: ", result)
     throw e
+  }
+  if (!("Ok" in result)) {
+    throw result
+  } else {
+    return result.Ok
   }
 }
 
