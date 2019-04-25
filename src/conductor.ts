@@ -54,7 +54,7 @@ export const keygen = (bundlePath?) => {
 export const spawnConductor = (baseDir) => {
   console.log("Using conductor binary: ", execSync('which holochain').toString())
   const conductor = spawn('holochain', ['-c', baseDir])
-  conductor.stdout.on('data', data => console.log(colors.dim('(HC)'), data.toString('utf8')))
+  conductor.stdout.on('data', data => console.log('(HC)'.bold, data.toString('utf8')))
   conductor.stderr.on('data', data => console.error('(HC) <E>', data.toString('utf8')))
   conductor.on('close', code => console.log('Conductor closed with code: ', code))
   return conductor

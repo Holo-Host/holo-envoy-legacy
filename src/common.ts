@@ -1,5 +1,6 @@
 
 import * as archiver from 'archiver'
+import * as colors from 'colors'
 import * as extract from 'extract-zip'
 import * as fs from 'fs-extra'
 import * as Config from './config'
@@ -18,14 +19,17 @@ export const errorResponse = msg => ({error: msg})
 export const fail = e => console.error("FAIL: ", e)
 
 
-export const serializeError = e => typeof e === 'object' ? JSON.stringify(e) : e
+export const serializeError = e => (
+  typeof e === 'object' && !(e instanceof Error)
+  ? JSON.stringify(e)
+  : e
+)
 /**
  * Useful for handling express server failure
  */
 export const catchHttp = next => e => {
-  const err = serializeError(e)
-  console.error("HTTP error caught:")
-  next(err)
+  console.error("HTTP error caught:".red)
+  next(serializeError(e))
 }
 
 /**

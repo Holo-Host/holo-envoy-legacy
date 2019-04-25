@@ -61,11 +61,11 @@ async function callWhenConnected (this: any, method, payload) {
   return promise.then(responseRaw => {
     const response = (responseRaw && typeof responseRaw === 'string') ? JSON.parse(responseRaw) : responseRaw
     console.log("")
-    console.log('websocket call:', colors.bold.underline(method))
-    console.log(colors.red('request '), colors.bold.red(`->`),  colors.italic.red(`(${typeof payload})`))
-    console.log(payload)
-    console.log(colors.blue('response'), colors.bold.blue(`<-`), colors.italic.blue(`(${typeof response})`))
-    console.log(response)
+    console.log(`WS call: ${method}`.dim.inverse)
+    console.log('request'.green.bold, `------>`.green.bold, `(${typeof payload})`.green.italic)
+    console.log(JSON.stringify(payload, null, 2))
+    console.log('response'.cyan.bold, `<-----`.cyan.bold, `(${typeof response})`.cyan.italic)
+    console.log(JSON.stringify(response, null, 2))
     console.log("")
     return response
   })

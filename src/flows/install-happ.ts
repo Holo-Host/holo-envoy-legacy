@@ -188,7 +188,7 @@ export const setupHolofuelBridge = async (client, {callerInstanceId}) => {
 export const setupInstances = async (client, opts: {happId: string, agentId: string, conductorInterface: Config.ConductorInterface}): Promise<void> => {
   const {happId, agentId, conductorInterface} = opts
   // NB: we don't actually use the UI info because we never install it into the conductor
-  const {dnas, ui: _} = await lookupAppInHHA(client, {happId})
+  const {dnas, ui: _} = await lookupAppEntryInHHA(client, {happId})
 
   const dnaPromises = dnas.map(async (dna) => {
     const dnaId = dna.hash
@@ -235,7 +235,7 @@ export const setupServiceLogger = async (masterClient, {hostedHappId}) => {
   // TODO: make initial call to serviceLogger to set up preferences?
 }
 
-export const lookupAppInHHA = async (client, {happId}: LookupHappRequest): Promise<HappEntry> => {
+export const lookupAppEntryInHHA = async (client, {happId}: LookupHappRequest): Promise<HappEntry> => {
 
   const appHash = await getHappHashFromHHA(client, happId)
   if (! appHash) {
@@ -245,29 +245,12 @@ export const lookupAppInHHA = async (client, {happId}: LookupHappRequest): Promi
   // TODO: look up actual web 2.0 hApp store via HTTP
   const happ = await lookupAppInStore(client, appHash)
   if (happ) {
-    return transformIncorrectHappEntry(happ)
+    return happ.appEntry
   } else {
     throw `happId not found in hApp Store: happId == ${happId}, app store hash == ${appHash}`
   }
 }
 
-/**
- * Temporarily finagle returned AppEntry shape to account for the fact that HApps-Store
- * only allows one DNA per entry, and does not record hashes
- * TODO: remove once happ store corrects this
- *  */
-const transformIncorrectHappEntry = (happ: {dnaUrl: string, uiUrl: string}) => {
-  return {
-    dnas: [{
-      location: happ.dnaUrl,
-      hash: 'TODO-FIX-HAPP-STORE',  // requires HApps-Store update
-    }],
-    ui: {
-      location: happ.uiUrl,
-      hash: 'TODO-FIX-HAPP-STORE',  // requires HApps-Store update
-    }
-  }
-}
 
 export const lookupAppInStore = (client, appHash) => {
   return zomeCallByInstance(client, {
@@ -294,8 +277,8 @@ const getHappHashFromHHA = async (client, happId) => {
   }
 }
 
-const downloadAppResources = async (_client, happId): Promise<DownloadResult> => {
-  const {dnas, ui} = await lookupAppInHHA(_client, {happId})
+const downloadAppResources = async (client, happId): Promise<DownloadResult> => {
+  const {dnas, ui} = await lookupAppEntryInHHA(client, {happId})
 
   const baseDir = fs.mkdtempSync(path.join(os.tmpdir(), 'happ-bundle-'))
   console.debug('using tempdir ', baseDir)

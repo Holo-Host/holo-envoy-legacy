@@ -54,18 +54,6 @@ export const SHIMS = {
   },
 
   createAndRegisterHapp: async (client, entry: HappEntry) => {
-
-    if (entry.dnas.length != 1) {
-      throw "hApp Store currently only supports exactly one DNA per hApp."
-    }
-
-    if (!entry.ui) {
-      throw "hApp Store currently requires all hApps to have a UI specified"
-    }
-
-    const dna = entry.dnas[0]
-    const ui = entry.ui
-
     const title = "TODO"
     const description = "TODO"
     const thumbnail_url = "TODO.gif"
@@ -77,8 +65,8 @@ export const SHIMS = {
       funcName: 'create_app',
       params: {
         title, description, thumbnail_url, homepage_url,
-        ui_url: ui!.location || "",
-        dna_url: dna.location,
+        ui: entry.ui,
+        dnas: entry.dnas,
       }
     })
 
