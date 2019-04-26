@@ -231,12 +231,9 @@ export const PORTS = {
   internalInterface: 3333,
 }
 
-// Get the nick for a DNA from either
-// - the `dnaNicks` object above, if a core DNA
-// - or the nickDatabase, if a DNA from the app store
+// Get the nick for a DNA from the nickDatabase (another hack), if a DNA from the app store.
+// TODO: remove once we have proper app bundles with handles for DNAs
 export const getNickByDna = dnaHash => {
-  // **TODO** Removed core app check, because core apps no longer reference their hashes!
-  // Only look in nickDatabase. Make sure this is still correct:
   const externalApp = nickDatabase.find(entry => Boolean(entry.knownDnaHashes.find(hash => hash === dnaHash)))
   return externalApp ? externalApp.nick : null
 }
