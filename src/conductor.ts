@@ -141,6 +141,30 @@ port = ${Config.PORTS.internalInterface}
 type = "websocket"
 
 
+[[ui_bundles]]
+hash = 'Qm000'
+id = 'hha-ui'
+root_dir = '/home/michael/Holo/holo-hosting-app_GUI/ui'
+
+[[ui_interfaces]]
+bundle = 'hha-ui'
+dna_interface = 'master-interface'
+id = 'hha-ui-interface'
+port = 8800
+
+
+[[ui_bundles]]
+hash = 'Qm001'
+id = 'happ-store-ui'
+root_dir = '/home/michael/Holo/HApps-Store/ui'
+
+[[ui_interfaces]]
+bundle = 'happ-store-ui'
+dna_interface = 'master-interface'
+id = 'happ-store-ui-interface'
+port = 8880
+
+
 [logger]
 type = "debug"
 [[logger.rules.rules]]

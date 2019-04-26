@@ -10,11 +10,6 @@ if (devUI) {
   console.log("Using hApp ID for dev UI: ", devUI)
 }
 
-type DnaConfig = {
-  path: string,
-  hash: string,
-}
-
 export const defaultEnvoyHome = process.env.ENVOY_PATH || path.join(os.homedir(), '.holochain/holo')
 export const conductorConfigPath = (dir?) => path.join(dir || defaultEnvoyHome, 'conductor-config.toml')
 export const uiStorageDir = (dir?) => path.join(dir || defaultEnvoyHome, 'ui-store')
@@ -46,51 +41,68 @@ export enum ConductorInterface {
   Internal = 'internal-interface',
 }
 
-let dnaConfig
+type ResourceConfig = {
+  dna: {
+    path: string,
+  },
+  ui?: {
+    path: string,
+    port: number,
+  }
+}
+
+type ResourceConfigMap = {[handle: string]: ResourceConfig}
+
+const testResourceConfig: ResourceConfigMap = {
+  serviceLogger: {
+    dna: {
+      path: '/path/to/happs/servicelogger/dist/servicelogger.dna.json',
+    }
+  },
+  holofuel: {
+    dna: {
+      path: '/path/to/happs/holofuel/dist/holofuel.dna.json',
+    }
+  },
+  holoHosting: {
+    dna: {
+      path: '/path/to/happs/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
+    },
+    ui: {
+      path: '/path/to/happs/holo-hosting-app_GUI/ui',
+      port: 8800,
+    },
+  },
+  happStore: {
+    dna: {
+      path: '/path/to/happs/HApps-Store/dna-src/dist/dna-src.dna.json',
+    },
+    ui: {
+      path: '/path/to/happs/HApps-Store/ui',
+      port: 8880,
+    },
+  }
+}
+
+let resourceConfig
 try {
   // Load core DNA paths from special untracked file
-  dnaConfig = require('./dna-config').default
+  resourceConfig = require('./resource-config').default
 } catch (e) {
   // In CI tests, we won't have this file, so just use a dummy object
   if (testMode) {
-    dnaConfig = {
-      serviceLogger: {
-        path: '/fake/path/to/servicelogger/dist/servicelogger.dna.json'
-      },
-      holoHosting: {
-        path: '/fake/path/to/Holo-Hosting-App/dna-src/dist/dna-src.dna.json'
-      },
-      holofuel: {
-        path: '/fake/path/to/holofuel/dist/holofuel.dna.json'
-      },
-      happStore: {
-        path: '/fake/path/to/happs-store/dist/happs-store.dna.json'
-      }
-    }
+    resourceConfig = testResourceConfig
   } else {
-    console.error(`You must provide a src/config/dna-config.ts file pointing to the core DNA packages.
+    console.error(`You must provide a src/config/resource-config.ts file pointing to the core DNA packages.
 Example:
 
-export default {
-  serviceLogger: {
-    path: '/home/me/happs/servicelogger/dist/servicelogger.dna.json'
-  },
-  holoHosting: {
-    path: '/home/me/happs/Holo-Hosting-App/dna-src/dist/dna-src.dna.json'
-  },
-  holofuel: {
-    path: '/home/me/happs/holofuel/dist/holofuel.dna.json'
-  },
-  happStore: {
-    path: '/home/me/happs/happs-store/dist/happs-store.dna.json'
-  },
-}
+export default ${JSON.stringify(testResourceConfig)}
   `)
     process.exit(-1)
   }
 }
 
-export const DNAS: {[handle: string]: DnaConfig} = dnaConfig
+export const DNAS: {[handle: string]: ResourceConfig} = resourceConfig
 
 // The nicknames are a temporary thing, to complement the nicknames in
 // `src/shims/nick-database`. They'll go away when we have "app bundles".
