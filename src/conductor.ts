@@ -60,10 +60,7 @@ export const spawnConductor = (baseDir) => {
   return conductor
 }
 
-const initialTomlConfig = (baseDir, {keyFile, publicAddress}) => {
-
-  // TODO: add DNA for HCHC when available
-  return `
+const initialTomlConfig = (baseDir, {keyFile, publicAddress}) => `
 bridges = []
 persistence_dir = "${baseDir}"
 signing_service_uri = "http://localhost:${Config.PORTS.wormhole}"
@@ -76,15 +73,15 @@ public_address = "${publicAddress}"
 
 
 [[dnas]]
-file = "${Config.DNAS.holoHosting.path}"
+file = "${Config.RESOURCES.holoHosting.dna.path}"
 id = "${Config.holoHostingAppId.dna}"
 
 [[dnas]]
-file = "${Config.DNAS.happStore.path}"
+file = "${Config.RESOURCES.happStore.dna.path}"
 id = "${Config.happStoreId.dna}"
 
 [[dnas]]
-file = "${Config.DNAS.holofuel.path}"
+file = "${Config.RESOURCES.holofuel.dna.path}"
 id = "${Config.holofuelId.dna}"
 
 
@@ -179,4 +176,3 @@ pattern = "^debug/dna"
 exclude = true
 pattern = ".*"
 `
-}
