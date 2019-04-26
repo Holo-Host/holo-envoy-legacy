@@ -17,6 +17,7 @@ export const initializeConductorConfig = (baseDir, keyData) => {
     fs.mkdirSync(baseDir, {recursive: true})
   } catch(e) {}
   try {
+    fs.mkdirSync(Config.chainStorageDir(baseDir), {recursive: true})
     fs.mkdirSync(Config.uiStorageDir(baseDir), {recursive: true})
   } catch(e) {}
   let toml = initialTomlConfig(baseDir, keyData)
