@@ -18,7 +18,13 @@ export type KeyData = {
   publicAddress: string,
 }
 
-// export type AdminUiInstallRequest = {
-//   id: string,
-//   root_dir: string
-// }
+export type HappResource = {
+  location: string,
+  hash: string,
+}
+
+export interface HappEntry {
+  dnas: Array<HappResource>
+  ui?: HappResource | void
+}
+

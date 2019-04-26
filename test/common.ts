@@ -4,8 +4,9 @@ import * as sinon from 'sinon'
 import {Client as RpcClient, Server as RpcServer} from 'rpc-websockets'
 
 import * as Config from '../src/config'
-import {EnvoyServer} from '../src/server'
+import {EnvoyServer, makeClient} from '../src/server'
 import {instanceIdFromAgentAndDna} from '../src/common'
+import {HappEntry} from '../src/types'
 import {HAPP_DATABASE} from '../src/shims/happ-server'
 
 const tape = tapePromise(_tape)
@@ -26,6 +27,13 @@ export const isAppRegisteredArgs = happId => ({
   zome: 'provider',
   function: 'get_app_details',
   params: {app_hash: happId}
+})
+
+export const lookupAppInStoreArgs = appHash => ({
+  instance_id: Config.happStoreId.instance,
+  zome: 'happs',
+  function: 'get_app',
+  params: {app_hash: appHash}
 })
 
 const testDnas = []
@@ -51,42 +59,65 @@ export const testInstances = (() => {
 })()
 
 export const baseClient = () => {
-  const client = sinon.stub(new RpcClient())
-  client.call = sinon.stub()
+  const client = makeClient(null, {})
+  sinon.spy(client, 'call')
+  client._call = sinon.stub()
   client.ready = true
   return client
 }
 
+/**
+ * Creates a heavily stubbed master client.
+ */
 export const testMasterClient = () => {
   const client = baseClient()
 
-  client.call.withArgs('admin/agent/list').returns([{id: 'existing-agent-id'}])
-  client.call.withArgs('admin/dna/list').returns(testDnas)
-  client.call.withArgs('admin/dna/install_from_file').returns(success)
-  client.call.withArgs('admin/ui/install').returns(success)
-  client.call.withArgs('admin/instance/list').resolves([{
+  client._call.withArgs('admin/agent/list').returns([{id: 'existing-agent-id'}])
+  client._call.withArgs('admin/dna/list').returns(testDnas)
+  client._call.withArgs('admin/dna/install_from_file').returns(success)
+  client._call.withArgs('admin/ui/install').returns(success)
+  client._call.withArgs('admin/instance/list').resolves([{
     id: instanceIdFromAgentAndDna('fake-agent', 'simple-app')
   }])
-  client.call.withArgs('admin/instance/add').resolves(success)
-  client.call.withArgs('admin/interface/add_instance').resolves(success)
-  client.call.withArgs('admin/instance/start').resolves(success)
-  client.call.withArgs('call', getEnabledAppArgs).resolves({Ok: testApps})
-  testApps.forEach(({address}) => {
-    client.call.withArgs('call', isAppRegisteredArgs(address)).resolves({Ok: 'whatever'})
+  client._call.withArgs('admin/instance/add').resolves(success)
+  client._call.withArgs('admin/interface/add_instance').resolves(success)
+  client._call.withArgs('admin/instance/start').resolves(success)
+  client._call.withArgs('call', getEnabledAppArgs).resolves({Ok: testApps})
+
+  client._call.withArgs('call', isAppRegisteredArgs('invalid')).resolves({
+    Err: "this is not the real error, but it is an error"
+  })
+  client._call.withArgs('call', lookupAppInStoreArgs('invalid')).resolves({
+    Err: "this is not the real error, but it is an error"
+  })
+
+  // Stub out functions that normally go the hApp Store, using the shim database
+  HAPP_DATABASE.forEach(entry => {
+    client._call.withArgs('call', isAppRegisteredArgs(entry.happId)).resolves({
+      Ok: {app_bundle: {happ_hash: entry.happId}}
+    })
+    client._call.withArgs('call', lookupAppInStoreArgs(entry.happId)).resolves({
+      Ok: {appEntry: entry}
+    })
   })
   return client
 }
 
+const testAppEntry: HappEntry = ({
+  dnas: [{location: 'wherever', hash: 'whatever'}],
+  ui: undefined
+})
+
 export const testInternalClient = () => {
   const client = baseClient()
-  client.call.withArgs('call').resolves(mockResponse)
+  client._call.withArgs('call').resolves(mockResponse)
   return client
 }
 
 export const testPublicClient = () => {
   const client = baseClient()
-  client.call.withArgs('call').resolves(mockResponse)
-  client.call.withArgs('info/instances').resolves(testInstances)
+  client._call.withArgs('call').resolves(mockResponse)
+  client._call.withArgs('info/instances').resolves(testInstances)
   return client
 }
 
