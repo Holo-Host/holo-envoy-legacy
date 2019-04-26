@@ -64,42 +64,60 @@ Let's start with the NPM dependencies:
 
 There are two sets of DNAs and UIs that you should install.
 
-#### Core DNAs
+#### Core DNAs and UIs
 
 The "core" DNAs are necessary for Envoy's operation. They are currently the DNAs found in:
 
-- [servicelogger](https://github.com/Holo-Host/servicelogger)
-- [Holo Hosting App](https://github.com/Holo-Host/Holo-Hosting-App)
-- [holofuel](https://github.com/Holo-Host/holofuel)
-- [hApp Store](https://github.com/holochain/HApps-Store)
+- [servicelogger](https://github.com/Holo-Host/servicelogger) (branch `develop`)
+- [Holo Hosting App](https://github.com/Holo-Host/Holo-Hosting-App) (branch `develop`)
+- [holofuel](https://github.com/Holo-Host/holofuel) (branch `develop`)
+- [hApp Store](https://github.com/holochain/HApps-Store) (branch `develop`)
 
-These will eventually come built into the NixOS image. For now, you must have packages of all of these DNAs somewhere on your local filesystem, and then point to them in a special config file named `src/config/dna-config.ts`.
+Two of these also have UIs that must be referenced as well:
 
-If you attempt to run Envoy without first creating this config file, it will exit with instructions similar to this:
+- [hApp Store](https://github.com/holochain/HApps-Store) (same repository as DNA, branch `develop`)
+- [Holo Hosting App GUI](https://github.com/Holo-Host/holo-hosting-app_GUI/tree/interceptor-tester) (branch `interceptor-tester`)
 
-```
-You must provide a src/config/dna-config.ts file pointing to the core DNA packages.
-Example:
+These will all eventually come built into the NixOS image. For now, you must have packages/builds of all of these DNAs and UIs somewhere on your local filesystem, and then point to them in a special config file named `src/config/user-config.ts`. It should look exactly like this:
 
+```javascript
 export default {
-  serviceLogger: {
-    path: '/home/me/happs/servicelogger/dist/servicelogger.dna.json'
-  },
-  holoHosting: {
-    path: '/home/me/happs/Holo-Hosting-App/dna-src/dist/dna-src.dna.json'
-  },
-  holofuel: {
-    path: '/home/me/happs/holofuel/dist/holofuel.dna.json'
-  },
-  happStore: {
-    path: '/home/me/happs/happs-store/dist/happs-store.dna.json'
-  },
+  resources: {
+    serviceLogger: {
+      dna: {
+        path: '/path/to/happs/servicelogger/dist/servicelogger.dna.json',
+      }
+    },
+    holofuel: {
+      dna: {
+        path: '/path/to/happs/holofuel/dist/holofuel.dna.json',
+      }
+    },
+    holoHosting: {
+      dna: {
+        path: '/path/to/happs/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
+      },
+      ui: {
+        path: '/path/to/happs/holo-hosting-app_GUI/ui',
+        port: 8800,
+      },
+    },
+    happStore: {
+      dna: {
+        path: '/path/to/happs/HApps-Store/dna-src/dist/dna-src.dna.json',
+      },
+      ui: {
+        path: '/path/to/happs/HApps-Store/ui',
+        port: 8880,
+      },
+    }
+  }
 }
 ```
 
-If you follow these instructions, Envoy will start successfully next time.
+If you attempt to run Envoy without first creating this config file, it will exit with instructions on how to create it.
 
-**Important**: you can point your `dna-config.ts` to packages anywhere on your filesystem, but it is highly recommended that you point to packages in the standard `dist/` directories of their respective repositories! (i.e. `git clone <repo> && cd <repo> && hc package`). If you do this, then you can use the handy `npm run happs:build` command, which will build the DNA packages that `dna-config.ts` expects, for you! In fact, if you don't do this, you will break the `happs:build` command, which is referenced in the next step!
+**Important**: you can point your `user-config.ts` to packages anywhere on your filesystem, but it is highly recommended that you point to packages in the standard `dist/` directories of their respective repositories! (i.e. `git clone <repo> && cd <repo> && hc package`). If you do this, then you can use the handy `npm run happs:build` command, which will build the DNA packages that `user-config.ts` expects, for you! In fact, if you don't do this, you will break the `happs:build` command, which is referenced in the next step!
 
 #### Hosted hApps
 
