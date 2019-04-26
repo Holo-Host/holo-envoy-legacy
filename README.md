@@ -76,7 +76,9 @@ The "core" DNAs are necessary for Envoy's operation. They are currently the DNAs
 Two of these also have UIs that must be referenced as well:
 
 - [hApp Store](https://github.com/holochain/HApps-Store) (same repository as DNA, branch `develop`)
+    + Build this via `npm install && npm run build`
 - [Holo Hosting App GUI](https://github.com/Holo-Host/holo-hosting-app_GUI/tree/interceptor-tester) (branch `interceptor-tester`)
+    + Build this via `cd ui-src && npm install && npm run build-HHA`
 
 These will all eventually come built into the NixOS image. For now, you must have packages/builds of all of these DNAs and UIs somewhere on your local filesystem, and then point to them in a special config file named `src/config/user-config.ts`. It should look exactly like this:
 
