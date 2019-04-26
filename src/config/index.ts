@@ -70,43 +70,49 @@ type ResourceConfig = {
   }
 }
 
+type UserConfig = {
+  resources: ResourceConfig
+}
+
 /**
  * @deprecated
  */
 type DnaConfigMap = {[handle: string]: DnaConfig}
 
-const testResourceConfig: ResourceConfig = {
-  serviceLogger: {
-    dna: {
-      path: '/path/to/happs/servicelogger/dist/servicelogger.dna.json',
+const testUserConfig: UserConfig = {
+  resources: {
+    serviceLogger: {
+      dna: {
+        path: '/path/to/happs/servicelogger/dist/servicelogger.dna.json',
+      }
+    },
+    holofuel: {
+      dna: {
+        path: '/path/to/happs/holofuel/dist/holofuel.dna.json',
+      }
+    },
+    holoHosting: {
+      dna: {
+        path: '/path/to/happs/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
+      },
+      ui: {
+        path: '/path/to/happs/holo-hosting-app_GUI/ui',
+        port: 8800,
+      },
+    },
+    happStore: {
+      dna: {
+        path: '/path/to/happs/HApps-Store/dna-src/dist/dna-src.dna.json',
+      },
+      ui: {
+        path: '/path/to/happs/HApps-Store/ui',
+        port: 8880,
+      },
     }
-  },
-  holofuel: {
-    dna: {
-      path: '/path/to/happs/holofuel/dist/holofuel.dna.json',
-    }
-  },
-  holoHosting: {
-    dna: {
-      path: '/path/to/happs/Holo-Hosting-App/dna-src/dist/dna-src.dna.json',
-    },
-    ui: {
-      path: '/path/to/happs/holo-hosting-app_GUI/ui',
-      port: 8800,
-    },
-  },
-  happStore: {
-    dna: {
-      path: '/path/to/happs/HApps-Store/dna-src/dist/dna-src.dna.json',
-    },
-    ui: {
-      path: '/path/to/happs/HApps-Store/ui',
-      port: 8880,
-    },
   }
 }
 
-const updateDnaConfigToResourceConfig = (config: DnaConfigMap): ResourceConfig => {
+const updateDnaConfigToUserConfig = (config: DnaConfigMap): UserConfig => {
   const newConfig = {} as ResourceConfig
   Object.entries(config).forEach(([name, c]) => {
     newConfig[name] = {
@@ -115,7 +121,7 @@ const updateDnaConfigToResourceConfig = (config: DnaConfigMap): ResourceConfig =
       }
     }
   })
-  return newConfig
+  return {resources: newConfig}
 }
 
 let outdatedDnaConfig
@@ -135,50 +141,54 @@ const readOutdatedDnaConfig = (): (DnaConfigMap | null) => {
 }
 
 /**
- * Read the resource-config.ts file, with the ability to
+ * Read the user-config.ts file, with the ability to
  * @type {[type]}
  */
-const readResourceConfig = () => {
+const readUserConfig = (): UserConfig => {
 
-  let readResourceConfigCount = 0
-  const run = (): ResourceConfig => {
-    if (++readResourceConfigCount > 2) {
-      console.error("Could not auto-create resource-config.ts file, or remove dna-config.ts and create resource-config.ts yourself")
+  let readUserConfigCount = 0
+  const run = (): UserConfig => {
+    if (++readUserConfigCount > 2) {
+      console.error("Could not auto-create user-config.ts file, or remove dna-config.ts and create user-config.ts yourself")
       process.exit(-1)
     }
     try {
       // Load core DNA paths from special untracked file
-      return require('./resource-config').default
+      return require('./user-config').default
     } catch (e) {
       // In CI tests, we won't have this file, so just use a dummy object
       if (testMode) {
-        return testResourceConfig
+        return testUserConfig
       } else {
         const oudatedDnaConfig = readOutdatedDnaConfig()
         if (outdatedDnaConfig) {
-          const resourceConfig = updateDnaConfigToResourceConfig(outdatedDnaConfig)
-          resourceConfig.happStore.ui = {
+          const userConfig = updateDnaConfigToUserConfig(outdatedDnaConfig)
+          userConfig.resources.happStore.ui = {
             path: '<<FILL ME IN>>',
             port: 8880,
           }
-          resourceConfig.holoHosting.ui = {
+          userConfig.resources.holoHosting.ui = {
             path: '<<FILL ME IN>>',
             port: 8800,
           }
-          const resourceConfigPath = path.join(__dirname, 'resource-config.ts')
+          const userConfigPath = path.join(__dirname, 'user-config.ts')
           const contents = `
-// Be sure to fill in the blanks for the UI paths!
-export default ${JSON.stringify(resourceConfig, null, 2)}
+export default ${JSON.stringify(userConfig, null, 2)}
 
-// Automatically ported from original DNA config. You may delete this.
+
+// YOU MAY DELETE EVERYTHING BELOW THIS LINE
+// Be sure to fill in the blanks for the UI paths above!
+
+
+// Automatically migrated original DNA config, listed below for safety.
 const portedConfig = ${JSON.stringify(outdatedDnaConfig, null, 2)}
 
 `
-          fs.writeFileSync(resourceConfigPath, contents)
+          fs.writeFileSync(userConfigPath, contents)
           console.log()
           console.log("----------------------------------------------------------------------------")
-          console.log("Deprecated dna-config.ts file found, moving info over to resource-config.ts")
-          console.log("Be sure to update your resource-config.ts to include UI paths!")
+          console.log("Deprecated dna-config.ts file found, moving info over to user-config.ts")
+          console.log("Be sure to update your user-config.ts to include UI paths!")
           console.log("Deleting your dna-config.ts file now...")
           console.log("----------------------------------------------------------------------------")
           console.log()
@@ -188,10 +198,10 @@ const portedConfig = ${JSON.stringify(outdatedDnaConfig, null, 2)}
 
           return run()
         }
-        console.error(`You must provide a src/config/resource-config.ts file pointing to the core DNA packages.
+        console.error(`You must provide a src/config/user-config.ts file pointing to the core DNA packages.
     Example:
 
-    export default ${JSON.stringify(testResourceConfig)}
+    export default ${JSON.stringify(testUserConfig)}
       `)
         return process.exit(-1)
       }
@@ -201,7 +211,7 @@ const portedConfig = ${JSON.stringify(outdatedDnaConfig, null, 2)}
   return run()
 }
 
-export const RESOURCES: ResourceConfig = readResourceConfig()
+export const RESOURCES: ResourceConfig = readUserConfig().resources
 
 // The nicknames are a temporary thing, to complement the nicknames in
 // `src/shims/nick-database`. They'll go away when we have "app bundles".
@@ -231,7 +241,8 @@ export const PORTS = {
 // - the `dnaNicks` object above, if a core DNA
 // - or the nickDatabase, if a DNA from the app store
 export const getNickByDna = dnaHash => {
-  const coreApp = Object.entries(RESOURCES).find(entry => entry[1].hash === dnaHash)
+  // **TODO** Removed core app check, because core apps no longer reference their hashes!
+  // Only look in nickDatabase. Make sure this is still correct:
   const externalApp = nickDatabase.find(entry => Boolean(entry.knownDnaHashes.find(hash => hash === dnaHash)))
-  return coreApp ? dnaNicks[coreApp[0]] : externalApp ? externalApp.nick : null
+  return externalApp ? externalApp.nick : null
 }
