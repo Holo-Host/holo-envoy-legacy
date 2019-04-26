@@ -60,10 +60,7 @@ export const spawnConductor = (baseDir) => {
   return conductor
 }
 
-const initialTomlConfig = (baseDir, {keyFile, publicAddress}) => {
-
-  // TODO: add DNA for HCHC when available
-  return `
+const initialTomlConfig = (baseDir, {keyFile, publicAddress}) => `
 bridges = []
 persistence_dir = "${baseDir}"
 signing_service_uri = "http://localhost:${Config.PORTS.wormhole}"
@@ -76,15 +73,15 @@ public_address = "${publicAddress}"
 
 
 [[dnas]]
-file = "${Config.DNAS.holoHosting.path}"
+file = "${Config.RESOURCES.holoHosting.dna.path}"
 id = "${Config.holoHostingAppId.dna}"
 
 [[dnas]]
-file = "${Config.DNAS.happStore.path}"
+file = "${Config.RESOURCES.happStore.dna.path}"
 id = "${Config.happStoreId.dna}"
 
 [[dnas]]
-file = "${Config.DNAS.holofuel.path}"
+file = "${Config.RESOURCES.holofuel.dna.path}"
 id = "${Config.holofuelId.dna}"
 
 
@@ -141,6 +138,30 @@ port = ${Config.PORTS.internalInterface}
 type = "websocket"
 
 
+[[ui_bundles]]
+hash = 'Qm000'
+id = 'hha-ui'
+root_dir = '${Config.RESOURCES.holoHosting.ui.path}'
+
+[[ui_interfaces]]
+bundle = 'hha-ui'
+dna_interface = 'master-interface'
+id = 'hha-ui-interface'
+port = ${Config.RESOURCES.holoHosting.ui.port}
+
+
+[[ui_bundles]]
+hash = 'Qm001'
+id = 'happ-store-ui'
+root_dir = '${Config.RESOURCES.happStore.ui.path}'
+
+[[ui_interfaces]]
+bundle = 'happ-store-ui'
+dna_interface = 'master-interface'
+id = 'happ-store-ui-interface'
+port = ${Config.RESOURCES.happStore.ui.port}
+
+
 [logger]
 type = "debug"
 [[logger.rules.rules]]
@@ -155,4 +176,3 @@ pattern = "^debug/dna"
 exclude = true
 pattern = ".*"
 `
-}

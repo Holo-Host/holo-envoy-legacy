@@ -210,7 +210,7 @@ export const setupInstances = async (client, opts: {happId: string, agentId: str
 }
 
 export const setupServiceLogger = async (masterClient, {hostedHappId}) => {
-  const {path} = Config.DNAS.serviceLogger
+  const {path} = Config.RESOURCES.serviceLogger.dna
   const dnaId = serviceLoggerDnaIdFromHappId(hostedHappId)
   const instanceId = serviceLoggerInstanceIdFromHappId(hostedHappId)
   const agentId = Config.hostAgentName
