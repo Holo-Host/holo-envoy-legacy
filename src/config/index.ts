@@ -124,14 +124,6 @@ const updateDnaConfigToUserConfig = (config: DnaConfigMap): UserConfig => {
   return {resources: newConfig}
 }
 
-let outdatedDnaConfig
-
-try {
-  outdatedDnaConfig = require('./dna-config').default
-} catch {
-  console.info("")
-}
-
 const readOutdatedDnaConfig = (): (DnaConfigMap | null) => {
   try {
     return require('./dna-config').default
@@ -141,8 +133,10 @@ const readOutdatedDnaConfig = (): (DnaConfigMap | null) => {
 }
 
 /**
- * Read the user-config.ts file, with the ability to
- * @type {[type]}
+ * Read the user-config.ts file, automatically migrating the old dna-config.ts file if
+ * applicable
+ *
+ * TODO: this can be simplified considerably once everyone is off of dna-config.ts
  */
 const readUserConfig = (): UserConfig => {
 
@@ -160,7 +154,7 @@ const readUserConfig = (): UserConfig => {
       if (testMode) {
         return testUserConfig
       } else {
-        const oudatedDnaConfig = readOutdatedDnaConfig()
+        const outdatedDnaConfig = readOutdatedDnaConfig()
         if (outdatedDnaConfig) {
           const userConfig = updateDnaConfigToUserConfig(outdatedDnaConfig)
           userConfig.resources.happStore.ui = {
