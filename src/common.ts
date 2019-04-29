@@ -156,6 +156,12 @@ export const lookupHoloInstance = async (client, {dnaHash, agentId}): Promise<In
       dnaHash: dna,
       agentId: agent
     }))
+  //
+  // // TODO: REMOVE THE FOLLOWING `INSTANCES` REFERENCE >>> for HF hosted app
+  // const instances: Array<any> = [{
+  //   dnaHash: "QmYhReByy4kHs3tAdUGSSfUBhvkhTTcfFvnSBCqAr2KZpq",
+  //   agentId: "HcSciwPX6w7Habgzgp73O9h53y3DmGpYdybfMbjWtkrydgfuAubAodr5Ofthqhi"
+  // }]
   const hosted = instances.find(inst => inst.dnaHash === dnaHash && inst.agentId === agentId)
   if (hosted) {
     console.debug("Found instance for hosted agent: ", hosted)

@@ -55,16 +55,16 @@ try {
   if (testMode) {
     dnaConfig = {
       serviceLogger: {
-        path: '/fake/path/to/servicelogger/dist/servicelogger.dna.json'
+        path: '/home/lisa/Documents/gitrepos/holochain/holo/envoy-intrceptr/envoy/src/dnas/servicelogger/dist/servicelogger.dna.json'
       },
       holoHosting: {
-        path: '/fake/path/to/Holo-Hosting-App/dna-src/dist/dna-src.dna.json'
+        path: '/home/lisa/Documents/gitrepos/holochain/holo/holo-hosting/Holo-Hosting-App/dna-src/dist/HoloHostingApp.dna.json'
       },
       holofuel: {
-        path: '/fake/path/to/holofuel/dist/holofuel.dna.json'
+        path: '/home/lisa/Documents/gitrepos/holochain/holo/envoy-intrceptr/envoy/src/dnas/holofuel/dist/holofuel.dna.json'
       },
       happStore: {
-        path: '/fake/path/to/happs-store/dist/happs-store.dna.json'
+        path: '/home/lisa/Documents/gitrepos/holochain/holo/simulation-holo/HApps-Store/dna/happ-store.dna.json'
       }
     }
   } else {
@@ -73,16 +73,16 @@ Example:
 
 export default {
   serviceLogger: {
-    path: '/home/me/happs/servicelogger/dist/servicelogger.dna.json'
+    path: '/home/lisa/happs/servicelogger/dist/servicelogger.dna.json'
   },
   holoHosting: {
-    path: '/home/me/happs/Holo-Hosting-App/dna-src/dist/dna-src.dna.json'
+    path: '/home/lisa/happs/Holo-Hosting-App/dna-src/dist/dna-src.dna.json'
   },
   holofuel: {
-    path: '/home/me/happs/holofuel/dist/holofuel.dna.json'
+    path: '/home/lisa/happs/holofuel/dist/holofuel.dna.json'
   },
   happStore: {
-    path: '/home/me/happs/happs-store/dist/happs-store.dna.json'
+    path: '/home/lisa/happs/happs-store/dist/happs-store.dna.json'
   },
 }
   `)

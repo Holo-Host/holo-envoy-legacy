@@ -73,7 +73,7 @@ name = "Envoy Host"
 keystore_file = "${keyFile}"
 public_address = "${publicAddress}"
 
-
+#********************************************
 [[dnas]]
 file = "${Config.DNAS.holoHosting.path}"
 id = "${Config.holoHostingAppId.dna}"
@@ -86,7 +86,7 @@ id = "${Config.happStoreId.dna}"
 file = "${Config.DNAS.holofuel.path}"
 id = "${Config.holofuelId.dna}"
 
-
+#********************************************
 [[instances]]
 agent = "${Config.hostAgentName}"
 dna = "${Config.holoHostingAppId.dna}"
@@ -111,7 +111,7 @@ id = "${Config.holofuelId.instance}"
 path = "${path.join(Config.chainStorageDir(baseDir), Config.holofuelId.instance)}"
 type = "file"
 
-
+#********************************************
 [[interfaces]]
 id = "${Config.ConductorInterface.Master}"
 admin = true
@@ -124,6 +124,15 @@ id = "${Config.happStoreId.instance}"
 [interfaces.driver]
 port = ${Config.PORTS.masterInterface}
 type = "websocket"
+
+[[interfaces.instances]]
+id = "${Config.holoHostingAppId.dna}"
+
+[[interfaces.instances]]
+id = "${Config.happStoreId.dna}"
+
+[[interfaces.instances]]
+id = "${Config.holofuelId.dna}"
 
 [[interfaces]]
 id = "${Config.ConductorInterface.Public}"
@@ -139,6 +148,45 @@ id = "${Config.ConductorInterface.Internal}"
 port = ${Config.PORTS.internalInterface}
 type = "websocket"
 
+#********************************************
+# CORE APP UI INFO :
+#********************************************
+[[ui_bundles]]
+hash = 'Qm000'
+id = 'HoloHostingApp-gui'
+root_dir = '/home/lisa/Documents/gitrepos/holochain/holo/holo-hosting/zo-el-hha-gui/holo-hosting-app_GUI/ui'
+
+[[ui_bundles]]
+hash = 'QmHAppStoreGUIFakeHash'
+id = 'hAppStore-gui'
+root_dir = '/home/lisa/Documents/gitrepos/holochain/holo/simulation-holo/HApps-Store/ui'
+# Holofuel as Core App:
+ [[ui_bundles]]
+ hash = 'QmHolofuelGUIFakeHash'
+ id = 'holofuel-gui'
+ root_dir = '/home/lisa/Documents/gitrepos/holochain/holo/HoloFuel/holoFuelUI/temp/holofuel-gui/ui-zip/holo-master'
+
+#********************************************
+[[ui_interfaces]]
+bundle = 'HoloHostingApp-gui'
+dna_interface = 'master-interface'
+id = 'ui-interface-1'
+port = 8000
+
+[[ui_interfaces]]
+bundle = 'hAppStore-gui'
+dna_interface = 'master-interface'
+id = 'hAppStore-gui-interface'
+port = 8800
+
+# Holofuel as Core App:
+[[ui_interfaces]]
+ bundle = 'holofuel-gui'
+ dna_interface = 'master-interface'
+ id = 'holofuel-gui-interface'
+ port = 9300
+#********************************************
+#********************************************
 
 [logger]
 type = "debug"

@@ -80,7 +80,7 @@ const logServiceRequest = async (client, payload) => {
     params: {
       entry: {
         agent_id: agentId,
-        dna_hash: dnaHash,
+        dna_hash: dnaHash // testing out hf as hosted app: "QmYhReByy4kHs3tAdUGSSfUBhvkhTTcfFvnSBCqAr2KZpq",  // TODO: REPLACE hashSTring with previous var >>> dnaHash,
         zome_call_spec: zomeCallSpec({zomeName, funcName}),  // TODO, figure out zome call spec format
         client_signature: signature,
       }
