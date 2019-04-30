@@ -59,7 +59,7 @@ sinonTest('can only host agent for enabled app (1 DNA)', async T => {
     params: {}
   })
   T.calledWith(masterClient.call, 'admin/instance/add', {
-    id: `${agentId}::simple-app`,
+    id: `simple-app::${agentId}`,
     dna_id: simpleApp.dnas[0].hash,
     agent_id: agentId,
   })
@@ -88,17 +88,17 @@ sinonTest('can only host agent for enabled app (3 DNAs)', async T => {
     params: {}
   })
   T.calledWith(masterClient.call, 'admin/instance/add', {
-    id: `${agentId}::test-dna-hash-3a`,
+    id: `test-dna-hash-3a::${agentId}`,
     dna_id: testApp3.dnas[0].hash,
     agent_id: agentId,
   })
   T.calledWith(masterClient.call, 'admin/instance/add', {
-    id: `${agentId}::test-dna-hash-3b`,
+    id: `test-dna-hash-3b::${agentId}`,
     dna_id: testApp3.dnas[1].hash,
     agent_id: agentId,
   })
   T.calledWith(masterClient.call, 'admin/instance/add', {
-    id: `${agentId}::test-dna-hash-3c`,
+    id: `test-dna-hash-3c::${agentId}`,
     dna_id: testApp3.dnas[2].hash,
     agent_id: agentId,
   })

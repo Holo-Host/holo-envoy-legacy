@@ -84,7 +84,7 @@ export const instanceIdFromAgentAndDna = (agentId, dnaHash) => {
   const nick = Config.getNickByDna(dnaHash)
   const isHost = agentId === Config.hostAgentName
   const canonicalName = nick ? nick : dnaHash
-  return isHost ? canonicalName : `${agentId}::${canonicalName}`
+  return isHost ? canonicalName : `${canonicalName}::${agentId}`
 }
 
 
