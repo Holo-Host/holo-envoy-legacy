@@ -48,6 +48,22 @@ export const HAPP_DATABASE = [
     },
   },
 
+  {
+    happId: 'QmTK25g1aWaMMWzTFYMB49KNRFdfDBkkVjnSYAXLUex7SZ',
+    nick: 'holofuel-gui',
+    dnas: [
+      {
+        location: `http://localhost:${Config.PORTS.shim}/holofuel/dist/holofuel.dna.json`,
+        hash: 'QmUrd3q8fF71VM3eA1mSEhcEzRsAiE8XiLnMZXBW6omHdV'
+      }
+    ],
+    ui: {
+      location: `http://localhost:${Config.PORTS.shim}/holofuel/ui.zip`,
+      hash: 'QMhfFakeHash'
+    },
+  },
+
+
   // The following are for testing only
   {
     happId: 'test-app-1',
