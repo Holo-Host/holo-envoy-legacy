@@ -1,16 +1,6 @@
 import * as StaticServer from 'static-server'
 import * as Config from '../config'
 
-export type HappResource = {
-  location: string,
-  hash: string,
-}
-
-export type HappEntry = {
-  dnas: Array<HappResource>
-  ui?: HappResource | void
-}
-
 export default (shimPort) => {
   const shimServer = new StaticServer({
     rootPath: './src/shims/happ-data',
@@ -48,7 +38,7 @@ export const HAPP_DATABASE = [
     dnas: [
       {
         location: `http://localhost:${Config.PORTS.shim}/holochain-basic-chat/dna-src/dist/dna-src.dna.json`,
-        hash: 'QmS7TuxiFwmGRig9b7v8mhXqT5LPz9ZSTmkwSpWyovDVkW'
+        hash: 'QmPmrxbyKPTKcpWnaEVyqXRN4efSjsa8s92hH654uQCZ9X'
       }
     ],
     ui: {

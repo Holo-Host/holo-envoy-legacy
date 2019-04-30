@@ -1,11 +1,11 @@
 import axios from 'axios'
+import * as colors from 'colors'
 import * as fs from 'fs-extra'
 import * as os from 'os'
 import * as path from 'path'
 
-import {HappID} from '../types'
+import {HappID, HappResource, HappEntry} from '../types'
 import {
-  callWhenConnected,
   fail,
   unbundleUI,
   uiIdFromHappId,
@@ -15,7 +15,7 @@ import {
   serviceLoggerInstanceIdFromHappId,
 } from '../common'
 import * as Config from '../config'
-import {HAPP_DATABASE, shimHappById, HappResource, HappEntry} from '../shims/happ-server'
+import {HAPP_DATABASE, shimHappById} from '../shims/happ-server'
 
 enum ResourceType {HappUi, HappDna}
 
@@ -98,7 +98,7 @@ const installUi = async (baseDir, {ui, happId}) => {
 }
 
 const isDnaInstalled = async (client, dnaId) => {
-  const installedDnas = await callWhenConnected(client, 'admin/dna/list', {})
+  const installedDnas = await client.call('admin/dna/list', {})
   // TODO: make sure the true DNA hash and ID really match here.
   // for now this is checking with ID since for testing I'm not using real DNA hashes
   return (installedDnas.find(({id}) => id === dnaId))
@@ -109,13 +109,19 @@ export const installDna = async (client, {hash, path, properties}) => {
     console.log(`DNA with ID ${hash} already installed; skipping.`)
     return {success: true}
   } else {
-    return callWhenConnected(client, 'admin/dna/install_from_file', {
+    let args: any = {
       id: hash,
       path: path,
-      expected_hash: hash,
       copy: true,
       properties,
-    })
+    }
+
+    if (hash === 'TODO-FIX-HAPP-STORE') {
+      console.log(colors.red.bgWhite.inverse("!!! Hash checking is temporarily disabled until hApp Store stores DNA hashes !!!"))
+    } else {
+      args.expected_hash = hash
+    }
+    return client.call('admin/dna/install_from_file', args)
   }
 }
 
@@ -127,7 +133,7 @@ export const installCoreDna = async (client, {dnaId, path, properties}) => {
     console.log(`DNA with ID ${dnaId} already installed; skipping.`)
     return {success: true}
   } else {
-    return callWhenConnected(client, 'admin/dna/install_from_file', {
+    return client.call('admin/dna/install_from_file', {
       id: dnaId,
       path: path,
       copy: true,
@@ -140,7 +146,7 @@ type SetupInstanceArgs = {instanceId: string, agentId: string, dnaId: string, co
 
 export const setupInstance = async (client, {instanceId, agentId, dnaId, conductorInterface, replace}: SetupInstanceArgs) => {
 
-  const instanceList = await callWhenConnected(client, 'admin/instance/list', {})
+  const instanceList = await client.call('admin/instance/list', {})
   if (instanceList.find(({id}) => id === instanceId)) {
     if (replace) {
       throw "Instance setup with replacement not yet supported"
@@ -151,18 +157,18 @@ export const setupInstance = async (client, {instanceId, agentId, dnaId, conduct
   }
 
   // TODO handle case where instance exists
-  const addInstance = await callWhenConnected(client, 'admin/instance/add', {
+  const addInstance = await client.call('admin/instance/add', {
     id: instanceId,
     agent_id: agentId,
     dna_id: dnaId,
   })
 
-  const addToInterface = await callWhenConnected(client, 'admin/interface/add_instance', {
+  const addToInterface = await client.call('admin/interface/add_instance', {
     instance_id: instanceId,
     interface_id: conductorInterface,
   })
 
-  const startInstance = await callWhenConnected(client, 'admin/instance/start', {
+  const startInstance = await client.call('admin/instance/start', {
     id: instanceId
   })
 
@@ -172,7 +178,7 @@ export const setupInstance = async (client, {instanceId, agentId, dnaId, conduct
 }
 
 export const setupHolofuelBridge = async (client, {callerInstanceId}) => {
-  return callWhenConnected(client, 'admin/bridge/add', {
+  return client.call('admin/bridge/add', {
     handle: 'holofuel-bridge',
     caller_id: callerInstanceId,
     callee_id: Config.holofuelId.instance,
@@ -182,7 +188,7 @@ export const setupHolofuelBridge = async (client, {callerInstanceId}) => {
 export const setupInstances = async (client, opts: {happId: string, agentId: string, conductorInterface: Config.ConductorInterface}): Promise<void> => {
   const {happId, agentId, conductorInterface} = opts
   // NB: we don't actually use the UI info because we never install it into the conductor
-  const {dnas, ui: _} = await lookupHoloApp(client, {happId})
+  const {dnas, ui: _} = await lookupAppEntryInHHA(client, {happId})
 
   const dnaPromises = dnas.map(async (dna) => {
     const dnaId = dna.hash
@@ -210,7 +216,7 @@ export const setupInstances = async (client, opts: {happId: string, agentId: str
 }
 
 export const setupServiceLogger = async (masterClient, {hostedHappId}) => {
-  const {path} = Config.DNAS.serviceLogger
+  const {path} = Config.RESOURCES.serviceLogger.dna
   const dnaId = serviceLoggerDnaIdFromHappId(hostedHappId)
   const instanceId = serviceLoggerInstanceIdFromHappId(hostedHappId)
   const agentId = Config.hostAgentName
@@ -229,54 +235,50 @@ export const setupServiceLogger = async (masterClient, {hostedHappId}) => {
   // TODO: make initial call to serviceLogger to set up preferences?
 }
 
-export const lookupHoloApp = async (client, {happId}: LookupHappRequest): Promise<HappEntry> => {
-  // this is a shim response for now
-  // assuming DNAs are served as JSON packages
-  // and UIs are served as ZIP archives
+export const lookupAppEntryInHHA = async (client, {happId}: LookupHappRequest): Promise<HappEntry> => {
 
-  // TODO: rewrite when using real App Store
-
-  if (! await happIsRegistered(client, happId)) {
-    throw `hApp is not registered by a provider! (happId = ${happId})`
+  const appHash = await getHappHashFromHHA(client, happId)
+  if (! appHash) {
+    throw `hApp is not registered by a provider! (happId == ${happId})`
   }
 
   // TODO: look up actual web 2.0 hApp store via HTTP
-  const happ = shimHappById(happId)
+  const happ = await lookupAppInStore(client, appHash)
   if (happ) {
-    return happ
+    return happ.appEntry
   } else {
-    throw `happId not found in shim database: ${happId}`
+    throw `happId not found in hApp Store: happId == ${happId}, app store hash == ${appHash}`
   }
 }
 
-const happIsRegistered = async (client, happId) => {
+
+export const lookupAppInStore = (client, appHash) => {
+  return zomeCallByInstance(client, {
+    instanceId: Config.happStoreId.instance,
+    zomeName: 'happs',
+    funcName: 'get_app',
+    params: {app_hash: appHash}
+  })
+}
+
+const getHappHashFromHHA = async (client, happId) => {
   try {
-    await zomeCallByInstance(client, {
+    const entry = await zomeCallByInstance(client, {
       instanceId: Config.holoHostingAppId.instance,
       zomeName: 'provider',
       funcName: 'get_app_details',
       params: {app_hash: happId}
     })
-    return true
+    return entry.app_bundle.happ_hash
   } catch (e) {
-    console.error("happIsRegistered returned error: ", e)
+    console.error("getHappHashFromHHA returned error: ", e)
     console.error("This might be a real error or it could simply mean that the entry was not found. TODO: differentiate the two.")
-    return false
+    return null
   }
 }
 
-export const listHoloApps = () => {
-  // TODO: call HHA's `get_my_registered_app` for real data
-  const fakeApps = ([] as any).concat(HAPP_DATABASE)
-  for (const i in fakeApps) {
-    fakeApps[i].ui_hash = fakeApps[i].ui
-    fakeApps[i].dna_list = fakeApps[i].dnas
-  }
-  return Promise.resolve(fakeApps)
-}
-
-const downloadAppResources = async (_client, happId): Promise<DownloadResult> => {
-  const {dnas, ui} = await lookupHoloApp(_client, {happId})
+const downloadAppResources = async (client, happId): Promise<DownloadResult> => {
+  const {dnas, ui} = await lookupAppEntryInHHA(client, {happId})
 
   const baseDir = fs.mkdtempSync(path.join(os.tmpdir(), 'happ-bundle-'))
   console.debug('using tempdir ', baseDir)

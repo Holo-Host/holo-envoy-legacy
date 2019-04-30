@@ -16,9 +16,9 @@ const hostedHapps: Array<AppBuildConfig> = [
   },
 ]
 
-const coreHapps = Object.values(Config.DNAS).map(entry => {
+const coreHapps = Object.values(Config.RESOURCES).map(entry => {
   // peel off two layers of directories to get to the actual dna source root
-  const dir = path.dirname(path.dirname(entry.path))
+  const dir = path.dirname(path.dirname(entry.dna.path))
   return {
     dnas: [dir],
     ui: null,

@@ -1,5 +1,6 @@
 
 import {spawn, execSync} from 'child_process'
+import * as colors from 'colors'
 import * as fs from 'fs-extra'
 import * as path from 'path'
 import * as rimraf from 'rimraf'
@@ -17,6 +18,7 @@ export const initializeConductorConfig = (baseDir, keyData) => {
     fs.mkdirSync(baseDir, {recursive: true})
   } catch(e) {}
   try {
+    fs.mkdirSync(Config.chainStorageDir(baseDir), {recursive: true})
     fs.mkdirSync(Config.uiStorageDir(baseDir), {recursive: true})
   } catch(e) {}
   let toml = initialTomlConfig(baseDir, keyData)
@@ -53,16 +55,13 @@ export const keygen = (bundlePath?) => {
 export const spawnConductor = (baseDir) => {
   console.log("Using conductor binary: ", execSync('which holochain').toString())
   const conductor = spawn('holochain', ['-c', baseDir])
-  conductor.stdout.on('data', data => console.log('(HC)', data.toString('utf8')))
+  conductor.stdout.on('data', data => console.log('(HC)'.bold, data.toString('utf8')))
   conductor.stderr.on('data', data => console.error('(HC) <E>', data.toString('utf8')))
   conductor.on('close', code => console.log('Conductor closed with code: ', code))
   return conductor
 }
 
-const initialTomlConfig = (baseDir, {keyFile, publicAddress}) => {
-
-  // TODO: add DNA for HCHC when available
-  return `
+const initialTomlConfig = (baseDir, {keyFile, publicAddress}) => `
 bridges = []
 persistence_dir = "${baseDir}"
 signing_service_uri = "http://localhost:${Config.PORTS.wormhole}"
@@ -75,15 +74,15 @@ public_address = "${publicAddress}"
 
 #********************************************
 [[dnas]]
-file = "${Config.DNAS.holoHosting.path}"
+file = "${Config.RESOURCES.holoHosting.dna.path}"
 id = "${Config.holoHostingAppId.dna}"
 
 [[dnas]]
-file = "${Config.DNAS.happStore.path}"
+file = "${Config.RESOURCES.happStore.dna.path}"
 id = "${Config.happStoreId.dna}"
 
 [[dnas]]
-file = "${Config.DNAS.holofuel.path}"
+file = "${Config.RESOURCES.holofuel.dna.path}"
 id = "${Config.holofuelId.dna}"
 
 #********************************************
@@ -188,6 +187,30 @@ port = 8800
 #********************************************
 #********************************************
 
+[[ui_bundles]]
+hash = 'Qm000'
+id = 'hha-ui'
+root_dir = '${Config.RESOURCES.holoHosting.ui.path}'
+
+[[ui_interfaces]]
+bundle = 'hha-ui'
+dna_interface = 'master-interface'
+id = 'hha-ui-interface'
+port = ${Config.RESOURCES.holoHosting.ui.port}
+
+
+[[ui_bundles]]
+hash = 'Qm001'
+id = 'happ-store-ui'
+root_dir = '${Config.RESOURCES.happStore.ui.path}'
+
+[[ui_interfaces]]
+bundle = 'happ-store-ui'
+dna_interface = 'master-interface'
+id = 'happ-store-ui-interface'
+port = ${Config.RESOURCES.happStore.ui.port}
+
+
 [logger]
 type = "debug"
 [[logger.rules.rules]]
@@ -202,4 +225,3 @@ pattern = "^debug/dna"
 exclude = true
 pattern = ".*"
 `
-}

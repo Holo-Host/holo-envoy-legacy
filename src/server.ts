@@ -4,12 +4,13 @@
  * Accepts requests similar to what the Conductor
  */
 
+import * as colors from 'colors'
 import * as express from 'express'
 import * as path from 'path'
 import {Client, Server as RpcServer} from 'rpc-websockets'
 
 import * as Config from './config'
-import installHapp, {InstallHappRequest, listHoloApps} from './flows/install-happ'
+import installHapp, {InstallHappRequest} from './flows/install-happ'
 import zomeCall, {CallRequest, logServiceSignature} from './flows/zome-call'
 import newAgent, {NewAgentRequest} from './flows/new-agent'
 import ConnectionManager from './connection-manager'
@@ -32,10 +33,58 @@ export default (port) => {
   return server
 }
 
+/**
+ * Replace original rpc-websockets client's call function
+ * with one that waits for connection before calling and performs logging,
+ * renaming the original function to `_call`
+ * @type {[type]}
+ */
+export const makeClient = (url, opts) => {
+  const client = new Client(url, opts)
+  client._call = client.call
+  client.call = callWhenConnected
+  return client
+}
+
+/**
+ * If the WS client is connected to the server, make the RPC call immediately
+ * Otherwise, wait for connection, then make the call
+ * Return a promise that resolves when the call is complete
+ * NB: `this._call` comes from `makeClient` above
+ * TODO: may eventually be superseded by ConnectionManager
+ */
+async function callWhenConnected (this: any, method, payload) {
+
+  // Do waiting
+  let promise
+  if(this.ready) {
+    promise = Promise.resolve(this._call(method, payload))
+  } else {
+    promise = new Promise((resolve, reject) => {
+      this.once('open', () => {
+        this._call(method, payload).then(resolve).catch(reject)
+      })
+    })
+  }
+
+  // Do snazzy logging
+  return promise.then(responseRaw => {
+    const response = (responseRaw && typeof responseRaw === 'string') ? JSON.parse(responseRaw) : responseRaw
+    console.log("")
+    console.log(`WS call: ${method}`.dim.inverse)
+    console.log('request'.green.bold, `------>`.green.bold, `(${typeof payload})`.green.italic)
+    console.log(JSON.stringify(payload, null, 2))
+    console.log('response'.cyan.bold, `<-----`.cyan.bold, `(${typeof response})`.cyan.italic)
+    console.log(JSON.stringify(response, null, 2))
+    console.log("")
+    return response
+  })
+}
+
 const clientOpts = reconnect => ({ max_reconnects: 0, reconnect })  // zero reconnects means unlimited
-export const getMasterClient = (reconnect) => new Client(`ws://localhost:${Config.PORTS.masterInterface}`, clientOpts(reconnect))
-export const getPublicClient = (reconnect) => new Client(`ws://localhost:${Config.PORTS.publicInterface}`, clientOpts(reconnect))
-export const getInternalClient = (reconnect) => new Client(`ws://localhost:${Config.PORTS.internalInterface}`, clientOpts(reconnect))
+export const getMasterClient = (reconnect) => makeClient(`ws://localhost:${Config.PORTS.masterInterface}`, clientOpts(reconnect))
+export const getPublicClient = (reconnect) => makeClient(`ws://localhost:${Config.PORTS.publicInterface}`, clientOpts(reconnect))
+export const getInternalClient = (reconnect) => makeClient(`ws://localhost:${Config.PORTS.internalInterface}`, clientOpts(reconnect))
 
 type SigningRequest = {
   entry: Object,

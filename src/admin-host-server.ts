@@ -1,7 +1,6 @@
 import * as express from 'express'
 import * as cors from 'cors'
 import * as bodyParser from 'body-parser'
-import {Client} from 'rpc-websockets'
 
 import * as C from './config'
 import {catchHttp} from './common'

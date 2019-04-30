@@ -7,10 +7,10 @@ import {exec} from 'child_process'
 import {Client, Server} from 'rpc-websockets'
 import * as rimraf from 'rimraf'
 
-import {callWhenConnected} from '../src/common'
 import * as Config from '../src/config'
 import * as S from '../src/server'
-import {shimHappByNick, HappEntry} from '../src/shims/happ-server'
+import {HappEntry} from '../src/types'
+import {shimHappByNick} from '../src/shims/happ-server'
 import {withConductor, getTestClient, adminHostCall, delay, doRegisterHost, doRegisterApp, doAppSetup, zomeCaller} from './common'
 
 import startWormholeServer from '../src/wormhole-server'
