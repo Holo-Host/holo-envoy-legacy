@@ -48,8 +48,8 @@ export const HAPP_DATABASE = [
   },
 
   {
-    happId: 'QmTK25g1aWaMMWzTFYMB49KNRFdfDBkkVjnSYAXLUex7SZ',
-    nick: 'holofuel-gui',
+    happId: 'QmWu2wYK9m38eZmqMn77Y7CGFDWHcH8mGY2jiAe71GnLu5',
+    nick: 'holofuel-hApp',
     dnas: [
       {
         location: `http://localhost:${Config.PORTS.shim}/holofuel/dist/holofuel.dna.json`,

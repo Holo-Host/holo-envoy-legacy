@@ -18,5 +18,23 @@ export const nickDatabase = [
     knownDnaHashes: [
       'QmSKxN3FGVrf1vVMav6gohJVi7GcF4jFcKVDhDcjiAnveo',
     ]
+  },
+  {
+    nick: 'QmYhReByy4kHs3tAdUGSSfUBhvkhTTcfFvnSBCqAr2KZpq',
+    knownDnaHashes: [
+      'QmUrd3q8fF71VM3eA1mSEhcEzRsAiE8XiLnMZXBW6omHdV',
+    ]
+  },
+  {
+    nick: 'holofuel',
+    knownDnaHashes: [
+      'QmUrd3q8fF71VM3eA1mSEhcEzRsAiE8XiLnMZXBW6omHdV',
+    ]
+  },
+  {
+    nick: 'holofuel-holo',
+    knownDnaHashes: [
+      'QmUrd3q8fF71VM3eA1mSEhcEzRsAiE8XiLnMZXBW6omHdV',
+    ]
   }
 ]

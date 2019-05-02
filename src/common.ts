@@ -112,7 +112,7 @@ export const zomeCallSpec = ({zomeName, funcName}) => (
 /**
  * Make a zome call through the WS client, identified by AgentID + DNA Hash
  */
-export const zomeCallByDna = async (client, {agentId, dnaHash, zomeName, funcName, params}) => {
+export const zomeCallByDna = async (client, dnaHash, {agentId, zomeName, funcName, params}) => {
   let instance = await lookupHoloInstance(client, {dnaHash, agentId})
   const instanceId = instanceIdFromAgentAndDna(instance.agentId, instance.dnaHash)
   return zomeCallByInstance(client, {instanceId, zomeName, funcName, params})
@@ -160,12 +160,6 @@ export const lookupHoloInstance = async (client, {dnaHash, agentId}): Promise<In
       dnaHash: dna,
       agentId: agent
     }))
-  //
-  // // TODO: REMOVE THE FOLLOWING `INSTANCES` REFERENCE >>> for HF hosted app
-  // const instances: Array<any> = [{
-  //   dnaHash: "QmYhReByy4kHs3tAdUGSSfUBhvkhTTcfFvnSBCqAr2KZpq",
-  //   agentId: "HcSciwPX6w7Habgzgp73O9h53y3DmGpYdybfMbjWtkrydgfuAubAodr5Ofthqhi"
-  // }]
   const hosted = instances.find(inst => inst.dnaHash === dnaHash && inst.agentId === agentId)
   if (hosted) {
     console.debug("Found instance for hosted agent: ", hosted)

@@ -1,5 +1,6 @@
 
 import {HappID} from '../types'
+import {nickDatabase} from '../shims/nick-database'
 import {
   errorResponse,
   fail,
@@ -13,6 +14,7 @@ import {
 export type CallRequest = {
   agentId: string,
   happId: HappID,
+  instanceId?: string,
   dnaHash: string,
   zome: string,
   function: string,
@@ -29,13 +31,15 @@ export default (publicClient, internalClient) => async (call: CallRequest) => {
   const {
     agentId,
     happId,
-    dnaHash,
+    instanceId: nick,
     zome: zomeName,
     function: funcName,
     params,
   } = call
 
   let signature = call.signature
+  //TODO: Update this to select the DNA in DNA list by handle, once avaiable. Use Case: to handle DNA selection when there are multiple DNAs in hApp bundle.
+  const dnaHash = nickDatabase.find(entry => entry.nick === nick)!.knownDnaHashes[0];
 
   console.debug("holo/call input: ", call)
 
@@ -44,11 +48,11 @@ export default (publicClient, internalClient) => async (call: CallRequest) => {
     signature = 'TODO-look-into-hClient-signature'
   }
 
-  const requestData = buildServiceLoggerRequestPackage(call)
-  const requestEntryHash = await logServiceRequest(internalClient,
-    {happId, agentId, dnaHash, requestData, zomeName, funcName, signature})
-  const result = await zomeCallByDna(publicClient, {
-    agentId, dnaHash, zomeName, funcName, params
+  const requestData = buildServiceLoggerRequestPackage(dnaHash, call)
+  const requestEntryHash = await logServiceRequest(internalClient, dnaHash,
+    {happId, agentId, requestData, zomeName, funcName, signature})
+  const result = await zomeCallByDna(publicClient, dnaHash, {
+    agentId, zomeName, funcName, params
   })
   const responseData = buildServiceLoggerResponsePackage(result)
   const metrics = calcMetrics(requestData, responseData)
@@ -68,9 +72,9 @@ type ServiceMetrics = {
 }
 
 
-const logServiceRequest = async (client, payload) => {
+const logServiceRequest = async (client, dnaHash, payload) => {
   const {
-    happId, agentId, dnaHash, requestData, signature, zomeName, funcName
+    happId, agentId, requestData, signature, zomeName, funcName
   } = payload
   const instanceId = serviceLoggerInstanceIdFromHappId(happId)
   const hash = await zomeCallByInstance(client, {
@@ -80,7 +84,7 @@ const logServiceRequest = async (client, payload) => {
     params: {
       entry: {
         agent_id: agentId,
-        dna_hash: dnaHash // testing out hf as hosted app: "QmYhReByy4kHs3tAdUGSSfUBhvkhTTcfFvnSBCqAr2KZpq",  // TODO: REPLACE hashSTring with previous var >>> dnaHash,
+        dna_hash: dnaHash,
         zome_call_spec: zomeCallSpec({zomeName, funcName}),  // TODO, figure out zome call spec format
         client_signature: signature,
       }
@@ -127,7 +131,9 @@ export const logServiceSignature = async (client, {happId, responseEntryHash, si
   return null
 }
 
-export const buildServiceLoggerRequestPackage = ({dnaHash, zome, function: func, params}: CallRequest) => {
+export const buildServiceLoggerRequestPackage = async (dnaHash, {zome, function: func, params}: CallRequest) => {
+  console.log(`\n`);
+  console.log('>>>>>>>>>>>>>>>>> dnaHash <<<<<<<<<<<<<<<<<<<', dnaHash);
   return {
     function: `${dnaHash}/${zome}/${func}`,
     params
