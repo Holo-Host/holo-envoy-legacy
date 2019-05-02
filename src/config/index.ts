@@ -195,7 +195,7 @@ const portedConfig = ${JSON.stringify(outdatedDnaConfig, null, 2)}
         console.error(`You must provide a src/config/user-config.ts file pointing to the core DNA packages.
     Example:
 
-    export default ${JSON.stringify(testUserConfig)}
+    export default ${JSON.stringify(testUserConfig, null, 2)}
       `)
         return process.exit(-1)
       }
