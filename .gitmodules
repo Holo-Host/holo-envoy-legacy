@@ -1,7 +1,0 @@
-[submodule "simple-app"]
-	path = src/shims/happ-data/simple-app
-	url = git@github.com:holochain/simple-app.git
-[submodule "holochain-basic-chat"]
-	path = src/shims/happ-data/holochain-basic-chat
-	url = https://github.com/holochain/holochain-basic-chat
-	branch = holofy
