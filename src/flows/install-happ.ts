@@ -119,7 +119,7 @@ export const installDna = async (client, {hash, path, properties}) => {
     if (hash === 'TODO-FIX-HAPP-STORE') {
       console.log(colors.red.bgWhite.inverse("!!! Hash checking is temporarily disabled until hApp Store stores DNA hashes !!!"))
     } else {
-      args.expected_hash = hash
+      // args.expected_hash = hash // disable DNA hash checking for development
     }
     return client.call('admin/dna/install_from_file', args)
   }

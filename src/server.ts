@@ -140,7 +140,7 @@ export class EnvoyServer {
         wss = await this.buildWebsocketServer(httpServer)
         console.log("WS server initialized")
 
-        shimServer = startShimServers(Config.PORTS.shim)
+        shimServer = await startShimServers(Config.PORTS.shim)
         adminServer = startAdminHostServer(Config.PORTS.admin, Config.defaultEnvoyHome, server.clients.master)
         wormholeServer = startWormholeServer(Config.PORTS.wormhole, server)
 
@@ -176,7 +176,7 @@ export class EnvoyServer {
           console.log("Not shutting down wormholeServer??")
         }
         if (shimServer) {
-          shimServer.stop()
+          shimServer.close()
           console.log("Shut down shimServer")
         } else {
           console.log("Not shutting down shimServer??")

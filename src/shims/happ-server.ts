@@ -20,9 +20,9 @@ export default (shimPort) => {
     app.use(`/${config.route}`, express.static(dir))
     console.log(`[Shim server]: Serving directory ${dir} on /${config.route}`)
   })
-  app.listen(shimPort)
-  console.log('Shim server running on port', shimPort)
-  return app
+  return app.listen(shimPort, () => {
+    console.log('Shim server running on port', shimPort)
+  })
 }
 
 export const shimHappByNick = nick => HAPP_DATABASE.find(a => a.nick === nick)
