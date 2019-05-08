@@ -1,25 +1,41 @@
-import * as StaticServer from 'static-server'
+import * as express from 'express'
 import * as Config from '../config'
 
+// instructs the static file server as to the location of the hAPP bundles it should serve.
+// This way they don't all need to be in a particular directory and can be external to this repo
+// make sure the routes are URL safe and unique
+const HAPP_SERVER_CONFIG: Array<{route: string, path: string}> = [
+  {
+    route: "basic-chat",
+    path: "./src/shims/happ-data/holochain-basic-chat"
+  },
+  {
+    route: "simple-app",
+    path: "./src/shims/happ-data/simple-app"
+  }
+]
+
 export default (shimPort) => {
-  const shimServer = new StaticServer({
-    rootPath: './src/shims/happ-data',
-    port: shimPort
+  const app = express()
+  HAPP_SERVER_CONFIG.forEach((config) => {
+    app.use(`/${config.route}`, express.static(config.path))
+    console.log(`[Shim server]: Serving directory ${config.path} on /${config.route}`)
   })
+  app.listen(shimPort)
   console.log('Shim server running on port', shimPort)
-  shimServer.start()
-  return shimServer
+  return app
 }
 
 export const shimHappByNick = nick => HAPP_DATABASE.find(a => a.nick === nick)
 export const shimHappById = happId => HAPP_DATABASE.find(a => a.happId === happId)
+
 
 // NB: The only way to find out the hApp ID is register the hApp with Holo Hosting App
 // using register_app, and check its entry hash.
 
 export const HAPP_DATABASE = [
   {
-    happId: 'QmYcfBXfbFJSWfeNC32oEUL1bKsYvXRVN56me4Q9tNHUH7',
+    happId: 'QmSKxN3FGVrf1vVMav6gohJVi7GcF4jFcKVDhDcjiAnveo',
     nick: 'simple-app',
     dnas: [
       {
@@ -34,12 +50,12 @@ export const HAPP_DATABASE = [
   },
 
   {
-    happId: 'QmWhpNUrB6K4kcXp4rGqYtgb823zeabxRA6GUbuvk7TWgv',
+    happId: 'QmYvoxkYYAhr2GsYHoSvAaERuQWXaED9HNqobEzwfuqEJA',
     nick: 'basic-chat',
     dnas: [
       {
         location: `http://localhost:${Config.PORTS.shim}/holochain-basic-chat/dna-src/dist/dna-src.dna.json`,
-        hash: 'QmPmrxbyKPTKcpWnaEVyqXRN4efSjsa8s92hH654uQCZ9X'
+        hash: 'QmVq8BYN8QLKwdg15coikJZFdQw5Jsv2CfVWxwNyCY9sA2'
       }
     ],
     ui: {
