@@ -3,18 +3,28 @@ import * as path from 'path'
 import {execSync} from 'child_process'
 import {bundleUI} from '../common'
 import * as Config from '../config'
+import { HAPP_SERVER_CONFIG } from '../shims/happ-server'
 
 type AppBuildConfig = {
   dnas: Array<string>,
   ui: string | null,
 }
 
-const hostedHapps: Array<AppBuildConfig> = [
-  {
-    dnas: ['./src/shims/happ-data/holochain-basic-chat/dna-src/'],
-    ui: './src/shims/happ-data/holochain-basic-chat/ui'
-  },
-]
+const hostedHapps: Array<AppBuildConfig> = HAPP_SERVER_CONFIG.map((config) => {
+  const dir = path.join(__dirname, config.path)
+  return {
+    dnas: [`${dir}/dna-src`], //assumes hApp directory structure
+    ui: `${dir}/ui`
+  }
+})
+
+
+// const hostedHapps: Array<AppBuildConfig> = [
+//   {
+//     dnas: ['./src/shims/happ-data/holochain-basic-chat/dna-src/'],
+//     ui: './src/shims/happ-data/holochain-basic-chat/ui'
+//   },
+// ]
 
 const coreHapps = Object.values(Config.RESOURCES).map(entry => {
   // peel off two layers of directories to get to the actual dna source root
@@ -44,7 +54,7 @@ const buildHapp = happ => {
   happ.dnas.forEach(dir => {
     console.log(`Packaging DNA for '${dir}'...`)
     execSync(`find $dir -name Cargo.lock -delete`)
-    execSync(`cd ${dir} && git pull && hc package --strip-meta`)
+    execSync(`cd ${dir} && hc package --strip-meta`)
   })
 }
 

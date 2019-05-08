@@ -1,25 +1,24 @@
 import * as express from 'express'
 import * as Config from '../config'
+import * as path from 'path'
 
 // instructs the static file server as to the location of the hAPP bundles it should serve.
 // This way they don't all need to be in a particular directory and can be external to this repo
 // make sure the routes are URL safe and unique
-const HAPP_SERVER_CONFIG: Array<{route: string, path: string}> = [
+// paths should be relative to the current file
+export const HAPP_SERVER_CONFIG: Array<{route: string, path: string}> = [
   {
-    route: "basic-chat",
-    path: "./src/shims/happ-data/holochain-basic-chat"
-  },
-  {
-    route: "simple-app",
-    path: "./src/shims/happ-data/simple-app"
+    route: "holochain-basic-chat",
+    path: "../../../../basic-chat"
   }
 ]
 
 export default (shimPort) => {
   const app = express()
   HAPP_SERVER_CONFIG.forEach((config) => {
-    app.use(`/${config.route}`, express.static(config.path))
-    console.log(`[Shim server]: Serving directory ${config.path} on /${config.route}`)
+    const dir = path.join(__dirname, config.path)
+    app.use(`/${config.route}`, express.static(dir))
+    console.log(`[Shim server]: Serving directory ${dir} on /${config.route}`)
   })
   app.listen(shimPort)
   console.log('Shim server running on port', shimPort)
