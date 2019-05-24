@@ -218,7 +218,13 @@ export class EnvoyServer {
     const uiDir = Config.devUI ? path.join(uiRoot, Config.devUI) : uiRoot
     console.log("Serving UI from: ", uiDir)
 
-    app.use(morgan('combined'))
+    const logFormat = `
+:method :url :status :response-time ms - :res[content-length]
+header:
+:req[header]
+`
+    // const logFormat = 'combined'
+    app.use(morgan(logFormat))
     // use the following for file-based logging
     // const logStream = fs.createWriteStream(path.join(__dirname, '..', 'log', 'access.log'), { flags: 'a' })
     // app.use(morgan('combined', {stream: logStream}))
