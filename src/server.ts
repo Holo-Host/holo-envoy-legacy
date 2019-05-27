@@ -223,7 +223,7 @@ export class EnvoyServer {
     // const logStream = fs.createWriteStream(path.join(__dirname, '..', 'log', 'access.log'), { flags: 'a' })
     // app.use(morgan(logFormat, {stream: logStream}))
 
-    app.get('/', (req, res, next) => {
+    app.use('*', (req, res, next) => {
       const host = req.headers['X-Forwarded-Host'] || ""
       const [happHash, partialAgentId, ...domain] = host.split('.')
       const domainExpected = 'holohost.net'.split('.')
