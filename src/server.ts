@@ -225,7 +225,7 @@ export class EnvoyServer {
 
     app.use('*', async (req, res, next) => {
       const host = req.headers['x-forwarded-host'] || ""
-      
+
       const [happHash, partialAgentId, ...domain] = host.split('.')
       const domainExpected = 'holohost.net'.split('.')
       if (!(domain[0] === domainExpected[0] && domain[1] === domainExpected[1])) {
@@ -236,10 +236,8 @@ export class EnvoyServer {
         const uiAppArray = uiApps(uiDir);
         const trueHappHash = await this.findCaseInsensitiveMatch(uiAppArray, happHash);
 
-        // const filePath = path.join(uiDir, happHash, req.path)
-        const filePath = path.join(uiDir, trueHappHash, req.path)
-        console.debug('serving static UI asset: ', filePath)
-        res.sendFile(filePath)
+        console.debug('serving static UI asset: ', path.join(uiDir, trueHappHash, req.path))
+        res.sendFile(req.path, {root: path.join(uiDir, trueHappHash)}, next)
       }
     })
 
