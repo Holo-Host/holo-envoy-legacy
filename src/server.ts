@@ -8,6 +8,7 @@ import * as colors from 'colors'
 import * as fs from 'fs'
 import * as express from 'express'
 import * as path from 'path'
+import * as mime from 'mime-types'
 import * as morgan from 'morgan'
 import {Client, Server as RpcServer} from 'rpc-websockets'
 
@@ -218,7 +219,7 @@ export class EnvoyServer {
     const uiDir = Config.devUI ? path.join(uiRoot, Config.devUI) : uiRoot
     console.log("Serving all UIs from: ", uiDir)
 
-    app.use(morgan('dev'))
+    // app.use(morgan('dev'))
     // use the following for file-based logging
     // const logStream = fs.createWriteStream(path.join(__dirname, '..', 'log', 'access.log'), { flags: 'a' })
     // app.use(morgan(logFormat, {stream: logStream}))
@@ -236,8 +237,11 @@ export class EnvoyServer {
         const uiAppArray = uiApps(uiDir);
         const trueHappHash = await this.findCaseInsensitiveMatch(uiAppArray, happHash);
 
-        console.debug('serving static UI asset: ', path.join(uiDir, trueHappHash, req.path))
-        res.sendFile(req.path, {root: path.join(uiDir, trueHappHash)}, next)
+        console.log('serving static UI asset: ', path.join(uiDir, trueHappHash, req.originalUrl));
+
+        const staticFile = path.join(uiDir, trueHappHash, req.originalUrl);
+
+        res.sendFile(staticFile, null, next)
       }
     })
 
@@ -250,7 +254,7 @@ export class EnvoyServer {
       return happHashLowerCase.match(new RegExp(happ, 'i'));
     });
     _casedHapp = happBundle[0];
-    console.log("RESULT from _casedHapp : ", _casedHapp);
+    // console.log("RESULT from _casedHapp : ", _casedHapp);
     return _casedHapp;
   }
 
