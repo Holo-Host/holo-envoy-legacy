@@ -8,7 +8,6 @@ import * as colors from 'colors'
 import * as fs from 'fs'
 import * as express from 'express'
 import * as path from 'path'
-import * as mime from 'mime-types'
 import * as morgan from 'morgan'
 import {Client, Server as RpcServer} from 'rpc-websockets'
 
@@ -219,7 +218,7 @@ export class EnvoyServer {
     const uiDir = Config.devUI ? path.join(uiRoot, Config.devUI) : uiRoot
     console.log("Serving all UIs from: ", uiDir)
 
-    // app.use(morgan('dev'))
+    app.use(morgan('dev'))
     // use the following for file-based logging
     // const logStream = fs.createWriteStream(path.join(__dirname, '..', 'log', 'access.log'), { flags: 'a' })
     // app.use(morgan(logFormat, {stream: logStream}))
