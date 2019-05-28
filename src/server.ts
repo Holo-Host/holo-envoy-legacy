@@ -232,6 +232,8 @@ export class EnvoyServer {
         next(new Error("X-Forwarded-Host header not properly set. Received: " + host))
       } else {
         // TODO: Refactor following once we have a solution to host happs with case-SENSITIVITY in tact.
+        // Since domain names are case-insensitive, we lose casing on the happ hash.
+        // Therefore, we need to search for the properly cased directory to serve from.
         const uiApps = (sourceDir) => fs.readdirSync(sourceDir).filter(file => fs.statSync(path.join(sourceDir, file)).isDirectory());
         const uiAppArray = uiApps(uiDir);
         const trueHappHash = await this.findCaseInsensitiveMatch(uiAppArray, happHash);
