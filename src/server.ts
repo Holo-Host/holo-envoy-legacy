@@ -216,22 +216,46 @@ export class EnvoyServer {
     // TODO: check access to prevent cross-UI requests?
     const uiRoot = Config.uiStorageDir(Config.defaultEnvoyHome)
     const uiDir = Config.devUI ? path.join(uiRoot, Config.devUI) : uiRoot
-    console.log("Serving UI from: ", uiDir)
+    console.log("Serving all UIs from: ", uiDir)
 
-    const logFormat = `
-:method :url :status :response-time ms - :res[content-length]
-header:
-:req[header]
-`
-    // const logFormat = 'combined'
-    app.use(morgan(logFormat))
+    app.use(morgan('dev'))
     // use the following for file-based logging
     // const logStream = fs.createWriteStream(path.join(__dirname, '..', 'log', 'access.log'), { flags: 'a' })
-    // app.use(morgan('combined', {stream: logStream}))
+    // app.use(morgan(logFormat, {stream: logStream}))
 
-    app.use(`/`, express.static(uiDir))
+    app.use('*', async (req, res, next) => {
+      const host = req.headers['x-forwarded-host'] || ""
+
+      const [happHash, partialAgentId, ...domain] = host.split('.')
+      const domainExpected = 'holohost.net'.split('.')
+      if (!(domain[0] === domainExpected[0] && domain[1] === domainExpected[1])) {
+        next(new Error("X-Forwarded-Host header not properly set. Received: " + host))
+      } else {
+        // TODO: Refactor following once we have a solution to host happs with case-SENSITIVITY in tact.
+        // Since domain names are case-insensitive, we lose casing on the happ hash.
+        // Therefore, we need to search for the properly cased directory to serve from.
+        const uiApps = (sourceDir) => fs.readdirSync(sourceDir).filter(file => fs.statSync(path.join(sourceDir, file)).isDirectory());
+        const uiAppArray = uiApps(uiDir);
+        const trueHappHash = await this.findCaseInsensitiveMatch(uiAppArray, happHash);
+
+        const staticFile = path.join(uiDir, trueHappHash, req.originalUrl);
+        console.log('serving static UI asset: ', staticFile);
+
+        res.sendFile(staticFile, null, next)
+      }
+    })
 
     return require('http').createServer(app)
+  }
+
+  findCaseInsensitiveMatch = (uiAppArray, happHashLowerCase) => {
+    let _casedHapp: string;
+    const happBundle = uiAppArray.filter(happ => {
+      return happHashLowerCase.match(new RegExp(happ, 'i'));
+    });
+    _casedHapp = happBundle[0];
+    // console.log("RESULT from _casedHapp : ", _casedHapp);
+    return _casedHapp;
   }
 
   buildWebsocketServer = async (httpServer) => {
