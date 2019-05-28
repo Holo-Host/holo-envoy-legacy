@@ -236,9 +236,8 @@ export class EnvoyServer {
         const uiAppArray = uiApps(uiDir);
         const trueHappHash = await this.findCaseInsensitiveMatch(uiAppArray, happHash);
 
-        console.log('serving static UI asset: ', path.join(uiDir, trueHappHash, req.originalUrl));
-
         const staticFile = path.join(uiDir, trueHappHash, req.originalUrl);
+        console.log('serving static UI asset: ', staticFile);
 
         res.sendFile(staticFile, null, next)
       }
