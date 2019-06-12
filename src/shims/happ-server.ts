@@ -39,7 +39,7 @@ export const HAPP_DATABASE = [
     dnas: [
       {
         location: `http://localhost:${Config.PORTS.shim}/holochain-basic-chat/dna-src/dist/dna-src.dna.json`,
-        hash: 'QmPmrxbyKPTKcpWnaEVyqXRN4efSjsa8s92hH654uQCZ9X'
+        hash: 'QmeVtyWaYQt3pANiREofWHGuwW3dpdzLegvgmdFQ6fQ6Vx'
       }
     ],
     ui: {

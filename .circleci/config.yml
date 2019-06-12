@@ -29,13 +29,13 @@ jobs:
             - node_modules
           key: v1-npmdeps-{{ checksum "package.json" }}
       
-      - persist_to_workspace:
-          # Must be an absolute path, or relative path from working_directory. This is a directory on the container which is 
-          # taken to be the root directory of the workspace.
-          root: .
-          # Must be relative path from root
-          paths:
-            - node_modules
+      # - persist_to_workspace:
+      #     # Must be an absolute path, or relative path from working_directory. This is a directory on the container which is 
+      #     # taken to be the root directory of the workspace.
+      #     root: .
+      #     # Must be relative path from root
+      #     paths:
+      #       - node_modules
 
       - run: yarn test
 
@@ -43,33 +43,50 @@ jobs:
     <<: *defaults
 
     steps:
-      - run: sudo apt-get update
-      - run: sudo apt-get install libssl-dev
       - checkout
       - attach_workspace:
           at: ~/project
 
       - restore_cache:
           keys:
-            - holochain-v0.0.9-alpha
+            - holochain-v0.0.18-alpha1
 
-      - run: wget https://github.com/holochain/holochain-rust/releases/download/v0.0.9-alpha/conductor-v0.0.9-alpha-x86_64-ubuntu-linux-gnu.tar.gz
-      - run: wget https://github.com/holochain/holochain-rust/releases/download/v0.0.9-alpha/cli-v0.0.9-alpha-x86_64-ubuntu-linux-gnu.tar.gz
+      - run: wget https://github.com/holochain/holochain-rust/releases/download/v0.0.19-alpha1/conductor-v0.0.19-alpha1-x86_64-generic-linux-gnu.tar.gz
+      - run: wget https://github.com/holochain/holochain-rust/releases/download/v0.0.19-alpha1/cli-v0.0.19-alpha1-x86_64-generic-linux-gnu.tar.gz
 
       - save_cache:
           paths:
             - node_modules
-          key: holochain-v0.0.9-alpha
+          key: holochain-v0.0.18-alpha1
 
-      - run: tar -xvf conductor-v0.0.9-alpha-x86_64-ubuntu-linux-gnu.tar.gz
-      - run: tar -xvf cli-v0.0.9-alpha-x86_64-ubuntu-linux-gnu.tar.gz
+      - run: tar -xvf conductor-v0.0.19-alpha1-x86_64-generic-linux-gnu.tar.gz
+      - run: tar -xvf cli-v0.0.19-alpha1-x86_64-generic-linux-gnu.tar.gz
 
       # note "unknown" for directory name vs "ubuntu" for archive name
-      - run: sudo mv conductor-v0.0.9-alpha-x86_64-unknown-linux-gnu/holochain /usr/local/bin && chmod a+x /usr/local/bin/holochain
-      - run: sudo mv cli-v0.0.9-alpha-x86_64-unknown-linux-gnu/hc /usr/local/bin && chmod a+x /usr/local/bin/hc
+      - run: sudo mv conductor-v0.0.19-alpha1-x86_64-unknown-linux-gnu/holochain /usr/local/bin && chmod a+x /usr/local/bin/holochain
+      - run: sudo mv cli-v0.0.19-alpha1-x86_64-unknown-linux-gnu/hc /usr/local/bin && chmod a+x /usr/local/bin/hc
       
       - run: holochain --version
       - run: hc --version
+
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+            - v1-npmdeps-{{ checksum "package.json" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-npmdeps-
+
+      # - run: nix-shell --run 'npm install'
+      - run: yarn install
+
+      - save_cache:
+          paths:
+            - node_modules
+          key: v1-npmdeps-{{ checksum "package.json" }}
+      
+      
+      - run: yarn integration
 
 
 workflows:
@@ -78,5 +95,4 @@ workflows:
   ubuntu:
     jobs:
       - unit-tests
-      # - integration-tests
-      # ^^ integration tests turned off until external libssl dep is removed
+      - integration-tests

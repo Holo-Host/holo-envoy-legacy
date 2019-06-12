@@ -44,7 +44,7 @@ setupDpki()
 
 
 // TODO remove only
-sinonTest.only('can do hosted zome call', async T => {
+sinonTest('can do hosted zome call', async T => {
   const happNick = 'basic-chat'
   return withConductor(T, async (envoy) => {
     // setup host
