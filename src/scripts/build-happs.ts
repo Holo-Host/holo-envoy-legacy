@@ -44,7 +44,8 @@ const buildHapp = happ => {
   happ.dnas.forEach(dir => {
     console.log(`Packaging DNA for '${dir}'...`)
     execSync(`find $dir -name Cargo.lock -delete`)
-    execSync(`cd ${dir} && hc package --strip-meta`)
+    execSync(`find $dir -name target | xargs -i{} rm -r {}`)
+    execSync(`cd ${dir} && git pull && hc package --strip-meta`)
   })
 }
 

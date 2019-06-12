@@ -35,6 +35,7 @@ export const nickDatabase = [
     nick: 'holofuel-holo',
     knownDnaHashes: [
       'QmUrd3q8fF71VM3eA1mSEhcEzRsAiE8XiLnMZXBW6omHdV',
+      'QmTjGiTEv8Fz6KuP5qzVRqbNw9pxp3mwXPjvV2pf99sKJz',
     ]
   }
 ]

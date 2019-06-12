@@ -314,7 +314,7 @@ const downloadResource = async (baseDir: string, res: HappResource, type: Resour
   })
   return new Promise((fulfill, reject) => {
     if (response.status != 200) {
-      reject(`Could not fetch ${res.location}: ${response.statusText} ${response.status}`)
+      reject(`Could not fetch ${res.location}, response was ${response.statusText} ${response.status}`)
     } else {
       const writer = fs.createWriteStream(resourcePath)
         .on("finish", () => fulfill(resourcePath))

@@ -221,7 +221,7 @@ pattern = "^err/"
 color = "white"
 exclude = false
 pattern = "^debug/dna"
-[[logger.rules.rules]]
-exclude = true
-pattern = ".*"
+# [[logger.rules.rules]]
+# exclude = true
+# pattern = ".*"
 `
