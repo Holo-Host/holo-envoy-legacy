@@ -228,7 +228,13 @@ export class EnvoyServer {
 
       const [happHash, partialAgentId, ...domain] = host.split('.')
       const domainExpected = 'holohost.net'.split('.')
-      if (!(domain[0] === domainExpected[0] && domain[1] === domainExpected[1])) {
+      const validHost = (
+        domain[0] === domainExpected[0]
+        && domain[1] === domainExpected[1]
+        && happHash
+        && partialAgentId
+      )
+      if (!validHost) {
         next(new Error("X-Forwarded-Host header not properly set. Received: " + host))
       } else {
         // TODO: Refactor following once we have a solution to host happs with case-SENSITIVITY in tact.
@@ -237,6 +243,9 @@ export class EnvoyServer {
         const uiApps = (sourceDir) => fs.readdirSync(sourceDir).filter(file => fs.statSync(path.join(sourceDir, file)).isDirectory());
         const uiAppArray = uiApps(uiDir);
         const trueHappHash = await this.findCaseInsensitiveMatch(uiAppArray, happHash);
+        if (!trueHappHash) {
+          next(new Error(`The case-insensitive happ hash '${happHash}' appears not to have been installed on this conductor!`))
+        }
 
         const staticFile = path.join(uiDir, trueHappHash, req.originalUrl);
         console.log('serving static UI asset: ', staticFile);
