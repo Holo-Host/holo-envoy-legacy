@@ -77,7 +77,7 @@ export const testMasterClient = () => {
   client._call.withArgs('admin/dna/install_from_file').returns(success)
   client._call.withArgs('admin/ui/install').returns(success)
   client._call.withArgs('admin/instance/list').resolves([{
-    id: instanceIdFromAgentAndDna('fake-agent', 'simple-app')
+    id: instanceIdFromAgentAndDna('fake-agent', 'basic-chat')
   }])
   client._call.withArgs('admin/instance/add').resolves(success)
   client._call.withArgs('admin/interface/add_instance').resolves(success)

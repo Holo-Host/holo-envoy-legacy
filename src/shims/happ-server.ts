@@ -1,54 +1,29 @@
 import * as StaticServer from 'static-server'
 import * as Config from '../config'
 
-export default (shimPort) => {
-  const shimServer = new StaticServer({
-    rootPath: './src/shims/happ-data',
-    port: shimPort
-  })
-  console.log('Shim server running on port', shimPort)
-  shimServer.start()
-  return shimServer
-}
 
 export const shimHappByNick = nick => HAPP_DATABASE.find(a => a.nick === nick)
-export const shimHappById = happId => HAPP_DATABASE.find(a => a.happId === happId)
 
 // NB: The only way to find out the hApp ID is register the hApp with Holo Hosting App
 // using register_app, and check its entry hash.
 
 export const HAPP_DATABASE = [
   {
-    happId: 'QmYcfBXfbFJSWfeNC32oEUL1bKsYvXRVN56me4Q9tNHUH7',
-    nick: 'simple-app',
-    dnas: [
-      {
-        location: `http://localhost:${Config.PORTS.shim}/simple-app/dist/simple-app.dna.json`,
-        hash: 'QmSKxN3FGVrf1vVMav6gohJVi7GcF4jFcKVDhDcjiAnveo'
-      }
-    ],
-    ui: {
-      location: 'src/shims/happ-data/simple-app/ui.zip',
-      hash: 'QmSimpleAppFakeHash'
-    },
-  },
-
-  {
-    happId: 'QmWhpNUrB6K4kcXp4rGqYtgb823zeabxRA6GUbuvk7TWgv',
+    happId: 'basic-chat',
     nick: 'basic-chat',
     dnas: [
       {
-        location: `http://localhost:${Config.PORTS.shim}/holochain-basic-chat/dna-src/dist/dna-src.dna.json`,
+        location: Config.DEPENDENCIES.testResources.basicChat.dna.location,
         hash: 'QmeVtyWaYQt3pANiREofWHGuwW3dpdzLegvgmdFQ6fQ6Vx'
       }
     ],
     ui: {
-      location: `http://localhost:${Config.PORTS.shim}/holochain-basic-chat/ui.zip`,
-      hash: 'QmBasicChatFakeHash'
+      location: Config.DEPENDENCIES.testResources.basicChat.ui.location,
+      hash: 'FAKEHASH'
     },
   },
 
-  // The following are for testing only
+  // The following are for unit tests only
   {
     happId: 'test-app-1',
     nick: 'test-app-1',

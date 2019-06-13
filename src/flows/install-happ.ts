@@ -16,7 +16,7 @@ import {
   serviceLoggerInstanceIdFromHappId,
 } from '../common'
 import * as Config from '../config'
-import {HAPP_DATABASE, shimHappById} from '../shims/happ-server'
+import {HAPP_DATABASE} from '../shims/happ-server'
 
 enum ResourceType {HappUi, HappDna}
 

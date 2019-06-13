@@ -10,12 +10,10 @@ import * as rimraf from 'rimraf'
 import * as Config from '../src/config'
 import * as S from '../src/server'
 import {HappEntry} from '../src/types'
-import {shimHappByNick} from '../src/shims/happ-server'
 import {withConductor, getTestClient, adminHostCall, delay, doRegisterHost, doRegisterApp, doAppSetup, zomeCaller} from './common'
 
 import startWormholeServer from '../src/wormhole-server'
 import startAdminHostServer from '../src/admin-host-server'
-import startShimServers from '../src/shims/happ-server'
 
 const requiredHcVersion = Config.DEPENDENCIES.holochainVersion
 exec(`holochain --version`, (err, stdout, stderr) => {
@@ -104,13 +102,11 @@ test('all components shut themselves down properly', async t => {
   const client = S.getMasterClient(false)
   const httpServer = await envoy.buildHttpServer(null)
   const wss = await envoy.buildWebsocketServer(httpServer)
-  const shimServer = startShimServers(Config.PORTS.shim)
   const adminServer = startAdminHostServer(Config.PORTS.admin, 'testdir', null)
   const wormholeServer = startWormholeServer(Config.PORTS.wormhole, envoy)
 
   httpServer.close()
   wss.close()
-  shimServer.stop()
   adminServer.close()
   wormholeServer.close()
   client.close()
