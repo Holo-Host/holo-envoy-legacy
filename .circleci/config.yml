@@ -22,7 +22,7 @@ jobs:
             - v1-npmdeps-
 
       # - run: nix-shell --run 'npm install'
-      - run: yarn install
+      - run: npm install
 
       - save_cache:
           paths:
@@ -37,7 +37,7 @@ jobs:
       #     paths:
       #       - node_modules
 
-      - run: yarn test
+      - run: npm test
 
   integration-tests:
     <<: *defaults
@@ -78,15 +78,15 @@ jobs:
             - v1-npmdeps-
 
       # - run: nix-shell --run 'npm install'
-      - run: yarn install
+      - run: npm install
 
       - save_cache:
           paths:
             - node_modules
           key: v1-npmdeps-{{ checksum "package.json" }}
       
-      - run: yarn run deps
-      - run: yarn integration
+      - run: npm run deps
+      - run: npm run integration
 
 
 workflows:
