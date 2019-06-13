@@ -213,7 +213,7 @@ sinonTest('can perform entire installation flow', async T => {
   T.callCount(spySetupServiceLogger, 1)
 
   T.calledWith(masterClient.call, 'admin/instance/add', {
-    id: 'basic-chat',
+    id: dnaHash,
     agent_id: Config.hostAgentName,
     dna_id: dnaHash,
   })
