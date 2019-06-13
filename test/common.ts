@@ -6,7 +6,7 @@ import {Client as RpcClient, Server as RpcServer} from 'rpc-websockets'
 import * as Config from '../src/config'
 import {EnvoyServer, makeClient} from '../src/server'
 import {instanceIdFromAgentAndDna} from '../src/common'
-import {HappEntry} from '../src/types'
+import {HappStoreEntry} from '../src/types'
 import {HAPP_DATABASE} from '../src/shims/happ-server'
 
 const tape = tapePromise(_tape)
@@ -103,8 +103,8 @@ export const testMasterClient = () => {
   return client
 }
 
-const testAppEntry: HappEntry = ({
-  dnas: [{location: 'wherever', hash: 'whatever'}],
+const testAppEntry: HappStoreEntry = ({
+  dnas: [{location: 'wherever', hash: 'whatever', handle: 'whomever'}],
   ui: undefined
 })
 

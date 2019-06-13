@@ -18,13 +18,16 @@ export type KeyData = {
   publicAddress: string,
 }
 
-export type HappResource = {
+export interface HappStoreResource {
   location: string,
   hash: string,
 }
 
-export interface HappEntry {
-  dnas: Array<HappResource>
-  ui?: HappResource | void
+export type HappStoreUiResource = HappStoreResource
+export type HappStoreDnaResource = HappStoreResource & { handle: string }
+
+export interface HappStoreEntry {
+  dnas: Array<HappStoreDnaResource>
+  ui?: HappStoreUiResource
 }
 

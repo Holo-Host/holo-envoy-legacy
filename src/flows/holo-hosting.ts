@@ -1,7 +1,7 @@
 
 import * as C from '../config'
 import {zomeCallByInstance} from '../common'
-import {HappEntry} from '../types'
+import {HappStoreEntry} from '../types'
 
 export const enableHapp = (client, happId) => {
   return zomeCallByInstance(client, {
@@ -53,7 +53,7 @@ export const SHIMS = {
     })
   },
 
-  createAndRegisterHapp: async (client, entry: HappEntry) => {
+  createAndRegisterHapp: async (client, entry: HappStoreEntry) => {
     const title = "TODO"
     const description = "TODO"
     const thumbnail_url = "TODO.gif"

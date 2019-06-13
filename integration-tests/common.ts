@@ -126,7 +126,7 @@ export const doRegisterHost = async () => {
   await delay(1000)
 }
 
-export const doRegisterApp = async (happEntry: T.HappEntry): Promise<string> => {
+export const doRegisterApp = async (happEntry: T.HappStoreEntry): Promise<string> => {
   const masterClient = S.getMasterClient(false)
   const happId = await HH.SHIMS.createAndRegisterHapp(masterClient, happEntry)
   console.log("registered hApp: ", happId)

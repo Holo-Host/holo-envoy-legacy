@@ -9,7 +9,6 @@ import * as rimraf from 'rimraf'
 
 import * as Config from '../src/config'
 import * as S from '../src/server'
-import {HappEntry} from '../src/types'
 import {withConductor, getTestClient, adminHostCall, delay, doRegisterHost, doRegisterApp, doAppSetup, zomeCaller} from './common'
 
 import startWormholeServer from '../src/wormhole-server'

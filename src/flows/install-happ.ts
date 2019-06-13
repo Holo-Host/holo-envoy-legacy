@@ -4,7 +4,7 @@ import * as fs from 'fs-extra'
 import * as os from 'os'
 import * as path from 'path'
 
-import {HappID, HappResource, HappEntry} from '../types'
+import {HappID, HappStoreResource, HappStoreEntry} from '../types'
 import {
   downloadFile,
   fail,
@@ -236,7 +236,7 @@ export const setupServiceLogger = async (masterClient, {hostedHappId}) => {
   // TODO: make initial call to serviceLogger to set up preferences?
 }
 
-export const lookupAppEntryInHHA = async (client, {happId}: LookupHappRequest): Promise<HappEntry> => {
+export const lookupAppEntryInHHA = async (client, {happId}: LookupHappRequest): Promise<HappStoreEntry> => {
 
   const appHash = await getHappHashFromHHA(client, happId)
   if (! appHash) {
@@ -301,7 +301,7 @@ const downloadAppResources = async (client, happId): Promise<DownloadResult> => 
   return {ui: uiResource, dnas: dnaResources}
 }
 
-const downloadResource = async (baseDir: string, res: HappResource, type: ResourceType): Promise<string> => {
+const downloadResource = async (baseDir: string, res: HappStoreResource, type: ResourceType): Promise<string> => {
   const suffix = type === ResourceType.HappDna ? '.dna.json' : '.zip'
   const resourcePath: string = path.join(baseDir, res.hash + suffix)
   return downloadFile({url: res.location, path: resourcePath})
