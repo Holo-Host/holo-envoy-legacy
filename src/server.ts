@@ -324,7 +324,7 @@ export class EnvoyServer {
   }
 
   zomeCall = (params: CallRequest) => {
-    return zomeCall(this.clients.public, this.clients.internal)(params).catch(fail)
+    return zomeCall(this.clients.master, this.clients.public, this.clients.internal)(params).catch(fail)
   }
 
   /**

@@ -192,7 +192,7 @@ export const setupInstances = async (client, opts: {happId: string, agentId: str
 
   const dnaPromises = dnas.map(async (dna) => {
     const dnaId = dna.hash
-    const instanceId = instanceIdFromAgentAndDna(agentId, dnaId)
+    const instanceId = instanceIdFromAgentAndDna({agentId, dnaHash: dnaId})
     return setupInstance(client, {
       dnaId,
       agentId,
@@ -243,7 +243,7 @@ export const lookupAppEntryInHHA = async (client, {happId}: LookupHappRequest): 
   }
 
   // TODO: look up actual web 2.0 hApp store via HTTP
-  const happ = await lookupAppInStore(client, appHash)
+  const happ = await lookupAppInStoreByHash(client, appHash)
   if (happ) {
     return happ.appEntry
   } else {
@@ -252,13 +252,22 @@ export const lookupAppEntryInHHA = async (client, {happId}: LookupHappRequest): 
 }
 
 
-export const lookupAppInStore = (client, appHash) => {
+export const lookupAppInStoreByHash = (client, appHash) => {
   return zomeCallByInstance(client, {
     instanceId: Config.happStoreId.instance,
     zomeName: 'happs',
     funcName: 'get_app',
     params: {app_hash: appHash}
   })
+}
+
+export const lookupDnaByHandle = async (client, appHash, handle): Promise<{hash: string}> => {
+  const app = await lookupAppInStoreByHash(client, appHash)
+  const dna = app.appEntry.dnas.find(dna => dna.handle === handle)
+  if (!dna) {
+    throw new Error(`DNA not found for appHash '${appHash}' and handle '${handle}'`)
+  }
+  return dna
 }
 
 const getHappHashFromHHA = async (client, happId) => {

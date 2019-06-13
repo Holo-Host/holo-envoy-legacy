@@ -2,13 +2,14 @@
 import * as sinon from 'sinon'
 
 import * as Config from '../../src/config'
+import {delay} from '../../src/common'
 import * as holochainClient from "@holochain/hc-web-client"
 import {sinonTest} from '../common'
 import {TEST_HAPPS} from '../test-happs'
 
 const HC = require('@holo-host/hclient')
 
-import {withConductor, getTestClient, adminHostCall, delay, doRegisterApp, doRegisterHost, doAppSetup, zomeCaller} from './setup'
+import {withConductor, getTestClient, adminHostCall, doRegisterApp, doRegisterHost, doAppSetup, zomeCaller} from './setup'
 
 const setupDpki = () => {
   const DPKI = HC.dpkiUltralite

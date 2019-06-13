@@ -1,19 +1,20 @@
 
 import {HappID} from '../types'
 import {
-  errorResponse,
-  fail,
+  lookupHoloInstance,
+  instanceIdFromAgentAndDna,
   serviceLoggerInstanceIdFromHappId,
-  zomeCallByDna,
   zomeCallByInstance,
   zomeCallSpec,
 } from '../common'
+
+import {lookupDnaByHandle} from './install-happ'
 
 
 export type CallRequest = {
   agentId: string,
   happId: HappID,
-  dnaHash: string,
+  handle: string,
   zome: string,
   function: string,
   params: any,
@@ -22,14 +23,14 @@ export type CallRequest = {
 
 export type CallResponse = any
 
-export default (publicClient, internalClient) => async (call: CallRequest) => {
+export default (masterClient, publicClient, internalClient) => async (call: CallRequest) => {
   // TODO: add replay attack protection? nonce?
   // TODO: figure out actual payload, especially after conductor RPC call is refactored
 
   const {
     agentId,
     happId,
-    dnaHash,
+    handle,
     zome: zomeName,
     function: funcName,
     params,
@@ -44,11 +45,19 @@ export default (publicClient, internalClient) => async (call: CallRequest) => {
     signature = 'TODO-look-into-hClient-signature'
   }
 
-  const requestData = buildServiceLoggerRequestPackage(call)
+  // TODO: make sure this is tested
+  const dna = await lookupDnaByHandle(masterClient, happId, handle)
+  const dnaHash = dna.hash
+  // see if this instance is actually hosted, we may have to get the host's instance if not
+  const instance = await lookupHoloInstance(publicClient, {agentId, dnaHash})
+  // use the looked-up instance info, not the info passed in to the zome call
+  const instanceId = instanceIdFromAgentAndDna(instance)
+
+  const requestData = buildServiceLoggerRequestPackage({dnaHash, ...call})
   const requestEntryHash = await logServiceRequest(internalClient,
     {happId, agentId, dnaHash, requestData, zomeName, funcName, signature})
-  const result = await zomeCallByDna(publicClient, {
-    agentId, dnaHash, zomeName, funcName, params
+  const result = await zomeCallByInstance(publicClient, {
+    instanceId, zomeName, funcName, params
   })
   const responseData = buildServiceLoggerResponsePackage(result)
   const metrics = calcMetrics(requestData, responseData)
@@ -127,7 +136,8 @@ export const logServiceSignature = async (client, {happId, responseEntryHash, si
   return null
 }
 
-export const buildServiceLoggerRequestPackage = ({dnaHash, zome, function: func, params}: CallRequest) => {
+// TODO: make sure this is tested
+export const buildServiceLoggerRequestPackage = ({dnaHash, zome, function: func, params}) => {
   return {
     function: `${dnaHash}/${zome}/${func}`,
     params

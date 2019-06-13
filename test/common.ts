@@ -29,7 +29,7 @@ export const isAppRegisteredArgs = happId => ({
   params: {app_hash: happId}
 })
 
-export const lookupAppInStoreArgs = appHash => ({
+export const lookupAppInStoreByHashArgs = appHash => ({
   instance_id: Config.happStoreId.instance,
   zome: 'happs',
   function: 'get_app',
@@ -77,7 +77,7 @@ export const testMasterClient = () => {
   client._call.withArgs('admin/dna/install_from_file').returns(success)
   client._call.withArgs('admin/ui/install').returns(success)
   client._call.withArgs('admin/instance/list').resolves([{
-    id: instanceIdFromAgentAndDna('fake-agent', 'basic-chat')
+    id: instanceIdFromAgentAndDna({agentId: 'fake-agent', dnaHash: 'basic-chat'})
   }])
   client._call.withArgs('admin/instance/add').resolves(success)
   client._call.withArgs('admin/interface/add_instance').resolves(success)
@@ -87,7 +87,7 @@ export const testMasterClient = () => {
   client._call.withArgs('call', isAppRegisteredArgs('invalid')).resolves({
     Err: "this is not the real error, but it is an error"
   })
-  client._call.withArgs('call', lookupAppInStoreArgs('invalid')).resolves({
+  client._call.withArgs('call', lookupAppInStoreByHashArgs('invalid')).resolves({
     Err: "this is not the real error, but it is an error"
   })
 
@@ -96,7 +96,7 @@ export const testMasterClient = () => {
     client._call.withArgs('call', isAppRegisteredArgs(entry.happId)).resolves({
       Ok: {app_bundle: {happ_hash: entry.happId}}
     })
-    client._call.withArgs('call', lookupAppInStoreArgs(entry.happId)).resolves({
+    client._call.withArgs('call', lookupAppInStoreByHashArgs(entry.happId)).resolves({
       Ok: {appEntry: entry}
     })
   })

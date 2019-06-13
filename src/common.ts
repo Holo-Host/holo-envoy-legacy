@@ -122,7 +122,7 @@ export const uiIdFromHappId = (
  * If this is the host's instance, the ID is just the DNA hash
  * Another agent's hosted instance gets their agentId appended to it with a ::
  */
-export const instanceIdFromAgentAndDna = (agentId, dnaHash) => {
+export const instanceIdFromAgentAndDna = ({agentId, dnaHash}) => {
   const isHost = agentId === Config.hostAgentName
   return isHost ? dnaHash : `${dnaHash}::${agentId}`
 }
@@ -148,15 +148,6 @@ export const serviceLoggerDnaIdFromHappId = serviceLoggerInstanceIdFromHappId
 export const zomeCallSpec = ({zomeName, funcName}) => (
   `${zomeName}/${funcName}`
 )
-
-/**
- * Make a zome call through the WS client, identified by AgentID + DNA Hash
- */
-export const zomeCallByDna = async (client, {agentId, dnaHash, zomeName, funcName, params}) => {
-  let instance = await lookupHoloInstance(client, {dnaHash, agentId})
-  const instanceId = instanceIdFromAgentAndDna(instance.agentId, instance.dnaHash)
-  return zomeCallByInstance(client, {instanceId, zomeName, funcName, params})
-}
 
 /**
  * Make a zome call through the WS client, identified by instance ID
@@ -188,6 +179,7 @@ export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName
     return result.Ok
   }
 }
+
 
 /**
  * Look for an instance config via AgentID and DNA hash
@@ -225,3 +217,5 @@ export const whenReady = async client => {
     })
   }
 }
+
+export const delay = ms => new Promise(resolve => setTimeout(resolve, ms))

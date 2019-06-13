@@ -55,6 +55,7 @@ sinonTest('can call public zome function', async T => {
   internalClient._call.withArgs('call').onSecondCall().returns({Ok: "responseHash"})
 
   const agentId = 'some-ad-hoc-agent-id'
+  const handle = '1a'
   const dnaHash = 'test-dna-hash-1a'
   const happId = 'test-app-1'
   const serviceLoggerInstanceId = serviceLoggerInstanceIdFromHappId(happId)
@@ -62,14 +63,14 @@ sinonTest('can call public zome function', async T => {
   const call = {
     happId,
     agentId,
-    dnaHash,
+    handle,
     zome: 'zome',
     function: 'function',
     params: request,
     signature: 'signature',
   }
   const response = await envoy.zomeCall(call)
-  const requestPackage = Z.buildServiceLoggerRequestPackage(call)
+  const requestPackage = Z.buildServiceLoggerRequestPackage({dnaHash, ...call})
   const responsePackage = Z.buildServiceLoggerResponsePackage(response)
   const metrics = Z.calcMetrics(requestPackage, responsePackage)
 
@@ -111,7 +112,7 @@ sinonTest('can call public zome function', async T => {
 
   // NB: the instance is called with the host agent ID, not the ad-hoc one!!
   T.calledWith(publicClient.call, 'call', {
-    instance_id: instanceIdFromAgentAndDna(Config.hostAgentName, dnaHash),
+    instance_id: instanceIdFromAgentAndDna({agentId: Config.hostAgentName, dnaHash}),
     params: request,
     function: 'function',
     zome: 'zome',

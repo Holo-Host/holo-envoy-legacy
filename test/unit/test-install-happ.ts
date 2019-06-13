@@ -4,7 +4,7 @@ import * as path from 'path'
 import * as sinon from 'sinon'
 import {EventEmitter} from 'events'
 
-import {mockResponse, sinonTest, testEnvoyServer, getEnabledAppArgs, isAppRegisteredArgs, lookupAppInStoreArgs} from '../common'
+import {mockResponse, sinonTest, testEnvoyServer, getEnabledAppArgs, isAppRegisteredArgs, lookupAppInStoreByHashArgs} from '../common'
 import {bundleUI, unbundleUI, instanceIdFromAgentAndDna, serviceLoggerDnaIdFromHappId, serviceLoggerInstanceIdFromHappId} from '../../src/common'
 import * as Common from '../../src/common'
 import * as Config from '../../src/config'
@@ -99,7 +99,7 @@ sinonTest('can install dnas and ui for hApp', async T => {
   T.callCount(masterClient.call, 4)
 
   T.calledWith(masterClient.call.getCall(0), 'call', isAppRegisteredArgs(happId))
-  T.calledWith(masterClient.call.getCall(1), 'call', lookupAppInStoreArgs(happId))
+  T.calledWith(masterClient.call.getCall(1), 'call', lookupAppInStoreByHashArgs(happId))
   T.calledWith(masterClient.call.getCall(2), 'admin/dna/list')
   T.calledWith(masterClient.call.getCall(3), 'admin/dna/install_from_file', {
     copy: true,
@@ -127,13 +127,13 @@ sinonTest('can setup instances', async T => {
   const happId = basicChat.happId
   const dnaHash = basicChat.dnas[0].hash
   const agentId = 'fake-agent-id'
-  const instanceId = instanceIdFromAgentAndDna(agentId, dnaHash)
+  const instanceId = instanceIdFromAgentAndDna({agentId, dnaHash})
   const result = M.setupInstances(masterClient, {happId, agentId, conductorInterface: Config.ConductorInterface.Public})
   await T.doesNotReject(result)
   T.callCount(masterClient.call, 6)
 
   T.calledWith(masterClient.call.getCall(0), 'call', isAppRegisteredArgs(happId))
-  T.calledWith(masterClient.call.getCall(1), 'call', lookupAppInStoreArgs(happId))
+  T.calledWith(masterClient.call.getCall(1), 'call', lookupAppInStoreByHashArgs(happId))
   T.calledWith(masterClient.call.getCall(2), 'admin/instance/list')
   T.calledWith(masterClient.call.getCall(3), 'admin/instance/add', {
     agent_id: agentId,
@@ -156,7 +156,7 @@ sinonTest('can setup servicelogger', async T => {
   const happId = basicChat.happId
   const dnaHash = basicChat.dnas[0].hash
   const agentId = 'fake-agent-id'
-  const instanceId = instanceIdFromAgentAndDna(agentId, dnaHash)
+  const instanceId = instanceIdFromAgentAndDna({agentId, dnaHash})
   const serviceLoggerDnaId = serviceLoggerDnaIdFromHappId(happId)
   const serviceLoggerId = serviceLoggerInstanceIdFromHappId(happId)
   const result = M.setupServiceLogger(masterClient, {hostedHappId: happId})
@@ -196,7 +196,7 @@ sinonTest('can perform entire installation flow', async T => {
   const happId = basicChat.happId
   const dnaHash = basicChat.dnas[0].hash
   const agentId = 'fake-agent-id'
-  const instanceId = instanceIdFromAgentAndDna(agentId, dnaHash)
+  const instanceId = instanceIdFromAgentAndDna({agentId, dnaHash})
   const serviceLoggerId = serviceLoggerInstanceIdFromHappId(happId)
 
   const spyInstallDnasAndUi = sinon.spy(M, 'installDnasAndUi')

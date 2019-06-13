@@ -8,7 +8,7 @@ import * as rimraf from 'rimraf'
 
 import * as S from '../../src/server'
 import * as T from '../../src/types'
-import {serializeError, whenReady, parseAxiosError} from '../../src/common'
+import {serializeError, whenReady, parseAxiosError, delay} from '../../src/common'
 import * as HH from '../../src/flows/holo-hosting'
 
 import * as Config from '../../src/config'
@@ -88,9 +88,6 @@ export const withConductor = async (t, fn) => {
   // Give envoy time to shut down (TODO, remove)
   await delay(1000)
 }
-
-
-export const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 /**
  * Read the cached test keyfile data from files, first creating said files if nonexistant
