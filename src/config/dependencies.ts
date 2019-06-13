@@ -20,7 +20,7 @@ export default (resourcePath: string ) => ({
     },
     holoHosting: {
       dna: {
-        location: 'https://github.com/Holo-Host/Holo-Hosting-App/releases/download/v0.2.2-alpha1/Qmah3kc2GkNoqKZiLV7enBz4kgaH1FogGJzP7ewfEFMwKQ.dna.json',
+        location: 'https://github.com/Holo-Host/Holo-Hosting-App/releases/download/v0.2.3-alpha1/QmS68VfLBKZPvNp17uCkHFwKVvxDxzESeiMmBg2QAgUwdH.dna.json',
         path: path.join(resourcePath, 'holo-hosting.dna.json'),
       },
       ui: {
