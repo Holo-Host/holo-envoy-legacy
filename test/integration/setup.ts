@@ -5,15 +5,16 @@ import * as os from 'os'
 import * as path from 'path'
 import {exec} from 'child_process'
 import * as rimraf from 'rimraf'
-import * as S from '../src/server'
-import * as T from '../src/types'
-import {serializeError, whenReady, parseAxiosError} from '../src/common'
-import {shimHappByNick} from '../src/shims/happ-server'
-import * as HH from '../src/flows/holo-hosting'
 
-import * as Config from '../src/config'
-import {initializeConductorConfig, cleanConductorStorage, spawnConductor, keygen} from '../src/conductor'
-import startEnvoy from '../src/server'
+import * as S from '../../src/server'
+import * as T from '../../src/types'
+import {serializeError, whenReady, parseAxiosError} from '../../src/common'
+import {shimHappByNick} from '../../src/shims/happ-server'
+import * as HH from '../../src/flows/holo-hosting'
+
+import * as Config from '../../src/config'
+import {initializeConductorConfig, cleanConductorStorage, spawnConductor, keygen} from '../../src/conductor'
+import startEnvoy from '../../src/server'
 
 
 export const adminHostCall = (uri, data) => {

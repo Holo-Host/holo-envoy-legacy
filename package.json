@@ -14,9 +14,9 @@
     "keygen": "ts-node -T keygen-cached.ts",
     "conductor": "holochain -c ~/.holochain/holo/conductor-config.toml",
     "test": "npm run test:unit",
-    "test:unit": "ENVOY_TEST=1 ts-node test/index.ts | faucet",
-    "test:unit:raw": "ENVOY_TEST=1 ts-node test/index.ts",
-    "integration": "ts-node integration-tests/index.ts",
+    "test:unit": "ENVOY_TEST=1 ts-node test/unit | faucet",
+    "test:unit:raw": "ENVOY_TEST=1 ts-node test/unit",
+    "integration": "ts-node test/integration",
     "cmd": "ts-node integration-tests/command.ts"
   },
   "dependencies": {

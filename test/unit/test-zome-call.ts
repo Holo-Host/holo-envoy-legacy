@@ -1,22 +1,22 @@
 import * as test from 'tape'
 import * as sinon from 'sinon'
 
-import * as Config from '../src/config'
-import {lookupHoloInstance} from '../src/common'
-import {InstanceType} from '../src/types'
-import {testInstances, baseClient} from './common'
+import * as Config from '../../src/config'
+import {lookupHoloInstance} from '../../src/common'
+import {InstanceType} from '../../src/types'
+import {testInstances, baseClient} from '../common'
 
 import {
   mockResponse,
   sinonTest,
   testEnvoyServer,
-} from './common'
+} from '../common'
 import {
   instanceIdFromAgentAndDna,
   serviceLoggerInstanceIdFromHappId,
-} from '../src/common'
-import {EnvoyServer} from '../src/server'
-import * as Z from '../src/flows/zome-call'
+} from '../../src/common'
+import {EnvoyServer} from '../../src/server'
+import * as Z from '../../src/flows/zome-call'
 
 test('can calculate metrics', t => {
   const request = {giveMe: 'what i want'}

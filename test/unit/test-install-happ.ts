@@ -4,13 +4,13 @@ import * as path from 'path'
 import * as sinon from 'sinon'
 import {EventEmitter} from 'events'
 
-import {mockResponse, sinonTest, testEnvoyServer, getEnabledAppArgs, isAppRegisteredArgs, lookupAppInStoreArgs} from './common'
-import {bundleUI, unbundleUI, instanceIdFromAgentAndDna, serviceLoggerDnaIdFromHappId, serviceLoggerInstanceIdFromHappId} from '../src/common'
-import * as Common from '../src/common'
-import * as Config from '../src/config'
-import {shimHappByNick} from '../src/shims/happ-server'
+import {mockResponse, sinonTest, testEnvoyServer, getEnabledAppArgs, isAppRegisteredArgs, lookupAppInStoreArgs} from '../common'
+import {bundleUI, unbundleUI, instanceIdFromAgentAndDna, serviceLoggerDnaIdFromHappId, serviceLoggerInstanceIdFromHappId} from '../../src/common'
+import * as Common from '../../src/common'
+import * as Config from '../../src/config'
+import {shimHappByNick} from '../../src/shims/happ-server'
 
-import installHapp, * as M from '../src/flows/install-happ'
+import installHapp, * as M from '../../src/flows/install-happ'
 
 const emitterWithPipe = () => {
   return Object.assign(new EventEmitter(), {

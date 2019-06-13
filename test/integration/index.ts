@@ -7,12 +7,12 @@ import {exec} from 'child_process'
 import {Client, Server} from 'rpc-websockets'
 import * as rimraf from 'rimraf'
 
-import * as Config from '../src/config'
-import * as S from '../src/server'
-import {withConductor, getTestClient, adminHostCall, delay, doRegisterHost, doRegisterApp, doAppSetup, zomeCaller} from './common'
+import * as Config from '../../src/config'
+import * as S from '../../src/server'
+import {withConductor, getTestClient, adminHostCall, delay, doRegisterHost, doRegisterApp, doAppSetup, zomeCaller} from './setup'
 
-import startWormholeServer from '../src/wormhole-server'
-import startAdminHostServer from '../src/admin-host-server'
+import startWormholeServer from '../../src/wormhole-server'
+import startAdminHostServer from '../../src/admin-host-server'
 
 const requiredHcVersion = Config.DEPENDENCIES.holochainVersion
 exec(`holochain --version`, (err, stdout, stderr) => {

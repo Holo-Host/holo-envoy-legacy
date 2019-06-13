@@ -1,12 +1,12 @@
 import * as test from 'tape'
 import * as sinon from 'sinon'
 
-import {mockResponse, sinonTest, testEnvoyServer} from './common'
-import * as Config from '../src/config'
-import {EnvoyServer} from '../src/server'
-import * as M from '../src/flows/new-agent'
-import newAgentFlow from '../src/flows/new-agent'
-import {shimHappByNick} from '../src/shims/happ-server'
+import {mockResponse, sinonTest, testEnvoyServer} from '../common'
+import * as Config from '../../src/config'
+import {EnvoyServer} from '../../src/server'
+import * as M from '../../src/flows/new-agent'
+import newAgentFlow from '../../src/flows/new-agent'
+import {shimHappByNick} from '../../src/shims/happ-server'
 
 // TODO: add tests for failure cases
 
