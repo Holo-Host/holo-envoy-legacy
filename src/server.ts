@@ -19,7 +19,6 @@ import ConnectionManager from './connection-manager'
 
 import startWormholeServer from './wormhole-server'
 import startAdminHostServer from './admin-host-server'
-import startShimServers from './shims/happ-server'
 
 const successResponse = { success: true }
 
@@ -128,7 +127,7 @@ export class EnvoyServer {
   }
 
   start = async (port) => {
-    let wss, httpServer, shimServer, adminServer, wormholeServer
+    let wss, httpServer, adminServer, wormholeServer
     const server = this
     const importantConnections = ['master']
     this.connections = new ConnectionManager({
@@ -140,7 +139,6 @@ export class EnvoyServer {
         wss = await this.buildWebsocketServer(httpServer)
         console.log("WS server initialized")
 
-        shimServer = startShimServers(Config.PORTS.shim)
         adminServer = startAdminHostServer(Config.PORTS.admin, Config.defaultEnvoyHome, server.clients.master)
         wormholeServer = startWormholeServer(Config.PORTS.wormhole, server)
 
@@ -174,12 +172,6 @@ export class EnvoyServer {
           console.log("Shut down wormholeServer")
         } else {
           console.log("Not shutting down wormholeServer??")
-        }
-        if (shimServer) {
-          shimServer.stop()
-          console.log("Shut down shimServer")
-        } else {
-          console.log("Not shutting down shimServer??")
         }
 
         this.server = null

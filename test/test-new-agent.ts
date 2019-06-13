@@ -10,7 +10,7 @@ import {shimHappByNick} from '../src/shims/happ-server'
 
 // TODO: add tests for failure cases
 
-const simpleApp = shimHappByNick('simple-app')!
+const simpleApp = shimHappByNick('basic-chat')!
 const testApp3 = shimHappByNick('test-app-3')!
 
 sinonTest('can host new agent', async T => {
@@ -59,7 +59,7 @@ sinonTest('can only host agent for enabled app (1 DNA)', async T => {
     params: {}
   })
   T.calledWith(masterClient.call, 'admin/instance/add', {
-    id: `simple-app::${agentId}`,
+    id: `basic-chat::${agentId}`,
     dna_id: simpleApp.dnas[0].hash,
     agent_id: agentId,
   })

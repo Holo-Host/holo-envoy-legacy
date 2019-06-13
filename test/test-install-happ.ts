@@ -26,7 +26,7 @@ sinon.stub(fs, 'copy')
 sinon.stub(Common, 'bundleUI')
 sinon.stub(Common, 'unbundleUI')
 
-const simpleApp = shimHappByNick('simple-app')!
+const basicChat = shimHappByNick('basic-chat')!
 
 const axiosResponse = (status) => {
   return {
@@ -71,9 +71,9 @@ sinonTest('throws error for non-hosted happId', async T => {
 sinonTest('throws error for unreachable resources', async T => {
   const {masterClient} = testEnvoyServer()
   const sandbox = sinon.createSandbox()
-  // sandbox.stub(M, 'lookupAppEntryInHHA').resolves(simpleApp)
+  // sandbox.stub(M, 'lookupAppEntryInHHA').resolves(basicChat)
   sandbox.stub(axios, 'request').resolves(axiosResponse(404))
-  const happId = simpleApp.happId
+  const happId = basicChat.happId
 
   await T.rejects(
     M.installDnasAndUi(masterClient, 'test-dir', {happId}),
@@ -89,11 +89,11 @@ sinonTest('can install dnas and ui for hApp', async T => {
   const {masterClient} = testEnvoyServer()
 
   const sandbox = sinon.createSandbox()
-  // sandbox.stub(M, 'lookupAppEntryInHHA').resolves(simpleApp)
+  // sandbox.stub(M, 'lookupAppEntryInHHA').resolves(basicChat)
   sandbox.stub(axios, 'request').resolves(axiosResponse(200))
-  const happId = simpleApp.happId
-  const dnaHash = simpleApp.dnas[0].hash
-  const uiHash = simpleApp.ui!.hash
+  const happId = basicChat.happId
+  const dnaHash = basicChat.dnas[0].hash
+  const uiHash = basicChat.ui!.hash
   const result = M.installDnasAndUi(masterClient, 'test-dir', {happId})
   await T.doesNotReject(result)
   T.callCount(masterClient.call, 4)
@@ -110,7 +110,7 @@ sinonTest('can install dnas and ui for hApp', async T => {
   })
 
   // const uiDir = `${happId}`
-  const uiDir = `tempdir/QmSimpleAppFakeHash`
+  const uiDir = `tempdir/FAKEHASH`
   T.calledWith(Common.unbundleUI, `${uiDir}.zip`, uiDir)
   T.calledWith(
     fs.copy,
@@ -124,8 +124,8 @@ sinonTest('can install dnas and ui for hApp', async T => {
 sinonTest('can setup instances', async T => {
   const {masterClient} = testEnvoyServer()
 
-  const happId = simpleApp.happId
-  const dnaHash = simpleApp.dnas[0].hash
+  const happId = basicChat.happId
+  const dnaHash = basicChat.dnas[0].hash
   const agentId = 'fake-agent-id'
   const instanceId = instanceIdFromAgentAndDna(agentId, dnaHash)
   const result = M.setupInstances(masterClient, {happId, agentId, conductorInterface: Config.ConductorInterface.Public})
@@ -153,8 +153,8 @@ sinonTest('can setup servicelogger', async T => {
   const {masterClient} = testEnvoyServer()
 
   const serviceLogger = Config.DEPENDENCIES.resources.serviceLogger.dna
-  const happId = simpleApp.happId
-  const dnaHash = simpleApp.dnas[0].hash
+  const happId = basicChat.happId
+  const dnaHash = basicChat.dnas[0].hash
   const agentId = 'fake-agent-id'
   const instanceId = instanceIdFromAgentAndDna(agentId, dnaHash)
   const serviceLoggerDnaId = serviceLoggerDnaIdFromHappId(happId)
@@ -168,7 +168,7 @@ sinonTest('can setup servicelogger', async T => {
     copy: true,
     id: serviceLoggerDnaId,
     path: serviceLogger.path,
-    properties: { forApp: simpleApp.happId }
+    properties: { forApp: basicChat.happId }
   })
   T.calledWith(masterClient.call, 'admin/instance/list')
   T.calledWith(masterClient.call, 'admin/instance/add', {
@@ -193,8 +193,8 @@ sinonTest('can setup servicelogger', async T => {
 sinonTest('can perform entire installation flow', async T => {
   const {masterClient} = testEnvoyServer()
   const serviceLogger = Config.DEPENDENCIES.resources.serviceLogger.dna
-  const happId = simpleApp.happId
-  const dnaHash = simpleApp.dnas[0].hash
+  const happId = basicChat.happId
+  const dnaHash = basicChat.dnas[0].hash
   const agentId = 'fake-agent-id'
   const instanceId = instanceIdFromAgentAndDna(agentId, dnaHash)
   const serviceLoggerId = serviceLoggerInstanceIdFromHappId(happId)
@@ -213,7 +213,7 @@ sinonTest('can perform entire installation flow', async T => {
   T.callCount(spySetupServiceLogger, 1)
 
   T.calledWith(masterClient.call, 'admin/instance/add', {
-    id: 'simple-app',
+    id: 'basic-chat',
     agent_id: Config.hostAgentName,
     dna_id: dnaHash,
   })

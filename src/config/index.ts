@@ -55,10 +55,11 @@ type UiConfig = {
 
 type DependencyConfig = {
   holochainVersion: string,
-  resources: ResourceConfig
+  resources: Resources,
+  testResources: TestResources,
 }
 
-type ResourceConfig = {
+type Resources = {
   serviceLogger: {
     dna: DnaConfig
   },
@@ -75,9 +76,20 @@ type ResourceConfig = {
   }
 }
 
-type UserConfig = {
-  resources: ResourceConfig
+type TestResources = {
+  basicChat: TestConfig,
 }
+
+type TestConfig = {
+  dna: TestResource,
+  ui: TestResource,
+}
+
+type TestResource = {
+  location: string,
+  hash: string,
+}
+
 
 export const resourcePath = path.join(__dirname, './.envoy-deps')
 
@@ -90,7 +102,6 @@ export const PORTS = {
 
   // These will eventually go away
   wormhole: 8888,
-  shim: 5555,
 
   // Websocket ports, interfaces into the running conductor
   masterInterface: 1111,
