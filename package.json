@@ -6,6 +6,7 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "prod": "tsc && node lib/index.js",
+    "deps": "ts-node src/scripts/download-deps.ts",
     "happs:build": "ts-node src/scripts/build-happs.ts build",
     "happs:clean": "ts-node src/scripts/build-happs.ts clean",
     "build": "yarn run happs:build & tsc",

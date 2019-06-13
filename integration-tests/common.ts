@@ -7,7 +7,7 @@ import {exec} from 'child_process'
 import * as rimraf from 'rimraf'
 import * as S from '../src/server'
 import * as T from '../src/types'
-import {serializeError, whenReady} from '../src/common'
+import {serializeError, whenReady, parseAxiosError} from '../src/common'
 import {shimHappByNick} from '../src/shims/happ-server'
 import * as HH from '../src/flows/holo-hosting'
 
@@ -89,25 +89,6 @@ export const withConductor = async (t, fn) => {
   await delay(1000)
 }
 
-// print less of the enormous axios error object
-const parseAxiosError = e => {
-  if (e.config && e.request && e.response) {
-    return {
-      request: {
-        method: e.config.method,
-        url: e.config.url,
-        data: e.config.data,
-      },
-      response: {
-        status: e.response.status,
-        statusText: e.response.statusText,
-        data: e.response.data,
-      }
-    }
-  } else {
-    return null
-  }
-}
 
 export const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
 

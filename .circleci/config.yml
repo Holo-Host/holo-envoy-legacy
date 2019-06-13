@@ -85,7 +85,7 @@ jobs:
             - node_modules
           key: v1-npmdeps-{{ checksum "package.json" }}
       
-      
+      - run: yarn run deps
       - run: yarn integration
 
 

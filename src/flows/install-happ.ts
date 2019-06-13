@@ -6,6 +6,7 @@ import * as path from 'path'
 
 import {HappID, HappResource, HappEntry} from '../types'
 import {
+  downloadFile,
   fail,
   unbundleUI,
   uiIdFromHappId,
@@ -216,7 +217,7 @@ export const setupInstances = async (client, opts: {happId: string, agentId: str
 }
 
 export const setupServiceLogger = async (masterClient, {hostedHappId}) => {
-  const {path} = Config.RESOURCES.serviceLogger.dna
+  const {path} = Config.DEPENDENCIES.resources.serviceLogger.dna
   const dnaId = serviceLoggerDnaIdFromHappId(hostedHappId)
   const instanceId = serviceLoggerInstanceIdFromHappId(hostedHappId)
   const agentId = Config.hostAgentName
@@ -302,27 +303,8 @@ const downloadAppResources = async (client, happId): Promise<DownloadResult> => 
 
 const downloadResource = async (baseDir: string, res: HappResource, type: ResourceType): Promise<string> => {
   const suffix = type === ResourceType.HappDna ? '.dna.json' : '.zip'
-  const resourcePath = path.join(baseDir, res.hash + suffix)
-  const response: any = await axios.request({
-    url: res.location,
-    method: 'GET',
-    responseType: 'stream',
-    maxContentLength: 999999999999,
-  }).catch(e => {
-    console.warn('axios error: ', e)
-    return e.response
-  })
-  return new Promise((fulfill, reject) => {
-    if (response.status != 200) {
-      reject(`Could not fetch ${res.location}, response was ${response.statusText} ${response.status}`)
-    } else {
-      const writer = fs.createWriteStream(resourcePath)
-        .on("finish", () => fulfill(resourcePath))
-        .on("error", reject)
-      console.debug("Starting streaming download...")
-      response.data.pipe(writer)
-    }
-  })
+  const resourcePath: string = path.join(baseDir, res.hash + suffix)
+  return downloadFile({url: res.location, path: resourcePath})
 }
 
 const unbundleUi = async (source: string) => {

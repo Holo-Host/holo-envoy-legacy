@@ -1,4 +1,4 @@
-
+import axios from 'axios'
 import * as archiver from 'archiver'
 import * as colors from 'colors'
 import * as extract from 'extract-zip'
@@ -61,6 +61,50 @@ export const unbundleUI = (input, target) => new Promise((resolve, reject) => {
    // extraction is complete. make sure to handle the err
   })
 })
+
+export const downloadFile = async ({url, path}: {url: string, path: string}): Promise<string> => {
+  const response = await axios.request({
+    url: url,
+    method: 'GET',
+    responseType: 'stream',
+    maxContentLength: 999999999999,
+  }).catch(e => {
+    console.warn('axios error: ', parseAxiosError(e))
+    return e.response
+  })
+
+  return new Promise((fulfill, reject) => {
+    if (response.status != 200) {
+      reject(`Could not fetch ${url}, response was ${response.statusText} ${response.status}`)
+    } else {
+      const writer = fs.createWriteStream(path)
+        .on("finish", () => fulfill(path))
+        .on("error", reject)
+      console.debug("Starting streaming download...")
+      response.data.pipe(writer)
+    }
+  })
+}
+
+// print less of the enormous axios error object
+export const parseAxiosError = e => {
+  if ('config' in e && 'request' in e && 'response' in e) {
+    return {
+      request: {
+        method: e.config.method,
+        url: e.config.url,
+        data: e.config.data,
+      },
+      response: !e.response ? e.response : {
+        status: e.response.status,
+        statusText: e.response.statusText,
+        data: e.response.data,
+      }
+    }
+  } else {
+    return null
+  }
+}
 
 ///////////////////////////////////////////////////////////////////
 ///////////////////////      UTIL      ////////////////////////////
