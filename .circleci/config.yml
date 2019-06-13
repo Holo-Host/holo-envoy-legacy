@@ -37,7 +37,7 @@ jobs:
       #     paths:
       #       - node_modules
 
-      - run: npm test
+      - run: npm run test:unit
 
   integration-tests:
     <<: *defaults
@@ -86,7 +86,7 @@ jobs:
           key: v1-npmdeps-{{ checksum "package.json" }}
       
       - run: npm run deps
-      - run: npm run integration
+      - run: npm run test:integration
 
 
 workflows:
