@@ -6,12 +6,11 @@ import * as Config from '../../src/config'
 import {EnvoyServer} from '../../src/server'
 import * as M from '../../src/flows/new-agent'
 import newAgentFlow from '../../src/flows/new-agent'
-import {shimHappByNick} from '../../src/shims/happ-server'
+import {TEST_HAPPS} from '../test-happs'
 
 // TODO: add tests for failure cases
 
-const basicChat = shimHappByNick('basic-chat')!
-const testApp3 = shimHappByNick('test-app-3')!
+const {basicChat, testApp3} = TEST_HAPPS
 
 sinonTest('can host new agent', async T => {
   const {envoy, masterClient, publicClient, internalClient} = testEnvoyServer()

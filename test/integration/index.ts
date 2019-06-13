@@ -9,6 +9,7 @@ import * as rimraf from 'rimraf'
 
 import * as Config from '../../src/config'
 import * as S from '../../src/server'
+import {TEST_HAPPS} from '../test-happs'
 import {withConductor, getTestClient, adminHostCall, delay, doRegisterHost, doRegisterApp, doAppSetup, zomeCaller} from './setup'
 
 import startWormholeServer from '../../src/wormhole-server'
@@ -64,12 +65,11 @@ const holofiedClient = async (agentId): Promise<any> => {
 
 
 test('can do public zome call', t => {
-  const happNick = 'basic-chat'
   const agentId = 'some-random-agent-id'
   withConductor(t, async () => {
     // setup host
     await doRegisterHost()
-    const {happId, dnaHashes} = await doAppSetup(happNick)
+    const {happId, dnaHashes} = await doAppSetup(TEST_HAPPS.basicChat)
     const dnaHash = dnaHashes[0]!
 
     const client = await getTestClient()

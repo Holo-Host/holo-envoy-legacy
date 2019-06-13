@@ -9,7 +9,6 @@ import * as rimraf from 'rimraf'
 import * as S from '../../src/server'
 import * as T from '../../src/types'
 import {serializeError, whenReady, parseAxiosError} from '../../src/common'
-import {shimHappByNick} from '../../src/shims/happ-server'
 import * as HH from '../../src/flows/holo-hosting'
 
 import * as Config from '../../src/config'
@@ -147,8 +146,7 @@ export const doInstallAndEnableApp = async (masterClient, happId) => {
 }
 
 
-export const doAppSetup = async (happNick: string) => {
-  const happEntry = shimHappByNick(happNick)!
+export const doAppSetup = async (happEntry: T.HappStoreEntry) => {
   const dnaHashes = happEntry.dnas.map(dna => dna.hash)
   const uiHash = happEntry.ui ? happEntry.ui.hash : null
   const client = S.getMasterClient(false)

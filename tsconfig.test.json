@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "rootDir": "src",
+    "rootDir": ".",
     "outDir": "lib",
     "module": "commonjs",
     "target": "es6",
@@ -21,7 +21,8 @@
   //   "src/**/*"
   // ],
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "test/**/*"
   ],
   "exclude": [
     "node_modules",

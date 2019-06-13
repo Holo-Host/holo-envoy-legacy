@@ -119,16 +119,12 @@ export const uiIdFromHappId = (
 
 /**
  * The instance ID for a given AgentID and DNA hash
- * If a nickname exists for a DNA, use that as the "canonical name".
- * Otherwise, use DNA hash as canonical name
- * The host's own instances are just given the canonical name.
- * Another agent's hosted instance gets their agentId prepended to it.
+ * If this is the host's instance, the ID is just the DNA hash
+ * Another agent's hosted instance gets their agentId appended to it with a ::
  */
 export const instanceIdFromAgentAndDna = (agentId, dnaHash) => {
-  const nick = Config.getNickByDna(dnaHash)
   const isHost = agentId === Config.hostAgentName
-  const canonicalName = nick ? nick : dnaHash
-  return isHost ? canonicalName : `${canonicalName}::${agentId}`
+  return isHost ? dnaHash : `${dnaHash}::${agentId}`
 }
 
 

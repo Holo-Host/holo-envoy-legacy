@@ -7,7 +7,7 @@
     "start": "ts-node src/index.ts",
     "deps": "ts-node src/scripts/download-deps.ts",
     "build": "tsc -d",
-    "watch": "tsc -d -w",
+    "watch": "tsc -p tsconfig.test.json -w ",
     "prod": "npm run build && node lib/index.js",
     "clean": "rm -fr lib",
     "init": "ts-node -T init-conductor.ts",

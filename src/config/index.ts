@@ -2,7 +2,6 @@ import * as path from 'path'
 import * as fs from 'fs'
 import * as os from 'os'
 import _ from 'lodash'
-import {nickDatabase} from '../shims/nick-database'
 
 export const devUI = process.env.ENVOY_UI || ""
 const testMode = Boolean(process.env.ENVOY_TEST)
@@ -107,11 +106,4 @@ export const PORTS = {
   masterInterface: 1111,
   publicInterface: 2222,
   internalInterface: 3333,
-}
-
-// Get the nick for a DNA from the nickDatabase (another hack), if a DNA from the app store.
-// TODO: remove once we have proper app bundles with handles for DNAs
-export const getNickByDna = dnaHash => {
-  const externalApp = nickDatabase.find(entry => Boolean(entry.knownDnaHashes.find(hash => hash === dnaHash)))
-  return externalApp ? externalApp.nick : null
 }

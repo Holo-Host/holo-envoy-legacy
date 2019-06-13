@@ -8,7 +8,7 @@ import {mockResponse, sinonTest, testEnvoyServer, getEnabledAppArgs, isAppRegist
 import {bundleUI, unbundleUI, instanceIdFromAgentAndDna, serviceLoggerDnaIdFromHappId, serviceLoggerInstanceIdFromHappId} from '../../src/common'
 import * as Common from '../../src/common'
 import * as Config from '../../src/config'
-import {shimHappByNick} from '../../src/shims/happ-server'
+import {TEST_HAPPS} from '../test-happs'
 
 import installHapp, * as M from '../../src/flows/install-happ'
 
@@ -26,7 +26,7 @@ sinon.stub(fs, 'copy')
 sinon.stub(Common, 'bundleUI')
 sinon.stub(Common, 'unbundleUI')
 
-const basicChat = shimHappByNick('basic-chat')!
+const {basicChat} = TEST_HAPPS
 
 const axiosResponse = (status) => {
   return {

@@ -7,7 +7,7 @@ import * as Config from '../src/config'
 import {EnvoyServer, makeClient} from '../src/server'
 import {instanceIdFromAgentAndDna} from '../src/common'
 import {HappStoreEntry} from '../src/types'
-import {HAPP_DATABASE} from '../src/shims/happ-server'
+import {TEST_HAPPS} from './test-happs'
 
 const tape = tapePromise(_tape)
 
@@ -39,7 +39,7 @@ export const lookupAppInStoreArgs = appHash => ({
 const testDnas = []
 
 // Stub HHA to say that all available apps are enabled
-const testApps = HAPP_DATABASE.map(({happId}) => ({
+const testApps = Object.values(TEST_HAPPS).map(({happId}) => ({
   address: happId,
   entry: 'fake entry',
 }))
@@ -47,7 +47,7 @@ const testApps = HAPP_DATABASE.map(({happId}) => ({
 // Stub to pretend that all DNAs are installed and have public instances
 export const testInstances = (() => {
   const dnaHashes: Array<string> = []
-  HAPP_DATABASE.forEach(({dnas, ui}) => {
+  Object.values(TEST_HAPPS).forEach(({dnas, ui}) => {
     dnas.forEach(dna => {
       dnaHashes.push(dna.hash)
     })
@@ -92,7 +92,7 @@ export const testMasterClient = () => {
   })
 
   // Stub out functions that normally go the hApp Store, using the shim database
-  HAPP_DATABASE.forEach(entry => {
+  Object.values(TEST_HAPPS).forEach(entry => {
     client._call.withArgs('call', isAppRegisteredArgs(entry.happId)).resolves({
       Ok: {app_bundle: {happ_hash: entry.happId}}
     })
