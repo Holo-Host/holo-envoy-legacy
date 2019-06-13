@@ -54,7 +54,7 @@ type UiConfig = {
 }
 
 type DependencyConfig = {
-  resourcePath: string,
+  holochainVersion: string,
   resources: ResourceConfig
 }
 
@@ -79,7 +79,7 @@ type UserConfig = {
   resources: ResourceConfig
 }
 
-export const resourcePath = path.join(__dirname, './envoy-deps')
+export const resourcePath = path.join(__dirname, './.envoy-deps')
 
 export const DEPENDENCIES: DependencyConfig = require('./dependencies').default(resourcePath)
 

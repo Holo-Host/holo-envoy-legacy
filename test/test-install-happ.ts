@@ -152,7 +152,7 @@ sinonTest('can setup instances', async T => {
 sinonTest('can setup servicelogger', async T => {
   const {masterClient} = testEnvoyServer()
 
-  const serviceLogger = Config.RESOURCES.serviceLogger.dna
+  const serviceLogger = Config.DEPENDENCIES.resources.serviceLogger.dna
   const happId = simpleApp.happId
   const dnaHash = simpleApp.dnas[0].hash
   const agentId = 'fake-agent-id'
@@ -192,7 +192,7 @@ sinonTest('can setup servicelogger', async T => {
 
 sinonTest('can perform entire installation flow', async T => {
   const {masterClient} = testEnvoyServer()
-  const serviceLogger = Config.RESOURCES.serviceLogger.dna
+  const serviceLogger = Config.DEPENDENCIES.resources.serviceLogger.dna
   const happId = simpleApp.happId
   const dnaHash = simpleApp.dnas[0].hash
   const agentId = 'fake-agent-id'
