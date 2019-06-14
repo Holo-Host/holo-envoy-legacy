@@ -45,7 +45,7 @@ const setupDpki = () => {
 setupDpki()
 
 
-sinonTest.only('can do hosted zome call', async T => {
+sinonTest('can do hosted zome call', async T => {
   return withConductor(T, async (envoy) => {
     // setup host
     await doRegisterHost()

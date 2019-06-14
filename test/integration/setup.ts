@@ -139,9 +139,8 @@ export const doInstallAndEnableApp = async (masterClient, happId) => {
     throw `Could not install hApp ${happId}, got status ${status} ${statusText}`
   }
   const enableResult = await HH.enableHapp(masterClient, happId)
-  console.log(`enabled ${happId}: `, enableResult)
+  console.log(`enabled happ ${happId}: `, enableResult)
 }
-
 
 export const doAppSetup = async (happEntry: T.HappStoreEntry) => {
   const client = S.getMasterClient(false)

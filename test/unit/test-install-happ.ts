@@ -4,7 +4,7 @@ import * as path from 'path'
 import * as sinon from 'sinon'
 import {EventEmitter} from 'events'
 
-import {mockResponse, sinonTest, testEnvoyServer, getEnabledAppArgs, isAppRegisteredArgs, lookupAppInStoreByHashArgs} from '../common'
+import {mockResponse, sinonTest, testEnvoyServer, getEnabledAppArgs, getAppDetailsArgs, lookupAppInStoreByHashArgs} from '../common'
 import {bundleUI, unbundleUI, instanceIdFromAgentAndDna, serviceLoggerDnaIdFromHappId, serviceLoggerInstanceIdFromHappId} from '../../src/common'
 import * as Common from '../../src/common'
 import * as Config from '../../src/config'
@@ -98,7 +98,7 @@ sinonTest('can install dnas and ui for hApp', async T => {
   await T.doesNotReject(result)
   T.callCount(masterClient.call, 4)
 
-  T.calledWith(masterClient.call.getCall(0), 'call', isAppRegisteredArgs(happId))
+  T.calledWith(masterClient.call.getCall(0), 'call', getAppDetailsArgs(happId))
   T.calledWith(masterClient.call.getCall(1), 'call', lookupAppInStoreByHashArgs(happId))
   T.calledWith(masterClient.call.getCall(2), 'admin/dna/list')
   T.calledWith(masterClient.call.getCall(3), 'admin/dna/install_from_file', {
@@ -132,7 +132,7 @@ sinonTest('can setup instances', async T => {
   await T.doesNotReject(result)
   T.callCount(masterClient.call, 6)
 
-  T.calledWith(masterClient.call.getCall(0), 'call', isAppRegisteredArgs(happId))
+  T.calledWith(masterClient.call.getCall(0), 'call', getAppDetailsArgs(happId))
   T.calledWith(masterClient.call.getCall(1), 'call', lookupAppInStoreByHashArgs(happId))
   T.calledWith(masterClient.call.getCall(2), 'admin/instance/list')
   T.calledWith(masterClient.call.getCall(3), 'admin/instance/add', {

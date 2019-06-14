@@ -237,17 +237,20 @@ export const setupServiceLogger = async (masterClient, {hostedHappId}) => {
 
 export const lookupAppEntryInHHA = async (client, {happId}: LookupHappRequest): Promise<HappStoreEntry> => {
 
-  const appHash = await getHappHashFromHHA(client, happId)
-  if (! appHash) {
-    throw `hApp is not registered by a provider! (happId == ${happId})`
+  let appHash
+
+  try {
+    appHash = await getHappHashFromHHA(client, happId)
+  } catch (e) {
+    throw `hApp is not registered by a provider! (happId == ${happId}). More info:\n${e}`
   }
 
   // TODO: look up actual web 2.0 hApp store via HTTP
-  const happ = await lookupAppInStoreByHash(client, appHash)
-  if (happ) {
+  try {
+    const happ = await lookupAppInStoreByHash(client, appHash)
     return happ.appEntry
-  } else {
-    throw `happId not found in hApp Store: happId == ${happId}, app store hash == ${appHash}`
+  } catch (e) {
+    throw `happId not found in hApp Store: happId == ${happId}, app store hash == ${appHash}. More info:\n${e}`
   }
 }
 
@@ -261,7 +264,9 @@ export const lookupAppInStoreByHash = (client, appHash) => {
   })
 }
 
-export const lookupDnaByHandle = async (client, appHash, handle): Promise<{hash: string}> => {
+export const lookupDnaByHandle = async (client, happId, handle): Promise<{hash: string}> => {
+  console.log("looking up happId, handle: ", happId, handle)
+  const appHash = await getHappHashFromHHA(client, happId)
   const app = await lookupAppInStoreByHash(client, appHash)
   const dna = app.appEntry.dnas.find(dna => dna.handle === handle)
   if (!dna) {
@@ -282,7 +287,7 @@ const getHappHashFromHHA = async (client, happId) => {
   } catch (e) {
     console.error("getHappHashFromHHA returned error: ", e)
     console.error("This might be a real error or it could simply mean that the entry was not found. TODO: differentiate the two.")
-    return null
+    throw e
   }
 }
 
