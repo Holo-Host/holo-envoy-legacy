@@ -4,7 +4,8 @@ import * as sinon from 'sinon'
 import * as Config from '../../src/config'
 import {lookupHoloInstance} from '../../src/common'
 import {InstanceType} from '../../src/types'
-import {testInstances, baseClient} from '../common'
+import {testInstances, baseClient, testMasterClient} from '../common'
+import {TEST_HAPPS} from '../test-happs'
 
 import {
   mockResponse,
@@ -17,6 +18,7 @@ import {
 } from '../../src/common'
 import {EnvoyServer} from '../../src/server'
 import * as Z from '../../src/flows/zome-call'
+import {lookupDnaByHandle} from '../../src/flows/install-happ'
 
 test('can calculate metrics', t => {
   const request = {giveMe: 'what i want'}
@@ -27,6 +29,15 @@ test('can calculate metrics', t => {
     bytes_out: 17,
     cpu_seconds: 0.1111111,
   })
+  t.end()
+})
+
+test('lookupDnaByHandle can search HHA and hApp store for DNA', async t => {
+  const client = testMasterClient()
+  const {basicChat} = TEST_HAPPS
+  const {hash, handle} = basicChat.dnas[0]
+  const result = await lookupDnaByHandle(client, basicChat.happId, handle).catch(t.fail)
+  t.equal(result.hash, hash)
   t.end()
 })
 

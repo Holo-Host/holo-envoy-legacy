@@ -139,27 +139,21 @@ export const doInstallAndEnableApp = async (masterClient, happId) => {
     throw `Could not install hApp ${happId}, got status ${status} ${statusText}`
   }
   const enableResult = await HH.enableHapp(masterClient, happId)
-  console.log(`enabled ${happId}: `, enableResult)
+  console.log(`enabled happ ${happId}: `, enableResult)
 }
-
 
 export const doAppSetup = async (happEntry: T.HappStoreEntry) => {
-  const dnaHashes = happEntry.dnas.map(dna => dna.hash)
-  const uiHash = happEntry.ui ? happEntry.ui.hash : null
   const client = S.getMasterClient(false)
-
   const happId = await doRegisterApp(happEntry)
-
   const happResult = await doInstallAndEnableApp(client, happId)
   client.close()
-
-  return {happId, dnaHashes, uiHash}
+  return happId
 }
 
 
-export const zomeCaller = (client, {happId, agentId, dnaHash, zome}) => (func, params) => {
+export const zomeCaller = (client, {happId, agentId, handle, zome}) => (func, params) => {
   return client.call('holo/call', {
-    happId, agentId, dnaHash,
+    happId, agentId, handle,
     zome: zome,
     function: func,
     params: params,

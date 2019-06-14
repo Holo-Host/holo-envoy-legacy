@@ -3,12 +3,12 @@ import * as Config from '../src/config'
 
 export const TEST_HAPPS = {
   basicChat: {
-    happId: 'basic-chat',
+    happId: 'basic-chat-test-happ-id',
     dnas: [
       {
         location: Config.DEPENDENCIES.testResources.basicChat.dna.location,
         hash: 'QmeVtyWaYQt3pANiREofWHGuwW3dpdzLegvgmdFQ6fQ6Vx',
-        handle: 'basic-chat',  // TODO: is this right?
+        handle: 'basic-chat-handle',  // TODO: is this right?
       }
     ],
     ui: {

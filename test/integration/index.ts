@@ -31,7 +31,8 @@ exec(`holochain --version`, (err, stdout, stderr) => {
   }
 })
 
-require('./test-hosted-zome-call')
+// TODO: hook up once we can integrate with hClient
+// require('./test-hosted-zome-call')
 
 
 /**
@@ -70,11 +71,11 @@ test('can do public zome call', t => {
   withConductor(t, async () => {
     // setup host
     await doRegisterHost()
-    const {happId, dnaHashes} = await doAppSetup(TEST_HAPPS.basicChat)
-    const dnaHash = dnaHashes[0]!
+    const happId = await doAppSetup(TEST_HAPPS.basicChat)
+    const handle = 'basic-chat'
 
     const client = await getTestClient()
-    const call = zomeCaller(client, {happId, agentId, dnaHash, zome: 'chat'})
+    const call = zomeCaller(client, {happId, agentId, handle, zome: 'chat'})
 
     const address = await call('register', {
       name: 'chat noir',

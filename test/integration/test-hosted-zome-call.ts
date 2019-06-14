@@ -45,7 +45,6 @@ const setupDpki = () => {
 setupDpki()
 
 
-// TODO remove only
 sinonTest('can do hosted zome call', async T => {
   return withConductor(T, async (envoy) => {
     // setup host
@@ -108,3 +107,4 @@ sinonTest('can do hosted zome call', async T => {
     await delay(500)
   })
 })
+

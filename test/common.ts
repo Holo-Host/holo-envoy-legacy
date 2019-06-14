@@ -22,7 +22,7 @@ export const getEnabledAppArgs = {
   params: {}
 }
 
-export const isAppRegisteredArgs = happId => ({
+export const getAppDetailsArgs = happId => ({
   instance_id: Config.holoHostingAppId.instance,
   zome: 'provider',
   function: 'get_app_details',
@@ -67,7 +67,8 @@ export const baseClient = () => {
 }
 
 /**
- * Creates a heavily stubbed master client.
+ * Creates a heavily stubbed master client, with full responses for apps
+ * that should be considered registered.
  */
 export const testMasterClient = () => {
   const client = baseClient()
@@ -84,7 +85,7 @@ export const testMasterClient = () => {
   client._call.withArgs('admin/instance/start').resolves(success)
   client._call.withArgs('call', getEnabledAppArgs).resolves({Ok: testApps})
 
-  client._call.withArgs('call', isAppRegisteredArgs('invalid')).resolves({
+  client._call.withArgs('call', getAppDetailsArgs('invalid')).resolves({
     Err: "this is not the real error, but it is an error"
   })
   client._call.withArgs('call', lookupAppInStoreByHashArgs('invalid')).resolves({
@@ -93,7 +94,7 @@ export const testMasterClient = () => {
 
   // Stub out functions that normally go the hApp Store, using the shim database
   Object.values(TEST_HAPPS).forEach(entry => {
-    client._call.withArgs('call', isAppRegisteredArgs(entry.happId)).resolves({
+    client._call.withArgs('call', getAppDetailsArgs(entry.happId)).resolves({
       Ok: {app_bundle: {happ_hash: entry.happId}}
     })
     client._call.withArgs('call', lookupAppInStoreByHashArgs(entry.happId)).resolves({
