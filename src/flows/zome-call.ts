@@ -14,7 +14,8 @@ import {lookupDnaByHandle} from './install-happ'
 export type CallRequest = {
   agentId: string,
   happId: HappID,
-  handle: string,
+  handle?: string,
+  instanceId?: string,
   zome: string,
   function: string,
   params: any,
@@ -30,11 +31,16 @@ export default (masterClient, publicClient, internalClient) => async (call: Call
   const {
     agentId,
     happId,
-    handle,
     zome: zomeName,
     function: funcName,
     params,
   } = call
+
+  // TODO: pick one or the other once we standardize across holochain, hc-web-client etc.
+  const handle = call.handle || call.instanceId
+  if (!handle) {
+    throw new Error("No `handle` or `instanceId` specified!")
+  }
 
   let signature = call.signature
 
