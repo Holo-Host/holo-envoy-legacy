@@ -1,23 +1,26 @@
 {
-  "name": "holo-envoy",
-  "version": "0.0.2",
-  "main": "index.js",
+  "name": "@holo-host/envoy",
+  "description": "The go-between for all Holo-Hosting functionality",
+  "version": "0.0.0",
+  "main": "lib/index.js",
   "license": "MIT",
   "scripts": {
     "start": "ts-node src/index.ts",
     "prod": "tsc && node lib/index.js",
     "happs:build": "ts-node src/scripts/build-happs.ts build",
     "happs:clean": "ts-node src/scripts/build-happs.ts clean",
-    "build": "yarn run happs:build & tsc",
+    "build": "tsc",
     "clean": "rm -fr lib",
     "init": "ts-node -T init-conductor.ts",
     "keygen": "ts-node -T keygen-cached.ts",
     "conductor": "holochain -c ~/.holochain/holo/conductor-config.toml",
-    "test": "yarn run test:unit",
+    "test": "npm run test:unit",
     "test:unit": "ENVOY_TEST=1 ts-node test/index.ts | faucet",
     "test:unit:raw": "ENVOY_TEST=1 ts-node test/index.ts",
     "integration": "ts-node integration-tests/index.ts",
-    "cmd": "ts-node integration-tests/command.ts"
+    "cmd": "ts-node integration-tests/command.ts",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test"
   },
   "dependencies": {
     "archiver": "^3.0.0",
@@ -29,7 +32,8 @@
     "extract-zip": "^1.6.7",
     "fs-extra": "^7.0.1",
     "morgan": "^1.9.1",
-    "rpc-websockets": "maackle/rpc-websockets"
+    "rpc-websockets": "maackle/rpc-websockets",
+    "static-server": "^2.2.1"
   },
   "devDependencies": {
     "@babel/runtime": "^7.4.3",
@@ -40,7 +44,6 @@
     "faucet": "^0.0.1",
     "rimraf": "^2.6.3",
     "sinon": "^7.2.4",
-    "static-server": "^2.2.1",
     "tape": "^4.10.0",
     "tape-promise": "^4.0.0",
     "ts-node": "^8.0.2",
