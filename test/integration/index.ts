@@ -31,7 +31,8 @@ exec(`holochain --version`, (err, stdout, stderr) => {
   }
 })
 
-require('./test-hosted-zome-call')
+// TODO: hook up once we can integrate with hClient
+// require('./test-hosted-zome-call')
 
 
 /**
