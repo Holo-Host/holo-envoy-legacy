@@ -1,4 +1,5 @@
 import axios from 'axios'
+import * as _ from 'lodash'
 import * as colors from 'colors'
 import * as fs from 'fs-extra'
 import * as os from 'os'
@@ -177,12 +178,25 @@ export const setupInstance = async (client, {instanceId, agentId, dnaId, conduct
   ])
 }
 
-export const setupHolofuelBridge = async (client, {callerInstanceId}) => {
-  return client.call('admin/bridge/add', {
+export const setupHolofuelBridge = async (client, {callerInstanceId, replace}) => {
+
+  const bridgeConfig = {
     handle: 'holofuel-bridge',
     caller_id: callerInstanceId,
     callee_id: Config.holofuelId.instance,
-  })
+  }
+
+  const bridges = await client.call('admin/bridge/list', {})
+  if (bridges.find(b => _.isEqual(b, bridgeConfig))) {
+    if (replace) {
+      throw "Bridge setup with replacement not yet supported"
+    } else {
+      console.log(`The following bridge was already set up; skipping:`)
+      console.log(JSON.stringify(bridgeConfig, null, 2))
+      return {success: true}
+    }
+  }
+  return client.call('admin/bridge/add', bridgeConfig)
 }
 
 export const setupInstances = async (client, opts: {happId: string, agentId: string, conductorInterface: Config.ConductorInterface}): Promise<void> => {
@@ -230,7 +244,7 @@ export const setupServiceLogger = async (masterClient, {hostedHappId}) => {
     agentId,
     conductorInterface: Config.ConductorInterface.Internal
   })
-  await setupHolofuelBridge(masterClient, {callerInstanceId: instanceId})
+  await setupHolofuelBridge(masterClient, {callerInstanceId: instanceId, replace: false})
 
   // TODO: make initial call to serviceLogger to set up preferences?
 }
