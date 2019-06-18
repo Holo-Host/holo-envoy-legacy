@@ -31,11 +31,11 @@ export default (resourcePath: string ) => ({
     },
     happStore: {
       dna: {
-        location: 'https://github.com/holochain/HApps-Store/releases/download/0.1.0-alpha/QmbZWA178HYUCnpUokfnyvdy3iz6fnJZCEgiy23NsrkGFj.dna.json',
+        location: 'https://github.com/holochain/HApps-Store/releases/download/0.2.1--alpha1/happ-store.dna.json',
         path: path.join(resourcePath, 'happ-store.dna.json'),
       },
       ui: {
-        location: 'https://holo-artifacts.s3-us-west-2.amazonaws.com/happ-store-ui.zip',
+        location: 'https://github.com/holochain/HApps-Store/releases/download/0.2.1--alpha1/ui.zip',
         path: path.join(resourcePath, 'happ-store-ui'),
         port: 8880,
       },
