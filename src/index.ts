@@ -6,15 +6,15 @@
 
 
 import startServer from './server'
-import * as C from './config'
+import * as Config from './config'
+
+Config.hcDependencyCheck()
 
 // console.debug = () => {}
-
-console.log('----------------------------------')
 
 process.on('unhandledRejection', (reason, p) => {
   console.log("*** UNHANDLED REJECTION ***")
   console.log("reason: ", reason)
 })
 
-startServer(C.PORTS.external)
+startServer(Config.PORTS.external)

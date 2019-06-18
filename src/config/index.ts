@@ -2,6 +2,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 import * as os from 'os'
 import _ from 'lodash'
+import {exec} from 'child_process'
 
 export const devUI = process.env.ENVOY_UI || ""
 const testMode = Boolean(process.env.ENVOY_TEST)
@@ -106,4 +107,28 @@ export const PORTS = {
   masterInterface: 1111,
   publicInterface: 2222,
   internalInterface: 3333,
+}
+
+export const hcDependencyCheck = () => {
+  // Check for version mismatch in holochain binary
+
+  const requiredHcVersion = DEPENDENCIES.holochainVersion
+  exec(`holochain --version`, (err, stdout, stderr) => {
+    const [_, installedVersion] = stdout.trim().split('holochain ')
+    if (err) {
+      console.error("Could not check Holochain error, is the `holochain` binary installed?")
+      process.exit(-1)
+    } else if (!installedVersion) {
+      console.error("Could not figure out holochain version from command line! `holochain --version` produced:")
+      console.error(stdout)
+      process.exit(-1)
+    } else if (installedVersion !== requiredHcVersion) {
+      console.error(`Installed HC version '${installedVersion}' does not match required version '${requiredHcVersion}' as specified in dependencies config. Aborting.`)
+      process.exit(-1)
+    } else {
+      console.log(`required holochain version:  ${requiredHcVersion}`)
+      console.log(`installed holochain version: ${installedVersion}`)
+    }
+  })
+
 }

@@ -3,7 +3,6 @@ import * as sinon from 'sinon'
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
-import {exec} from 'child_process'
 import {Client, Server} from 'rpc-websockets'
 import * as rimraf from 'rimraf'
 
@@ -16,20 +15,7 @@ import {withConductor, getTestClient, adminHostCall, doRegisterHost, doRegisterA
 import startWormholeServer from '../../src/wormhole-server'
 import startAdminHostServer from '../../src/admin-host-server'
 
-const requiredHcVersion = Config.DEPENDENCIES.holochainVersion
-exec(`holochain --version`, (err, stdout, stderr) => {
-  const [_, installedVersion] = stdout.trim().split('holochain ')
-  if (err) {
-    console.error("Could not check Holochain error, is the `holochain` binary installed?")
-    process.exit(-1)
-  } else if (!installedVersion) {
-    console.error("Could not figure out holochain version from command line! `holochain --version` produced:")
-    console.error(stdout)
-  } else if (installedVersion !== requiredHcVersion) {
-    console.error(`Installed HC version '${installedVersion}' does not match required version '${requiredHcVersion}' as specified in dependencies config. Aborting.`)
-    process.exit(-1)
-  }
-})
+Config.hcDependencyCheck()
 
 // TODO: hook up once we can integrate with hClient
 // require('./test-hosted-zome-call')
