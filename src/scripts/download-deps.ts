@@ -19,6 +19,7 @@ const downloadDeps = async (): Promise<Array<any>> => {
   const uis = [
     resources.holoHosting.ui,
     resources.happStore.ui,
+    resources.holofuel.ui,
   ]
 
   const dnaPromises = dnas.map(dep => downloadFile({ url: dep.location, path: dep.path }))

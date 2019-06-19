@@ -64,7 +64,8 @@ type Resources = {
     dna: DnaConfig
   },
   holofuel: {
-    dna: DnaConfig
+    dna: DnaConfig,
+    ui: UiConfig,
   },
   holoHosting: {
     dna: DnaConfig,
