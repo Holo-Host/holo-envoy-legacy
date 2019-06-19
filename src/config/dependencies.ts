@@ -24,7 +24,7 @@ export default (resourcePath: string ) => ({
         path: path.join(resourcePath, 'holo-hosting.dna.json'),
       },
       ui: {
-        location: 'https://holo-artifacts.s3-us-west-2.amazonaws.com/holo-hosting-app-ui.zip',
+        location: 'https://github.com/Holo-Host/holo-hosting-app_GUI/releases/download/v0.1.0/ui.zip',
         path: path.join(resourcePath, 'holo-hosting-ui'),
         port: 8800,
       },
