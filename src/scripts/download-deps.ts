@@ -1,5 +1,5 @@
 import axios from 'axios'
-const fs = require('fs').promises
+const fs = require('fs-extra')
 
 import * as Config from '../config'
 import {downloadFile, parseAxiosError, unbundleUI} from '../common'
@@ -7,9 +7,7 @@ import {downloadFile, parseAxiosError, unbundleUI} from '../common'
 const downloadDeps = async (): Promise<Array<any>> => {
   const resources = Config.DEPENDENCIES.resources
 
-  try {
-    await fs.mkdir(Config.resourcePath, {recursive: true})
-  } catch (e) {}
+  await fs.emptyDir(Config.resourcePath)
 
   const dnas = [
     resources.holofuel.dna,
@@ -22,6 +20,7 @@ const downloadDeps = async (): Promise<Array<any>> => {
     resources.holoHosting.ui,
     resources.happStore.ui,
   ]
+
   const dnaPromises = dnas.map(dep => downloadFile({ url: dep.location, path: dep.path }))
   const uiPromises = uis.map(async dep => {
     const dir = dep.path
