@@ -119,6 +119,8 @@ admin = true
 id = "${Config.holoHostingAppId.instance}"
 [[interfaces.instances]]
 id = "${Config.happStoreId.instance}"
+[[interfaces.instances]]
+id = "${Config.holofuelId.instance}"
 
 [interfaces.driver]
 port = ${Config.PORTS.masterInterface}
