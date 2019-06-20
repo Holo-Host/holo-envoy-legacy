@@ -274,7 +274,7 @@ export const lookupAppInStoreByHash = (client, appHash) => {
     instanceId: Config.happStoreId.instance,
     zomeName: 'happs',
     funcName: 'get_app',
-    params: {app_hash: appHash}
+    args: {app_hash: appHash}
   })
 }
 
@@ -295,7 +295,7 @@ const getHappHashFromHHA = async (client, happId) => {
       instanceId: Config.holoHostingAppId.instance,
       zomeName: 'provider',
       funcName: 'get_app_details',
-      params: {app_hash: happId}
+      args: {app_hash: happId}
     })
     return entry.app_bundle.happ_hash
   } catch (e) {

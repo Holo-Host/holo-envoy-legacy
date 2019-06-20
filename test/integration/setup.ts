@@ -156,7 +156,7 @@ export const zomeCaller = (client, {happId, agentId, handle, zome}) => (func, pa
     happId, agentId, handle,
     zome: zome,
     function: func,
-    params: params,
+    args: params,
     signature: 'TODO',
   })
 }

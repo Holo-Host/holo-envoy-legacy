@@ -18,7 +18,8 @@ export type CallRequest = {
   instanceId?: string,
   zome: string,
   function: string,
-  params: any,
+  params?: any,
+  args?: any,
   signature: string,
 }
 
@@ -28,12 +29,17 @@ export default (masterClient, publicClient, internalClient) => async (call: Call
   // TODO: add replay attack protection? nonce?
   // TODO: figure out actual payload, especially after conductor RPC call is refactored
 
+  const args = call.args || call.params || {}
+
+  if (call.params) {
+    console.warn("Warning: `params` is deprecated, use `args`")
+  }
+
   const {
     agentId,
     happId,
     zome: zomeName,
     function: funcName,
-    params,
   } = call
 
   // TODO: pick one or the other once we standardize across holochain, hc-web-client etc.
@@ -59,11 +65,16 @@ export default (masterClient, publicClient, internalClient) => async (call: Call
   // use the looked-up instance info, not the info passed in to the zome call
   const instanceId = instanceIdFromAgentAndDna(instance)
 
-  const requestData = buildServiceLoggerRequestPackage({dnaHash, ...call})
+  const requestData = buildServiceLoggerRequestPackage({
+    dnaHash,
+    zome: zomeName,
+    function: funcName,
+    args,
+  })
   const requestEntryHash = await logServiceRequest(internalClient,
     {happId, agentId, dnaHash, requestData, zomeName, funcName, signature})
   const result = await zomeCallByInstance(publicClient, {
-    instanceId, zomeName, funcName, params
+    instanceId, zomeName, funcName, args
   })
   const responseData = buildServiceLoggerResponsePackage(result)
   const metrics = calcMetrics(requestData, responseData)
@@ -92,7 +103,7 @@ const logServiceRequest = async (client, payload) => {
     instanceId: instanceId,
     zomeName: 'service',
     funcName: 'log_request',
-    params: {
+    args: {
       entry: {
         agent_id: agentId,
         dna_hash: dnaHash,
@@ -110,7 +121,7 @@ const logServiceResponse = async (client, {happId, requestEntryHash, responseDat
     instanceId: instanceId,
     zomeName: 'service',
     funcName: 'log_response',
-    params: {
+    args: {
       entry: {
         request_hash: requestEntryHash,
         hosting_stats: metrics,
@@ -132,7 +143,7 @@ export const logServiceSignature = async (client, {happId, responseEntryHash, si
     instanceId: instanceId,
     zomeName: 'service',
     funcName: 'log_service',
-    params: {
+    args: {
       entry: {
         response_hash: responseEntryHash,
         client_signature: signature
@@ -143,10 +154,10 @@ export const logServiceSignature = async (client, {happId, responseEntryHash, si
 }
 
 // TODO: make sure this is tested
-export const buildServiceLoggerRequestPackage = ({dnaHash, zome, function: func, params}) => {
+export const buildServiceLoggerRequestPackage = ({dnaHash, zome, function: func, args}) => {
   return {
     function: `${dnaHash}/${zome}/${func}`,
-    params
+    args
   }
 }
 

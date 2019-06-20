@@ -77,11 +77,16 @@ sinonTest('can call public zome function', async T => {
     handle,
     zome: 'zome',
     function: 'function',
-    params: request,
+    args: request,
     signature: 'signature',
   }
   const response = await envoy.zomeCall(call)
-  const requestPackage = Z.buildServiceLoggerRequestPackage({dnaHash, ...call})
+  const requestPackage = Z.buildServiceLoggerRequestPackage({
+    dnaHash,
+    zome: call.zome,
+    function: call.function,
+    args: call.args
+  })
   const responsePackage = Z.buildServiceLoggerResponsePackage(response)
   const metrics = Z.calcMetrics(requestPackage, responsePackage)
 
