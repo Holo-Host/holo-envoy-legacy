@@ -34,7 +34,7 @@ export const holofuelId = {
   instance: 'holofuel',
   dna: 'holofuel',
 }
-export const keyConfigFile = 'src/shims/envoy-host-key.json'
+export const keyConfigFile = 'src/config/envoy-host-key.json'
 
 export enum ConductorInterface {
   Master = 'master-interface',
