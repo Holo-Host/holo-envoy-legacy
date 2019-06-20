@@ -18,7 +18,7 @@ export default (resourcePath: string ) => ({
         path: path.join(resourcePath, 'holofuel.dna.json'),
       },
       ui: {
-        location: 'https://github.com/Holo-Host/holofuel-gui/releases/download/v0.1.0-alpha1/master-ui.zip',
+        location: 'https://github.com/Holo-Host/holofuel-gui/releases/download/v0.1.0-alpha1-hc/master-ui.zip',
         path: path.join(resourcePath, 'holofuel-gui'),
         port: 8088,
       }
