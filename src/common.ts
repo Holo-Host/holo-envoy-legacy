@@ -158,7 +158,7 @@ export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName
     instance_id: instanceId,
     zome: zomeName,
     function: funcName,
-    params
+    params: params || {}
   }
   let result
   try {
