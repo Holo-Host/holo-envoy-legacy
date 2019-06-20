@@ -102,7 +102,7 @@ export const parseAxiosError = e => {
       }
     }
   } else {
-    return null
+    return e
   }
 }
 
