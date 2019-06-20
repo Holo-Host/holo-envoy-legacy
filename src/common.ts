@@ -163,8 +163,6 @@ type CallFnParams = {
  */
 export const zomeCallByInstance = async (client, callParams: CallFnParams) => {
   const {instanceId, zomeName, funcName, args} = callParams
-  console.log("CALLPARAMS", callParams)
-  console.log("ARGS", args)
   const payload = {
     instance_id: instanceId,
     zome: zomeName,
