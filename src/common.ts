@@ -153,7 +153,7 @@ export const zomeCallSpec = ({zomeName, funcName}) => (
  * Make a zome call through the WS client, identified by instance ID
  * TODO: maybe keep the Ok/Err wrapping, to differentiate between zome error and true exception
  */
-export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName, params = {}) => {
+export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName, params = {}}) => {
   const payload = {
     instance_id: instanceId,
     zome: zomeName,
