@@ -1,4 +1,5 @@
 
+import * as Config from '../config'
 import {HappID} from '../types'
 import {
   lookupHoloInstance,
@@ -57,7 +58,6 @@ export default (masterClient, publicClient, internalClient) => async (call: Call
     signature = 'TODO-look-into-hClient-signature'
   }
 
-  // TODO: make sure this is tested
   const dna = await lookupDnaByHandle(masterClient, happId, handle)
   const dnaHash = dna.hash
   // see if this instance is actually hosted, we may have to get the host's instance if not
