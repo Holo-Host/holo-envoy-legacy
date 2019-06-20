@@ -19,21 +19,21 @@ export const getEnabledAppArgs = {
   instance_id: Config.holoHostingAppId.instance,
   zome: 'host',
   function: 'get_enabled_app_list',
-  params: {}
+  args: {}
 }
 
 export const getAppDetailsArgs = happId => ({
   instance_id: Config.holoHostingAppId.instance,
   zome: 'provider',
   function: 'get_app_details',
-  params: {app_hash: happId}
+  args: {app_hash: happId}
 })
 
 export const lookupAppInStoreByHashArgs = appHash => ({
   instance_id: Config.happStoreId.instance,
   zome: 'happs',
   function: 'get_app',
-  params: {app_hash: appHash}
+  args: {app_hash: appHash}
 })
 
 const testDnas = []
@@ -73,10 +73,11 @@ export const baseClient = () => {
 export const testMasterClient = () => {
   const client = baseClient()
 
-  client._call.withArgs('admin/agent/list').returns([{id: 'existing-agent-id'}])
-  client._call.withArgs('admin/dna/list').returns(testDnas)
-  client._call.withArgs('admin/dna/install_from_file').returns(success)
-  client._call.withArgs('admin/ui/install').returns(success)
+  client._call.withArgs('admin/agent/list').resolves([{id: 'existing-agent-id'}])
+  client._call.withArgs('admin/dna/list').resolves(testDnas)
+  client._call.withArgs('admin/dna/install_from_file').resolves(success)
+  client._call.withArgs('admin/bridge/list').resolves([])
+  client._call.withArgs('admin/ui/install').resolves(success)
   client._call.withArgs('admin/instance/list').resolves([{
     id: instanceIdFromAgentAndDna({agentId: 'fake-agent', dnaHash: 'basic-chat'})
   }])

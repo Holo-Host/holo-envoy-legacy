@@ -161,7 +161,7 @@ sinonTest('can setup servicelogger', async T => {
   const serviceLoggerId = serviceLoggerInstanceIdFromHappId(happId)
   const result = M.setupServiceLogger(masterClient, {hostedHappId: happId})
   await T.doesNotReject(result)
-  T.callCount(masterClient.call, 7)
+  T.callCount(masterClient.call, 8)
 
   T.calledWith(masterClient.call, 'admin/dna/list', {})
   T.calledWith(masterClient.call, 'admin/dna/install_from_file', {
@@ -176,6 +176,7 @@ sinonTest('can setup servicelogger', async T => {
     dna_id: serviceLoggerDnaId,
     id: serviceLoggerId,
   })
+  T.calledWith(masterClient.call, 'admin/bridge/list')
   T.calledWith(masterClient.call, 'admin/interface/add_instance', {
     instance_id: serviceLoggerId,
     interface_id: Config.ConductorInterface.Internal,

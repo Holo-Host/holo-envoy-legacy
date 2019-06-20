@@ -45,7 +45,7 @@ sinonTest('can only host agent for enabled app (1 DNA)', async T => {
     signature: 'TODO unused signature'
   })
 
-  // 8 calls:
+  // 9 calls:
   // 1 for get_enabled_app_list
   // 2 for createAgent
   // 2 for lookupAppEntryInHHA
@@ -56,7 +56,7 @@ sinonTest('can only host agent for enabled app (1 DNA)', async T => {
     instance_id: Config.holoHostingAppId.instance,
     zome: 'host',
     function: 'get_enabled_app_list',
-    params: {}
+    args: {}
   })
   T.calledWith(masterClient.call, 'admin/instance/add', {
     id: `${dnaHash}::${agentId}`,
@@ -85,7 +85,7 @@ sinonTest('can only host agent for enabled app (3 DNAs)', async T => {
     instance_id: Config.holoHostingAppId.instance,
     zome: 'host',
     function: 'get_enabled_app_list',
-    params: {}
+    args: {}
   })
   T.calledWith(masterClient.call, 'admin/instance/add', {
     id: `${testApp3.dnas[0].hash}::${agentId}`,
