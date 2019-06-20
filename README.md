@@ -46,7 +46,7 @@ All requests should be JSON, i.e. use `Content-Type: application/json`. Currentl
 
 See [src/server.ts](src/admin-host-server.ts) for implementation
 
-#### Shim server
+#### Shim server (Deprecated)
 
 A temporary server useful for development, this service mimics distributions of certain hApp DNAs and UI bundles. These apps are found in [src/shims/happ-data](src/shims/happ-data), are identified in [src/shims/happ-server.ts](src/shims/happ-server.ts), and are built via `npm run happs:build`
 
