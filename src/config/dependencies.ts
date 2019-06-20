@@ -16,6 +16,11 @@ export default (resourcePath: string ) => ({
         // location: 'https://github.com/Holo-Host/holofuel/releases/download/v0.9.1-alpha1/holofuel.dna.json',
         location: 'https://holo-artifacts.s3-us-west-2.amazonaws.com/holofuel-v0.8.5-alpha1.dna.json',
         path: path.join(resourcePath, 'holofuel.dna.json'),
+      },
+      ui: {
+        location: 'https://github.com/Holo-Host/holofuel-gui/releases/download/v0.1.0-alpha1-hc/master-ui.zip',
+        path: path.join(resourcePath, 'holofuel-gui'),
+        port: 8088,
       }
     },
     holoHosting: {

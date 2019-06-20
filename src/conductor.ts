@@ -119,6 +119,8 @@ admin = true
 id = "${Config.holoHostingAppId.instance}"
 [[interfaces.instances]]
 id = "${Config.happStoreId.instance}"
+[[interfaces.instances]]
+id = "${Config.holofuelId.instance}"
 
 [interfaces.driver]
 port = ${Config.PORTS.masterInterface}
@@ -161,6 +163,18 @@ bundle = 'happ-store-ui'
 dna_interface = 'master-interface'
 id = 'happ-store-ui-interface'
 port = ${Config.DEPENDENCIES.resources.happStore.ui.port}
+
+
+[[ui_bundles]]
+hash = 'Qm002'
+id = 'holofuel-gui'
+root_dir = '${Config.DEPENDENCIES.resources.holofuel.ui.path}'
+
+[[ui_interfaces]]
+bundle = 'holofuel-gui'
+dna_interface = 'master-interface'
+id = 'holofuel-gui-interface'
+port = ${Config.DEPENDENCIES.resources.holofuel.ui.port}
 
 
 [logger]
