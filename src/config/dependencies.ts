@@ -6,8 +6,9 @@ export default (resourcePath: string ) => ({
   resources: {
     serviceLogger: {
       dna: {
-        // location: 'https://github.com/Holo-Host/servicelogger/releases/download/v0.0.3/QmR5XnQP5pGNh53PT6qyjj3XmZgGHiyGMpPvaDWK1UJgQv.dna.json',
-        location: 'https://holo-artifacts.s3-us-west-2.amazonaws.com/servicelogger-v0.0.3.dna.json',
+        // Note: New servicelogger version that incudes required bridge config.
+        location: 'https://github.com/Holo-Host/servicelogger/releases/download/v0.0.4/QmWSg6rASeEU6JfxFrR9a64F26SxFASWP9CK4kbNRaWNuD.dna.json',
+        // location: 'https://holo-artifacts.s3-us-west-2.amazonaws.com/servicelogger-v0.0.3.dna.json',
         path: path.join(resourcePath, 'servicelogger.dna.json'),
       }
     },
