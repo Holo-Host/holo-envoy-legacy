@@ -1,9 +1,10 @@
 {
   "name": "@holo-host/envoy",
   "description": "The go-between for all Holo-Hosting functionality",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "main": "lib/index.js",
-  "license": "MIT",
+  "homepage": "https://github.com/holo-host/envoy",
+  "license": "GPL-3",
   "scripts": {
     "start": "ts-node src/index.ts",
     "deps": "ts-node src/scripts/download-deps.ts",
