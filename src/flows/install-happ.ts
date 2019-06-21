@@ -179,7 +179,6 @@ export const setupInstance = async (client, {instanceId, agentId, dnaId, conduct
 }
 
 export const setupHolofuelBridge = async (client, {callerInstanceId, replace}) => {
-
   const bridgeConfig = {
     handle: 'holofuel-bridge',
     caller_id: callerInstanceId,
