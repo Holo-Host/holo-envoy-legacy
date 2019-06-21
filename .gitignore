@@ -1,4 +1,5 @@
 node_modules/
 lib/
 .cache/
-yarn-error.log
+.envoy-deps
+envoy-host-key*.json

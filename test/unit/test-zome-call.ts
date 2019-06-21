@@ -1,22 +1,24 @@
 import * as test from 'tape'
 import * as sinon from 'sinon'
 
-import * as Config from '../src/config'
-import {lookupHoloInstance} from '../src/common'
-import {InstanceType} from '../src/types'
-import {testInstances, baseClient} from './common'
+import * as Config from '../../src/config'
+import {lookupHoloInstance} from '../../src/common'
+import {InstanceType} from '../../src/types'
+import {testInstances, baseClient, testMasterClient} from '../common'
+import {TEST_HAPPS} from '../test-happs'
 
 import {
   mockResponse,
   sinonTest,
   testEnvoyServer,
-} from './common'
+} from '../common'
 import {
   instanceIdFromAgentAndDna,
   serviceLoggerInstanceIdFromHappId,
-} from '../src/common'
-import {EnvoyServer} from '../src/server'
-import * as Z from '../src/flows/zome-call'
+} from '../../src/common'
+import {EnvoyServer} from '../../src/server'
+import * as Z from '../../src/flows/zome-call'
+import {lookupDnaByHandle} from '../../src/flows/install-happ'
 
 test('can calculate metrics', t => {
   const request = {giveMe: 'what i want'}
@@ -27,6 +29,15 @@ test('can calculate metrics', t => {
     bytes_out: 17,
     cpu_seconds: 0.1111111,
   })
+  t.end()
+})
+
+test('lookupDnaByHandle can search HHA and hApp store for DNA', async t => {
+  const client = testMasterClient()
+  const {basicChat} = TEST_HAPPS
+  const {hash, handle} = basicChat.dnas[0]
+  const result = await lookupDnaByHandle(client, basicChat.happId, handle).catch(t.fail)
+  t.equal(result.hash, hash)
   t.end()
 })
 
@@ -55,21 +66,27 @@ sinonTest('can call public zome function', async T => {
   internalClient._call.withArgs('call').onSecondCall().returns({Ok: "responseHash"})
 
   const agentId = 'some-ad-hoc-agent-id'
+  const handle = '1a'
   const dnaHash = 'test-dna-hash-1a'
   const happId = 'test-app-1'
   const serviceLoggerInstanceId = serviceLoggerInstanceIdFromHappId(happId)
-  const request = {params: 'params'}
+  const request = {args: 'args'}
   const call = {
     happId,
     agentId,
-    dnaHash,
+    handle,
     zome: 'zome',
     function: 'function',
-    params: request,
+    args: request,
     signature: 'signature',
   }
   const response = await envoy.zomeCall(call)
-  const requestPackage = Z.buildServiceLoggerRequestPackage(call)
+  const requestPackage = Z.buildServiceLoggerRequestPackage({
+    dnaHash,
+    zome: call.zome,
+    function: call.function,
+    args: call.args
+  })
   const responsePackage = Z.buildServiceLoggerResponsePackage(response)
   const metrics = Z.calcMetrics(requestPackage, responsePackage)
 
@@ -82,7 +99,7 @@ sinonTest('can call public zome function', async T => {
     instance_id: serviceLoggerInstanceId,
     zome: 'service',
     function: 'log_request',
-    params: {
+    args: {
       entry: {
         agent_id: agentId,
         zome_call_spec: 'zome/function',
@@ -96,7 +113,7 @@ sinonTest('can call public zome function', async T => {
     instance_id: serviceLoggerInstanceId,
     zome: 'service',
     function: 'log_response',
-    params: {
+    args: {
       entry: {
         request_hash: 'requestHash',
         hosting_stats: metrics,
@@ -111,8 +128,8 @@ sinonTest('can call public zome function', async T => {
 
   // NB: the instance is called with the host agent ID, not the ad-hoc one!!
   T.calledWith(publicClient.call, 'call', {
-    instance_id: instanceIdFromAgentAndDna(Config.hostAgentName, dnaHash),
-    params: request,
+    instance_id: instanceIdFromAgentAndDna({agentId: Config.hostAgentName, dnaHash}),
+    args: request,
     function: 'function',
     zome: 'zome',
   })
@@ -148,7 +165,7 @@ sinonTest('can sign responses for servicelogger later', async T => {
     instance_id: serviceLoggerInstanceIdFromHappId(happId),
     zome: 'service',
     function: 'log_service',
-    params: {
+    args: {
       response_hash: 'hash',
       client_signature: 'signature',
     }
@@ -165,7 +182,7 @@ sinonTest('can sign responses for servicelogger later', async T => {
     zome: "service",
     function: "log_service",
     instance_id: "servicelogger-happId",
-    params: {
+    args: {
       entry: { client_signature: "signature", response_hash: "hash" }
     }
   })

@@ -1,11 +1,13 @@
 import axios from 'axios'
+import * as _ from 'lodash'
 import * as colors from 'colors'
 import * as fs from 'fs-extra'
 import * as os from 'os'
 import * as path from 'path'
 
-import {HappID, HappResource, HappEntry} from '../types'
+import {HappID, HappStoreResource, HappStoreEntry} from '../types'
 import {
+  downloadFile,
   fail,
   unbundleUI,
   uiIdFromHappId,
@@ -15,7 +17,6 @@ import {
   serviceLoggerInstanceIdFromHappId,
 } from '../common'
 import * as Config from '../config'
-import {HAPP_DATABASE, shimHappById} from '../shims/happ-server'
 
 enum ResourceType {HappUi, HappDna}
 
@@ -177,12 +178,24 @@ export const setupInstance = async (client, {instanceId, agentId, dnaId, conduct
   ])
 }
 
-export const setupHolofuelBridge = async (client, {callerInstanceId}) => {
-  return client.call('admin/bridge/add', {
+export const setupHolofuelBridge = async (client, {callerInstanceId, replace}) => {
+  const bridgeConfig = {
     handle: 'holofuel-bridge',
     caller_id: callerInstanceId,
     callee_id: Config.holofuelId.instance,
-  })
+  }
+
+  const bridges = await client.call('admin/bridge/list', {})
+  if (bridges.find(b => _.isEqual(b, bridgeConfig))) {
+    if (replace) {
+      throw "Bridge setup with replacement not yet supported"
+    } else {
+      console.log(`The following bridge was already set up; skipping:`)
+      console.log(JSON.stringify(bridgeConfig, null, 2))
+      return {success: true}
+    }
+  }
+  return client.call('admin/bridge/add', bridgeConfig)
 }
 
 export const setupInstances = async (client, opts: {happId: string, agentId: string, conductorInterface: Config.ConductorInterface}): Promise<void> => {
@@ -192,7 +205,7 @@ export const setupInstances = async (client, opts: {happId: string, agentId: str
 
   const dnaPromises = dnas.map(async (dna) => {
     const dnaId = dna.hash
-    const instanceId = instanceIdFromAgentAndDna(agentId, dnaId)
+    const instanceId = instanceIdFromAgentAndDna({agentId, dnaHash: dnaId})
     return setupInstance(client, {
       dnaId,
       agentId,
@@ -216,7 +229,7 @@ export const setupInstances = async (client, opts: {happId: string, agentId: str
 }
 
 export const setupServiceLogger = async (masterClient, {hostedHappId}) => {
-  const {path} = Config.RESOURCES.serviceLogger.dna
+  const {path} = Config.DEPENDENCIES.resources.serviceLogger.dna
   const dnaId = serviceLoggerDnaIdFromHappId(hostedHappId)
   const instanceId = serviceLoggerInstanceIdFromHappId(hostedHappId)
   const agentId = Config.hostAgentName
@@ -230,35 +243,49 @@ export const setupServiceLogger = async (masterClient, {hostedHappId}) => {
     agentId,
     conductorInterface: Config.ConductorInterface.Internal
   })
-  await setupHolofuelBridge(masterClient, {callerInstanceId: instanceId})
+  await setupHolofuelBridge(masterClient, {callerInstanceId: instanceId, replace: false})
 
   // TODO: make initial call to serviceLogger to set up preferences?
 }
 
-export const lookupAppEntryInHHA = async (client, {happId}: LookupHappRequest): Promise<HappEntry> => {
+export const lookupAppEntryInHHA = async (client, {happId}: LookupHappRequest): Promise<HappStoreEntry> => {
 
-  const appHash = await getHappHashFromHHA(client, happId)
-  if (! appHash) {
-    throw `hApp is not registered by a provider! (happId == ${happId})`
+  let appHash
+
+  try {
+    appHash = await getHappHashFromHHA(client, happId)
+  } catch (e) {
+    throw `hApp is not registered by a provider! (happId == ${happId}). More info:\n${e}`
   }
 
   // TODO: look up actual web 2.0 hApp store via HTTP
-  const happ = await lookupAppInStore(client, appHash)
-  if (happ) {
+  try {
+    const happ = await lookupAppInStoreByHash(client, appHash)
     return happ.appEntry
-  } else {
-    throw `happId not found in hApp Store: happId == ${happId}, app store hash == ${appHash}`
+  } catch (e) {
+    throw `happId not found in hApp Store: happId == ${happId}, app store hash == ${appHash}. More info:\n${e}`
   }
 }
 
 
-export const lookupAppInStore = (client, appHash) => {
+export const lookupAppInStoreByHash = (client, appHash) => {
   return zomeCallByInstance(client, {
     instanceId: Config.happStoreId.instance,
     zomeName: 'happs',
     funcName: 'get_app',
-    params: {app_hash: appHash}
+    args: {app_hash: appHash}
   })
+}
+
+export const lookupDnaByHandle = async (client, happId, handle): Promise<{hash: string}> => {
+  console.log("looking up happId, handle: ", happId, handle)
+  const appHash = await getHappHashFromHHA(client, happId)
+  const app = await lookupAppInStoreByHash(client, appHash)
+  const dna = app.appEntry.dnas.find(dna => dna.handle === handle)
+  if (!dna) {
+    throw new Error(`DNA not found for appHash '${appHash}' and handle '${handle}'`)
+  }
+  return dna
 }
 
 const getHappHashFromHHA = async (client, happId) => {
@@ -267,13 +294,13 @@ const getHappHashFromHHA = async (client, happId) => {
       instanceId: Config.holoHostingAppId.instance,
       zomeName: 'provider',
       funcName: 'get_app_details',
-      params: {app_hash: happId}
+      args: {app_hash: happId}
     })
     return entry.app_bundle.happ_hash
   } catch (e) {
     console.error("getHappHashFromHHA returned error: ", e)
     console.error("This might be a real error or it could simply mean that the entry was not found. TODO: differentiate the two.")
-    return null
+    throw e
   }
 }
 
@@ -300,29 +327,10 @@ const downloadAppResources = async (client, happId): Promise<DownloadResult> => 
   return {ui: uiResource, dnas: dnaResources}
 }
 
-const downloadResource = async (baseDir: string, res: HappResource, type: ResourceType): Promise<string> => {
+const downloadResource = async (baseDir: string, res: HappStoreResource, type: ResourceType): Promise<string> => {
   const suffix = type === ResourceType.HappDna ? '.dna.json' : '.zip'
-  const resourcePath = path.join(baseDir, res.hash + suffix)
-  const response: any = await axios.request({
-    url: res.location,
-    method: 'GET',
-    responseType: 'stream',
-    maxContentLength: 999999999999,
-  }).catch(e => {
-    console.warn('axios error: ', e)
-    return e.response
-  })
-  return new Promise((fulfill, reject) => {
-    if (response.status != 200) {
-      reject(`Could not fetch ${res.location}, response was ${response.statusText} ${response.status}`)
-    } else {
-      const writer = fs.createWriteStream(resourcePath)
-        .on("finish", () => fulfill(resourcePath))
-        .on("error", reject)
-      console.debug("Starting streaming download...")
-      response.data.pipe(writer)
-    }
-  })
+  const resourcePath: string = path.join(baseDir, res.hash + suffix)
+  return downloadFile({url: res.location, path: resourcePath})
 }
 
 const unbundleUi = async (source: string) => {

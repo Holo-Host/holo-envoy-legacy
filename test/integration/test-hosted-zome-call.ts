@@ -1,13 +1,15 @@
 
 import * as sinon from 'sinon'
 
-import * as Config from '../src/config'
+import * as Config from '../../src/config'
+import {delay} from '../../src/common'
 import * as holochainClient from "@holochain/hc-web-client"
-import {sinonTest} from '../test/common'
+import {sinonTest} from '../common'
+import {TEST_HAPPS} from '../test-happs'
 
 const HC = require('@holo-host/hclient')
 
-import {withConductor, getTestClient, adminHostCall, delay, doRegisterApp, doRegisterHost, doAppSetup, zomeCaller} from './common'
+import {withConductor, getTestClient, adminHostCall, doRegisterApp, doRegisterHost, doAppSetup, zomeCaller} from './setup'
 
 const setupDpki = () => {
   const DPKI = HC.dpkiUltralite
@@ -43,13 +45,11 @@ const setupDpki = () => {
 setupDpki()
 
 
-// TODO remove only
-sinonTest.only('can do hosted zome call', async T => {
-  const happNick = 'basic-chat'
+sinonTest('can do hosted zome call', async T => {
   return withConductor(T, async (envoy) => {
     // setup host
     await doRegisterHost()
-    const {happId, dnaHashes} = await doAppSetup(happNick)
+    const {happId, dnaHashes} = await doAppSetup(TEST_HAPPS.basicChat)
     const dnaHash = dnaHashes[0]!
 
     // setup some spies
@@ -107,3 +107,4 @@ sinonTest.only('can do hosted zome call', async T => {
     await delay(500)
   })
 })
+

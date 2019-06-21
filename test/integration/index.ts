@@ -3,22 +3,22 @@ import * as sinon from 'sinon'
 import * as fs from 'fs'
 import * as os from 'os'
 import * as path from 'path'
-import {exec} from 'child_process'
 import {Client, Server} from 'rpc-websockets'
 import * as rimraf from 'rimraf'
 
-import * as Config from '../src/config'
-import * as S from '../src/server'
-import {HappEntry} from '../src/types'
-import {shimHappByNick} from '../src/shims/happ-server'
-import {withConductor, getTestClient, adminHostCall, delay, doRegisterHost, doRegisterApp, doAppSetup, zomeCaller} from './common'
+import * as Config from '../../src/config'
+import {delay} from '../../src/common'
+import * as S from '../../src/server'
+import {TEST_HAPPS} from '../test-happs'
+import {withConductor, getTestClient, adminHostCall, doRegisterHost, doRegisterApp, doAppSetup, zomeCaller} from './setup'
 
-import startWormholeServer from '../src/wormhole-server'
-import startAdminHostServer from '../src/admin-host-server'
-import startShimServers from '../src/shims/happ-server'
+import startWormholeServer from '../../src/wormhole-server'
+import startAdminHostServer from '../../src/admin-host-server'
 
+Config.hcDependencyCheck()
 
-require('./test-hosted-zome-call')
+// TODO: hook up once we can integrate with hClient
+// require('./test-hosted-zome-call')
 
 
 /**
@@ -53,16 +53,15 @@ const holofiedClient = async (agentId): Promise<any> => {
 
 
 test('can do public zome call', t => {
-  const happNick = 'basic-chat'
   const agentId = 'some-random-agent-id'
   withConductor(t, async () => {
     // setup host
     await doRegisterHost()
-    const {happId, dnaHashes} = await doAppSetup(happNick)
-    const dnaHash = dnaHashes[0]!
+    const happId = await doAppSetup(TEST_HAPPS.basicChat)
+    const handle = 'basic-chat'
 
     const client = await getTestClient()
-    const call = zomeCaller(client, {happId, agentId, dnaHash, zome: 'chat'})
+    const call = zomeCaller(client, {happId, agentId, handle, zome: 'chat'})
 
     const address = await call('register', {
       name: 'chat noir',
@@ -90,13 +89,11 @@ test('all components shut themselves down properly', async t => {
   const client = S.getMasterClient(false)
   const httpServer = await envoy.buildHttpServer(null)
   const wss = await envoy.buildWebsocketServer(httpServer)
-  const shimServer = startShimServers(Config.PORTS.shim)
   const adminServer = startAdminHostServer(Config.PORTS.admin, 'testdir', null)
   const wormholeServer = startWormholeServer(Config.PORTS.wormhole, envoy)
 
   httpServer.close()
   wss.close()
-  shimServer.stop()
   adminServer.close()
   wormholeServer.close()
   client.close()

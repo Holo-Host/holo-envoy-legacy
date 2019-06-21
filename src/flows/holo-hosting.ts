@@ -1,14 +1,14 @@
 
 import * as C from '../config'
 import {zomeCallByInstance} from '../common'
-import {HappEntry} from '../types'
+import {HappStoreEntry} from '../types'
 
 export const enableHapp = (client, happId) => {
   return zomeCallByInstance(client, {
     instanceId: C.holoHostingAppId.instance,
     zomeName: 'host',
     funcName: 'enable_app',
-    params: {
+    args: {
       app_hash: happId
     }
   })
@@ -19,7 +19,7 @@ export const disableHapp = (client, happId) => {
     instanceId: C.holoHostingAppId.instance,
     zomeName: 'host',
     funcName: 'disable_app',
-    params: {
+    args: {
       app_hash: happId
     }
   })
@@ -30,7 +30,7 @@ export const registerAsHost = (client) => {
     instanceId: C.holoHostingAppId.instance,
     zomeName: 'host',
     funcName: 'register_as_host',
-    params: {
+    args: {
       host_doc: {
         kyc_proof: "TODO this proves nothing",
       }
@@ -45,7 +45,7 @@ export const SHIMS = {
       instanceId: C.holoHostingAppId.instance,
       zomeName: 'provider',
       funcName: 'register_as_provider',
-      params: {
+      args: {
         provider_doc: {
           kyc_proof: "TODO this proves nothing",
         }
@@ -53,7 +53,7 @@ export const SHIMS = {
     })
   },
 
-  createAndRegisterHapp: async (client, entry: HappEntry) => {
+  createAndRegisterHapp: async (client, entry: HappStoreEntry) => {
     const title = "TODO"
     const description = "TODO"
     const thumbnail_url = "TODO.gif"
@@ -63,7 +63,7 @@ export const SHIMS = {
       instanceId: C.happStoreId.instance,
       zomeName: 'happs',
       funcName: 'create_app',
-      params: {
+      args: {
         title, description, thumbnail_url, homepage_url,
         ui: entry.ui,
         dnas: entry.dnas,
@@ -76,7 +76,7 @@ export const SHIMS = {
       instanceId: C.holoHostingAppId.instance,
       zomeName: 'provider',
       funcName: 'register_app',
-      params: {
+      args: {
         app_bundle: {
           happ_hash: happHash
         },

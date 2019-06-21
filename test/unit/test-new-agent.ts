@@ -1,17 +1,16 @@
 import * as test from 'tape'
 import * as sinon from 'sinon'
 
-import {mockResponse, sinonTest, testEnvoyServer} from './common'
-import * as Config from '../src/config'
-import {EnvoyServer} from '../src/server'
-import * as M from '../src/flows/new-agent'
-import newAgentFlow from '../src/flows/new-agent'
-import {shimHappByNick} from '../src/shims/happ-server'
+import {mockResponse, sinonTest, testEnvoyServer} from '../common'
+import * as Config from '../../src/config'
+import {EnvoyServer} from '../../src/server'
+import * as M from '../../src/flows/new-agent'
+import newAgentFlow from '../../src/flows/new-agent'
+import {TEST_HAPPS} from '../test-happs'
 
 // TODO: add tests for failure cases
 
-const simpleApp = shimHappByNick('simple-app')!
-const testApp3 = shimHappByNick('test-app-3')!
+const {basicChat, testApp3} = TEST_HAPPS
 
 sinonTest('can host new agent', async T => {
   const {envoy, masterClient, publicClient, internalClient} = testEnvoyServer()
@@ -39,13 +38,14 @@ sinonTest('can idempotently add existing agent', async T => {
 sinonTest('can only host agent for enabled app (1 DNA)', async T => {
   const {envoy, masterClient, publicClient, internalClient} = testEnvoyServer()
   const agentId = 'agentId'
+  const dnaHash = basicChat.dnas[0].hash
   await newAgentFlow(masterClient)({
     agentId,
-    happId: simpleApp.happId,
+    happId: basicChat.happId,
     signature: 'TODO unused signature'
   })
 
-  // 8 calls:
+  // 9 calls:
   // 1 for get_enabled_app_list
   // 2 for createAgent
   // 2 for lookupAppEntryInHHA
@@ -56,11 +56,11 @@ sinonTest('can only host agent for enabled app (1 DNA)', async T => {
     instance_id: Config.holoHostingAppId.instance,
     zome: 'host',
     function: 'get_enabled_app_list',
-    params: {}
+    args: {}
   })
   T.calledWith(masterClient.call, 'admin/instance/add', {
-    id: `simple-app::${agentId}`,
-    dna_id: simpleApp.dnas[0].hash,
+    id: `${dnaHash}::${agentId}`,
+    dna_id: dnaHash,
     agent_id: agentId,
   })
 })
@@ -85,20 +85,20 @@ sinonTest('can only host agent for enabled app (3 DNAs)', async T => {
     instance_id: Config.holoHostingAppId.instance,
     zome: 'host',
     function: 'get_enabled_app_list',
-    params: {}
+    args: {}
   })
   T.calledWith(masterClient.call, 'admin/instance/add', {
-    id: `test-dna-hash-3a::${agentId}`,
+    id: `${testApp3.dnas[0].hash}::${agentId}`,
     dna_id: testApp3.dnas[0].hash,
     agent_id: agentId,
   })
   T.calledWith(masterClient.call, 'admin/instance/add', {
-    id: `test-dna-hash-3b::${agentId}`,
+    id: `${testApp3.dnas[1].hash}::${agentId}`,
     dna_id: testApp3.dnas[1].hash,
     agent_id: agentId,
   })
   T.calledWith(masterClient.call, 'admin/instance/add', {
-    id: `test-dna-hash-3c::${agentId}`,
+    id: `${testApp3.dnas[2].hash}::${agentId}`,
     dna_id: testApp3.dnas[2].hash,
     agent_id: agentId,
   })

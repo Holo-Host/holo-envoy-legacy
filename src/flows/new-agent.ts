@@ -24,7 +24,7 @@ export default (masterClient) => async ({
     instanceId: Config.holoHostingAppId.instance,
     zomeName: 'host',
     funcName: 'get_enabled_app_list',
-    params: {}
+    args: {}
   })
   if (enabledApps.find(app => app.address === happId)) {
     await createAgent(masterClient, agentId)

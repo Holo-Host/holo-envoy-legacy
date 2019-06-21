@@ -19,7 +19,6 @@ import ConnectionManager from './connection-manager'
 
 import startWormholeServer from './wormhole-server'
 import startAdminHostServer from './admin-host-server'
-import startShimServers from './shims/happ-server'
 
 const successResponse = { success: true }
 
@@ -57,8 +56,9 @@ export const makeClient = (url, opts) => {
  */
 async function callWhenConnected (this: any, method, payload) {
 
+  let promise, failure, responseRaw
+
   // Do waiting
-  let promise
   if(this.ready) {
     promise = Promise.resolve(this._call(method, payload))
   } else {
@@ -69,18 +69,26 @@ async function callWhenConnected (this: any, method, payload) {
     })
   }
 
-  // Do snazzy logging
-  return promise.then(responseRaw => {
-    const response = (responseRaw && typeof responseRaw === 'string') ? JSON.parse(responseRaw) : responseRaw
-    console.log("")
-    console.log(`WS call: ${method}`.dim.inverse)
-    console.log('request'.green.bold, `------>`.green.bold, `(${typeof payload})`.green.italic)
-    console.log(JSON.stringify(payload, null, 2))
-    console.log('response'.cyan.bold, `<-----`.cyan.bold, `(${typeof response})`.cyan.italic)
-    console.log(JSON.stringify(response, null, 2))
-    console.log("")
+  try {
+    responseRaw = await promise
+  } catch (e) {
+    failure = e
+  }
+
+  const response = (responseRaw && typeof responseRaw === 'string') ? JSON.parse(responseRaw) : responseRaw
+  console.log("")
+  console.log(failure ? `WS call (ERROR): ${method}`.red.inverse : `WS call: ${method}`.dim.inverse)
+  console.log('request'.green.bold, `------>`.green.bold, `(${typeof payload})`.green.italic)
+  console.log(JSON.stringify(payload, null, 2))
+  console.log('response'.cyan.bold, `<-----`.cyan.bold, `(${typeof response})`.cyan.italic)
+  console.log(JSON.stringify(response, null, 2))
+  console.log("")
+
+  if (failure) {
+    throw failure
+  } else {
     return response
-  })
+  }
 }
 
 const clientOpts = reconnect => ({ max_reconnects: 0, reconnect })  // zero reconnects means unlimited
@@ -128,7 +136,7 @@ export class EnvoyServer {
   }
 
   start = async (port) => {
-    let wss, httpServer, shimServer, adminServer, wormholeServer
+    let wss, httpServer, adminServer, wormholeServer
     const server = this
     const importantConnections = ['master']
     this.connections = new ConnectionManager({
@@ -140,7 +148,6 @@ export class EnvoyServer {
         wss = await this.buildWebsocketServer(httpServer)
         console.log("WS server initialized")
 
-        shimServer = startShimServers(Config.PORTS.shim)
         adminServer = startAdminHostServer(Config.PORTS.admin, Config.defaultEnvoyHome, server.clients.master)
         wormholeServer = startWormholeServer(Config.PORTS.wormhole, server)
 
@@ -174,12 +181,6 @@ export class EnvoyServer {
           console.log("Shut down wormholeServer")
         } else {
           console.log("Not shutting down wormholeServer??")
-        }
-        if (shimServer) {
-          shimServer.stop()
-          console.log("Shut down shimServer")
-        } else {
-          console.log("Not shutting down shimServer??")
         }
 
         this.server = null
@@ -332,7 +333,7 @@ export class EnvoyServer {
   }
 
   zomeCall = (params: CallRequest) => {
-    return zomeCall(this.clients.public, this.clients.internal)(params).catch(fail)
+    return zomeCall(this.clients.master, this.clients.public, this.clients.internal)(params).catch(fail)
   }
 
   /**

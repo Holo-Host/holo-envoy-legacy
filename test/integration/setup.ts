@@ -5,15 +5,15 @@ import * as os from 'os'
 import * as path from 'path'
 import {exec} from 'child_process'
 import * as rimraf from 'rimraf'
-import * as S from '../src/server'
-import * as T from '../src/types'
-import {serializeError, whenReady} from '../src/common'
-import {shimHappByNick} from '../src/shims/happ-server'
-import * as HH from '../src/flows/holo-hosting'
 
-import * as Config from '../src/config'
-import {initializeConductorConfig, cleanConductorStorage, spawnConductor, keygen} from '../src/conductor'
-import startEnvoy from '../src/server'
+import * as S from '../../src/server'
+import * as T from '../../src/types'
+import {serializeError, whenReady, parseAxiosError, delay} from '../../src/common'
+import * as HH from '../../src/flows/holo-hosting'
+
+import * as Config from '../../src/config'
+import {initializeConductorConfig, cleanConductorStorage, spawnConductor, keygen} from '../../src/conductor'
+import startEnvoy from '../../src/server'
 
 
 export const adminHostCall = (uri, data) => {
@@ -89,28 +89,6 @@ export const withConductor = async (t, fn) => {
   await delay(1000)
 }
 
-// print less of the enormous axios error object
-const parseAxiosError = e => {
-  if (e.config && e.request && e.response) {
-    return {
-      request: {
-        method: e.config.method,
-        url: e.config.url,
-        data: e.config.data,
-      },
-      response: {
-        status: e.response.status,
-        statusText: e.response.statusText,
-        data: e.response.data,
-      }
-    }
-  } else {
-    return null
-  }
-}
-
-export const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
-
 /**
  * Read the cached test keyfile data from files, first creating said files if nonexistant
  */
@@ -145,7 +123,7 @@ export const doRegisterHost = async () => {
   await delay(1000)
 }
 
-export const doRegisterApp = async (happEntry: T.HappEntry): Promise<string> => {
+export const doRegisterApp = async (happEntry: T.HappStoreEntry): Promise<string> => {
   const masterClient = S.getMasterClient(false)
   const happId = await HH.SHIMS.createAndRegisterHapp(masterClient, happEntry)
   console.log("registered hApp: ", happId)
@@ -161,31 +139,24 @@ export const doInstallAndEnableApp = async (masterClient, happId) => {
     throw `Could not install hApp ${happId}, got status ${status} ${statusText}`
   }
   const enableResult = await HH.enableHapp(masterClient, happId)
-  console.log(`enabled ${happId}: `, enableResult)
+  console.log(`enabled happ ${happId}: `, enableResult)
 }
 
-
-export const doAppSetup = async (happNick: string) => {
-  const happEntry = shimHappByNick(happNick)!
-  const dnaHashes = happEntry.dnas.map(dna => dna.hash)
-  const uiHash = happEntry.ui ? happEntry.ui.hash : null
+export const doAppSetup = async (happEntry: T.HappStoreEntry) => {
   const client = S.getMasterClient(false)
-
   const happId = await doRegisterApp(happEntry)
-
   const happResult = await doInstallAndEnableApp(client, happId)
   client.close()
-
-  return {happId, dnaHashes, uiHash}
+  return happId
 }
 
 
-export const zomeCaller = (client, {happId, agentId, dnaHash, zome}) => (func, params) => {
+export const zomeCaller = (client, {happId, agentId, handle, zome}) => (func, params) => {
   return client.call('holo/call', {
-    happId, agentId, dnaHash,
+    happId, agentId, handle,
     zome: zome,
     function: func,
-    params: params,
+    args: params,
     signature: 'TODO',
   })
 }

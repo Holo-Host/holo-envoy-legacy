@@ -6,8 +6,8 @@ import {Client as RpcClient, Server as RpcServer} from 'rpc-websockets'
 import * as Config from '../src/config'
 import {EnvoyServer, makeClient} from '../src/server'
 import {instanceIdFromAgentAndDna} from '../src/common'
-import {HappEntry} from '../src/types'
-import {HAPP_DATABASE} from '../src/shims/happ-server'
+import {HappStoreEntry} from '../src/types'
+import {TEST_HAPPS} from './test-happs'
 
 const tape = tapePromise(_tape)
 
@@ -19,27 +19,27 @@ export const getEnabledAppArgs = {
   instance_id: Config.holoHostingAppId.instance,
   zome: 'host',
   function: 'get_enabled_app_list',
-  params: {}
+  args: {}
 }
 
-export const isAppRegisteredArgs = happId => ({
+export const getAppDetailsArgs = happId => ({
   instance_id: Config.holoHostingAppId.instance,
   zome: 'provider',
   function: 'get_app_details',
-  params: {app_hash: happId}
+  args: {app_hash: happId}
 })
 
-export const lookupAppInStoreArgs = appHash => ({
+export const lookupAppInStoreByHashArgs = appHash => ({
   instance_id: Config.happStoreId.instance,
   zome: 'happs',
   function: 'get_app',
-  params: {app_hash: appHash}
+  args: {app_hash: appHash}
 })
 
 const testDnas = []
 
 // Stub HHA to say that all available apps are enabled
-const testApps = HAPP_DATABASE.map(({happId}) => ({
+const testApps = Object.values(TEST_HAPPS).map(({happId}) => ({
   address: happId,
   entry: 'fake entry',
 }))
@@ -47,7 +47,7 @@ const testApps = HAPP_DATABASE.map(({happId}) => ({
 // Stub to pretend that all DNAs are installed and have public instances
 export const testInstances = (() => {
   const dnaHashes: Array<string> = []
-  HAPP_DATABASE.forEach(({dnas, ui}) => {
+  Object.values(TEST_HAPPS).forEach(({dnas, ui}) => {
     dnas.forEach(dna => {
       dnaHashes.push(dna.hash)
     })
@@ -67,44 +67,46 @@ export const baseClient = () => {
 }
 
 /**
- * Creates a heavily stubbed master client.
+ * Creates a heavily stubbed master client, with full responses for apps
+ * that should be considered registered.
  */
 export const testMasterClient = () => {
   const client = baseClient()
 
-  client._call.withArgs('admin/agent/list').returns([{id: 'existing-agent-id'}])
-  client._call.withArgs('admin/dna/list').returns(testDnas)
-  client._call.withArgs('admin/dna/install_from_file').returns(success)
-  client._call.withArgs('admin/ui/install').returns(success)
+  client._call.withArgs('admin/agent/list').resolves([{id: 'existing-agent-id'}])
+  client._call.withArgs('admin/dna/list').resolves(testDnas)
+  client._call.withArgs('admin/dna/install_from_file').resolves(success)
+  client._call.withArgs('admin/bridge/list').resolves([])
+  client._call.withArgs('admin/ui/install').resolves(success)
   client._call.withArgs('admin/instance/list').resolves([{
-    id: instanceIdFromAgentAndDna('fake-agent', 'simple-app')
+    id: instanceIdFromAgentAndDna({agentId: 'fake-agent', dnaHash: 'basic-chat'})
   }])
   client._call.withArgs('admin/instance/add').resolves(success)
   client._call.withArgs('admin/interface/add_instance').resolves(success)
   client._call.withArgs('admin/instance/start').resolves(success)
   client._call.withArgs('call', getEnabledAppArgs).resolves({Ok: testApps})
 
-  client._call.withArgs('call', isAppRegisteredArgs('invalid')).resolves({
+  client._call.withArgs('call', getAppDetailsArgs('invalid')).resolves({
     Err: "this is not the real error, but it is an error"
   })
-  client._call.withArgs('call', lookupAppInStoreArgs('invalid')).resolves({
+  client._call.withArgs('call', lookupAppInStoreByHashArgs('invalid')).resolves({
     Err: "this is not the real error, but it is an error"
   })
 
   // Stub out functions that normally go the hApp Store, using the shim database
-  HAPP_DATABASE.forEach(entry => {
-    client._call.withArgs('call', isAppRegisteredArgs(entry.happId)).resolves({
+  Object.values(TEST_HAPPS).forEach(entry => {
+    client._call.withArgs('call', getAppDetailsArgs(entry.happId)).resolves({
       Ok: {app_bundle: {happ_hash: entry.happId}}
     })
-    client._call.withArgs('call', lookupAppInStoreArgs(entry.happId)).resolves({
+    client._call.withArgs('call', lookupAppInStoreByHashArgs(entry.happId)).resolves({
       Ok: {appEntry: entry}
     })
   })
   return client
 }
 
-const testAppEntry: HappEntry = ({
-  dnas: [{location: 'wherever', hash: 'whatever'}],
+const testAppEntry: HappStoreEntry = ({
+  dnas: [{location: 'wherever', hash: 'whatever', handle: 'whomever'}],
   ui: undefined
 })
 

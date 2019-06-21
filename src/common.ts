@@ -1,4 +1,4 @@
-
+import axios from 'axios'
 import * as archiver from 'archiver'
 import * as colors from 'colors'
 import * as extract from 'extract-zip'
@@ -62,6 +62,50 @@ export const unbundleUI = (input, target) => new Promise((resolve, reject) => {
   })
 })
 
+export const downloadFile = async ({url, path}: {url: string, path: string}): Promise<string> => {
+  const response = await axios.request({
+    url: url,
+    method: 'GET',
+    responseType: 'stream',
+    maxContentLength: 999999999999,
+  }).catch(e => {
+    console.warn('axios error: ', parseAxiosError(e))
+    return e.response
+  })
+
+  return new Promise((fulfill, reject) => {
+    if (response.status != 200) {
+      reject(`Could not fetch ${url}, response was ${response.statusText} ${response.status}`)
+    } else {
+      const writer = fs.createWriteStream(path)
+        .on("finish", () => fulfill(path))
+        .on("error", reject)
+      console.debug("Starting streaming download...")
+      response.data.pipe(writer)
+    }
+  })
+}
+
+// print less of the enormous axios error object
+export const parseAxiosError = e => {
+  if ('config' in e && 'request' in e && 'response' in e) {
+    return {
+      request: {
+        method: e.config.method,
+        url: e.config.url,
+        data: e.config.data,
+      },
+      response: !e.response ? e.response : {
+        status: e.response.status,
+        statusText: e.response.statusText,
+        data: e.response.data,
+      }
+    }
+  } else {
+    return e
+  }
+}
+
 ///////////////////////////////////////////////////////////////////
 ///////////////////////      UTIL      ////////////////////////////
 ///////////////////////////////////////////////////////////////////
@@ -75,16 +119,12 @@ export const uiIdFromHappId = (
 
 /**
  * The instance ID for a given AgentID and DNA hash
- * If a nickname exists for a DNA, use that as the "canonical name".
- * Otherwise, use DNA hash as canonical name
- * The host's own instances are just given the canonical name.
- * Another agent's hosted instance gets their agentId prepended to it.
+ * If this is the host's instance, the ID is just the DNA hash
+ * Another agent's hosted instance gets their agentId appended to it with a ::
  */
-export const instanceIdFromAgentAndDna = (agentId, dnaHash) => {
-  const nick = Config.getNickByDna(dnaHash)
+export const instanceIdFromAgentAndDna = ({agentId, dnaHash}) => {
   const isHost = agentId === Config.hostAgentName
-  const canonicalName = nick ? nick : dnaHash
-  return isHost ? canonicalName : `${canonicalName}::${agentId}`
+  return isHost ? dnaHash : `${dnaHash}::${agentId}`
 }
 
 
@@ -109,25 +149,25 @@ export const zomeCallSpec = ({zomeName, funcName}) => (
   `${zomeName}/${funcName}`
 )
 
-/**
- * Make a zome call through the WS client, identified by AgentID + DNA Hash
- */
-export const zomeCallByDna = async (client, {agentId, dnaHash, zomeName, funcName, params}) => {
-  let instance = await lookupHoloInstance(client, {dnaHash, agentId})
-  const instanceId = instanceIdFromAgentAndDna(instance.agentId, instance.dnaHash)
-  return zomeCallByInstance(client, {instanceId, zomeName, funcName, params})
+
+type CallFnParams = {
+  instanceId: string,
+  zomeName: string,
+  funcName: string,
+  args: any
 }
 
 /**
  * Make a zome call through the WS client, identified by instance ID
  * TODO: maybe keep the Ok/Err wrapping, to differentiate between zome error and true exception
  */
-export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName, params}) => {
+export const zomeCallByInstance = async (client, callParams: CallFnParams) => {
+  const {instanceId, zomeName, funcName, args = {}} = callParams
   const payload = {
     instance_id: instanceId,
     zome: zomeName,
     function: funcName,
-    params
+    args: args || {},
   }
   let result
   try {
@@ -148,6 +188,7 @@ export const zomeCallByInstance = async (client, {instanceId, zomeName, funcName
     return result.Ok
   }
 }
+
 
 /**
  * Look for an instance config via AgentID and DNA hash
@@ -185,3 +226,5 @@ export const whenReady = async client => {
     })
   }
 }
+
+export const delay = ms => new Promise(resolve => setTimeout(resolve, ms))

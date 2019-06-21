@@ -4,13 +4,13 @@ import * as path from 'path'
 import * as sinon from 'sinon'
 import {EventEmitter} from 'events'
 
-import {mockResponse, sinonTest, testEnvoyServer, getEnabledAppArgs, isAppRegisteredArgs, lookupAppInStoreArgs} from './common'
-import {bundleUI, unbundleUI, instanceIdFromAgentAndDna, serviceLoggerDnaIdFromHappId, serviceLoggerInstanceIdFromHappId} from '../src/common'
-import * as Common from '../src/common'
-import * as Config from '../src/config'
-import {shimHappByNick} from '../src/shims/happ-server'
+import {mockResponse, sinonTest, testEnvoyServer, getEnabledAppArgs, getAppDetailsArgs, lookupAppInStoreByHashArgs} from '../common'
+import {bundleUI, unbundleUI, instanceIdFromAgentAndDna, serviceLoggerDnaIdFromHappId, serviceLoggerInstanceIdFromHappId} from '../../src/common'
+import * as Common from '../../src/common'
+import * as Config from '../../src/config'
+import {TEST_HAPPS} from '../test-happs'
 
-import installHapp, * as M from '../src/flows/install-happ'
+import installHapp, * as M from '../../src/flows/install-happ'
 
 const emitterWithPipe = () => {
   return Object.assign(new EventEmitter(), {
@@ -26,7 +26,7 @@ sinon.stub(fs, 'copy')
 sinon.stub(Common, 'bundleUI')
 sinon.stub(Common, 'unbundleUI')
 
-const simpleApp = shimHappByNick('simple-app')!
+const {basicChat} = TEST_HAPPS
 
 const axiosResponse = (status) => {
   return {
@@ -71,9 +71,9 @@ sinonTest('throws error for non-hosted happId', async T => {
 sinonTest('throws error for unreachable resources', async T => {
   const {masterClient} = testEnvoyServer()
   const sandbox = sinon.createSandbox()
-  // sandbox.stub(M, 'lookupAppEntryInHHA').resolves(simpleApp)
+  // sandbox.stub(M, 'lookupAppEntryInHHA').resolves(basicChat)
   sandbox.stub(axios, 'request').resolves(axiosResponse(404))
-  const happId = simpleApp.happId
+  const happId = basicChat.happId
 
   await T.rejects(
     M.installDnasAndUi(masterClient, 'test-dir', {happId}),
@@ -89,17 +89,17 @@ sinonTest('can install dnas and ui for hApp', async T => {
   const {masterClient} = testEnvoyServer()
 
   const sandbox = sinon.createSandbox()
-  // sandbox.stub(M, 'lookupAppEntryInHHA').resolves(simpleApp)
+  // sandbox.stub(M, 'lookupAppEntryInHHA').resolves(basicChat)
   sandbox.stub(axios, 'request').resolves(axiosResponse(200))
-  const happId = simpleApp.happId
-  const dnaHash = simpleApp.dnas[0].hash
-  const uiHash = simpleApp.ui!.hash
+  const happId = basicChat.happId
+  const dnaHash = basicChat.dnas[0].hash
+  const uiHash = basicChat.ui!.hash
   const result = M.installDnasAndUi(masterClient, 'test-dir', {happId})
   await T.doesNotReject(result)
   T.callCount(masterClient.call, 4)
 
-  T.calledWith(masterClient.call.getCall(0), 'call', isAppRegisteredArgs(happId))
-  T.calledWith(masterClient.call.getCall(1), 'call', lookupAppInStoreArgs(happId))
+  T.calledWith(masterClient.call.getCall(0), 'call', getAppDetailsArgs(happId))
+  T.calledWith(masterClient.call.getCall(1), 'call', lookupAppInStoreByHashArgs(happId))
   T.calledWith(masterClient.call.getCall(2), 'admin/dna/list')
   T.calledWith(masterClient.call.getCall(3), 'admin/dna/install_from_file', {
     copy: true,
@@ -110,7 +110,7 @@ sinonTest('can install dnas and ui for hApp', async T => {
   })
 
   // const uiDir = `${happId}`
-  const uiDir = `tempdir/QmSimpleAppFakeHash`
+  const uiDir = `tempdir/FAKEHASH`
   T.calledWith(Common.unbundleUI, `${uiDir}.zip`, uiDir)
   T.calledWith(
     fs.copy,
@@ -124,16 +124,16 @@ sinonTest('can install dnas and ui for hApp', async T => {
 sinonTest('can setup instances', async T => {
   const {masterClient} = testEnvoyServer()
 
-  const happId = simpleApp.happId
-  const dnaHash = simpleApp.dnas[0].hash
+  const happId = basicChat.happId
+  const dnaHash = basicChat.dnas[0].hash
   const agentId = 'fake-agent-id'
-  const instanceId = instanceIdFromAgentAndDna(agentId, dnaHash)
+  const instanceId = instanceIdFromAgentAndDna({agentId, dnaHash})
   const result = M.setupInstances(masterClient, {happId, agentId, conductorInterface: Config.ConductorInterface.Public})
   await T.doesNotReject(result)
   T.callCount(masterClient.call, 6)
 
-  T.calledWith(masterClient.call.getCall(0), 'call', isAppRegisteredArgs(happId))
-  T.calledWith(masterClient.call.getCall(1), 'call', lookupAppInStoreArgs(happId))
+  T.calledWith(masterClient.call.getCall(0), 'call', getAppDetailsArgs(happId))
+  T.calledWith(masterClient.call.getCall(1), 'call', lookupAppInStoreByHashArgs(happId))
   T.calledWith(masterClient.call.getCall(2), 'admin/instance/list')
   T.calledWith(masterClient.call.getCall(3), 'admin/instance/add', {
     agent_id: agentId,
@@ -152,23 +152,23 @@ sinonTest('can setup instances', async T => {
 sinonTest('can setup servicelogger', async T => {
   const {masterClient} = testEnvoyServer()
 
-  const serviceLogger = Config.RESOURCES.serviceLogger.dna
-  const happId = simpleApp.happId
-  const dnaHash = simpleApp.dnas[0].hash
+  const serviceLogger = Config.DEPENDENCIES.resources.serviceLogger.dna
+  const happId = basicChat.happId
+  const dnaHash = basicChat.dnas[0].hash
   const agentId = 'fake-agent-id'
-  const instanceId = instanceIdFromAgentAndDna(agentId, dnaHash)
+  const instanceId = instanceIdFromAgentAndDna({agentId, dnaHash})
   const serviceLoggerDnaId = serviceLoggerDnaIdFromHappId(happId)
   const serviceLoggerId = serviceLoggerInstanceIdFromHappId(happId)
   const result = M.setupServiceLogger(masterClient, {hostedHappId: happId})
   await T.doesNotReject(result)
-  T.callCount(masterClient.call, 7)
+  T.callCount(masterClient.call, 8)
 
   T.calledWith(masterClient.call, 'admin/dna/list', {})
   T.calledWith(masterClient.call, 'admin/dna/install_from_file', {
     copy: true,
     id: serviceLoggerDnaId,
     path: serviceLogger.path,
-    properties: { forApp: simpleApp.happId }
+    properties: { forApp: basicChat.happId }
   })
   T.calledWith(masterClient.call, 'admin/instance/list')
   T.calledWith(masterClient.call, 'admin/instance/add', {
@@ -176,6 +176,7 @@ sinonTest('can setup servicelogger', async T => {
     dna_id: serviceLoggerDnaId,
     id: serviceLoggerId,
   })
+  T.calledWith(masterClient.call, 'admin/bridge/list')
   T.calledWith(masterClient.call, 'admin/interface/add_instance', {
     instance_id: serviceLoggerId,
     interface_id: Config.ConductorInterface.Internal,
@@ -192,11 +193,11 @@ sinonTest('can setup servicelogger', async T => {
 
 sinonTest('can perform entire installation flow', async T => {
   const {masterClient} = testEnvoyServer()
-  const serviceLogger = Config.RESOURCES.serviceLogger.dna
-  const happId = simpleApp.happId
-  const dnaHash = simpleApp.dnas[0].hash
+  const serviceLogger = Config.DEPENDENCIES.resources.serviceLogger.dna
+  const happId = basicChat.happId
+  const dnaHash = basicChat.dnas[0].hash
   const agentId = 'fake-agent-id'
-  const instanceId = instanceIdFromAgentAndDna(agentId, dnaHash)
+  const instanceId = instanceIdFromAgentAndDna({agentId, dnaHash})
   const serviceLoggerId = serviceLoggerInstanceIdFromHappId(happId)
 
   const spyInstallDnasAndUi = sinon.spy(M, 'installDnasAndUi')
@@ -213,7 +214,7 @@ sinonTest('can perform entire installation flow', async T => {
   T.callCount(spySetupServiceLogger, 1)
 
   T.calledWith(masterClient.call, 'admin/instance/add', {
-    id: 'simple-app',
+    id: dnaHash,
     agent_id: Config.hostAgentName,
     dna_id: dnaHash,
   })
