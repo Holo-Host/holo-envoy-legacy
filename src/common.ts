@@ -162,7 +162,7 @@ type CallFnParams = {
  * TODO: maybe keep the Ok/Err wrapping, to differentiate between zome error and true exception
  */
 export const zomeCallByInstance = async (client, callParams: CallFnParams) => {
-  const {instanceId, zomeName, funcName, args} = callParams
+  const {instanceId, zomeName, funcName, args = {}} = callParams
   const payload = {
     instance_id: instanceId,
     zome: zomeName,
