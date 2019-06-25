@@ -6,6 +6,7 @@ export default (resourcePath: string ) => ({
   resources: {
     serviceLogger: {
       dna: {
+        // Note: New servicelogger version that incudes required bridge config.
         location: 'https://github.com/Holo-Host/servicelogger/releases/download/v0.0.4/QmWSg6rASeEU6JfxFrR9a64F26SxFASWP9CK4kbNRaWNuD.dna.json',
         // location: 'https://holo-artifacts.s3-us-west-2.amazonaws.com/servicelogger-v0.0.3.dna.json',
         path: path.join(resourcePath, 'servicelogger.dna.json'),
@@ -51,11 +52,11 @@ export default (resourcePath: string ) => ({
     basicChat: {
       dna: {
         // Only the location is used, it is downloaded through the normal installation process
-        location: 'https://holo-artifacts.s3-us-west-2.amazonaws.com/holochain-basic-chat.dna.json',
+        location: 'https://github.com/holochain/holochain-basic-chat/releases/download/v0.0.4/holochain-basic-chat.dna.json',
         // path: path.join(resourcePath, 'holochain-basic-chat.dna.json'),
       },
       ui: {
-        location: 'https://holo-artifacts.s3-us-west-2.amazonaws.com/holochain-basic-chat-ui.zip',
+        location: 'https://github.com/holochain/holochain-basic-chat/releases/download/v0.0.4/holochain-basic-chat-0.0.4.zip',
       },
     }
   }

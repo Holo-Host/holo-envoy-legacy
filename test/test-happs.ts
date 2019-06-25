@@ -7,7 +7,7 @@ export const TEST_HAPPS = {
     dnas: [
       {
         location: Config.DEPENDENCIES.testResources.basicChat.dna.location,
-        hash: 'QmeVtyWaYQt3pANiREofWHGuwW3dpdzLegvgmdFQ6fQ6Vx',
+        hash: 'QmW5tVmqmgHQVxi3JtpQtpHHmDXn7W7qBrhSeArskR7ULC',
         handle: 'basic-chat-handle',  // TODO: is this right?
       }
     ],

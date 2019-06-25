@@ -70,7 +70,7 @@ sinonTest('can call public zome function', async T => {
   const dnaHash = 'test-dna-hash-1a'
   const happId = 'test-app-1'
   const serviceLoggerInstanceId = serviceLoggerInstanceIdFromHappId(happId)
-  const request = {params: 'params'}
+  const request = {args: 'args'}
   const call = {
     happId,
     agentId,
@@ -99,7 +99,7 @@ sinonTest('can call public zome function', async T => {
     instance_id: serviceLoggerInstanceId,
     zome: 'service',
     function: 'log_request',
-    params: {
+    args: {
       entry: {
         agent_id: agentId,
         zome_call_spec: 'zome/function',
@@ -113,7 +113,7 @@ sinonTest('can call public zome function', async T => {
     instance_id: serviceLoggerInstanceId,
     zome: 'service',
     function: 'log_response',
-    params: {
+    args: {
       entry: {
         request_hash: 'requestHash',
         hosting_stats: metrics,
@@ -129,7 +129,7 @@ sinonTest('can call public zome function', async T => {
   // NB: the instance is called with the host agent ID, not the ad-hoc one!!
   T.calledWith(publicClient.call, 'call', {
     instance_id: instanceIdFromAgentAndDna({agentId: Config.hostAgentName, dnaHash}),
-    params: request,
+    args: request,
     function: 'function',
     zome: 'zome',
   })
@@ -165,7 +165,7 @@ sinonTest('can sign responses for servicelogger later', async T => {
     instance_id: serviceLoggerInstanceIdFromHappId(happId),
     zome: 'service',
     function: 'log_service',
-    params: {
+    args: {
       response_hash: 'hash',
       client_signature: 'signature',
     }
@@ -182,7 +182,7 @@ sinonTest('can sign responses for servicelogger later', async T => {
     zome: "service",
     function: "log_service",
     instance_id: "servicelogger-happId",
-    params: {
+    args: {
       entry: { client_signature: "signature", response_hash: "hash" }
     }
   })
