@@ -6,19 +6,20 @@ export default (resourcePath: string ) => ({
   resources: {
     serviceLogger: {
       dna: {
-        // location: 'https://github.com/Holo-Host/servicelogger/releases/download/v0.0.3/QmR5XnQP5pGNh53PT6qyjj3XmZgGHiyGMpPvaDWK1UJgQv.dna.json',
-        location: 'https://holo-artifacts.s3-us-west-2.amazonaws.com/servicelogger-v0.0.3.dna.json',
+        location: 'https://github.com/Holo-Host/servicelogger/releases/download/v0.0.4/QmWSg6rASeEU6JfxFrR9a64F26SxFASWP9CK4kbNRaWNuD.dna.json',
+        // location: 'https://holo-artifacts.s3-us-west-2.amazonaws.com/servicelogger-v0.0.3.dna.json',
         path: path.join(resourcePath, 'servicelogger.dna.json'),
       }
     },
     holofuel: {
+      // hash: QmXmouydbaQ6W4TvFheCZvBkYTmzcSD7o2yEyDuUM76AoT
       dna: {
         // location: 'https://github.com/Holo-Host/holofuel/releases/download/v0.9.1-alpha1/holofuel.dna.json',
         location: 'https://holo-artifacts.s3-us-west-2.amazonaws.com/holofuel-v0.8.5-alpha1.dna.json',
         path: path.join(resourcePath, 'holofuel.dna.json'),
       },
       ui: {
-        location: 'https://github.com/Holo-Host/holofuel-gui/releases/download/v0.1.0-alpha1-hc/master-ui.zip',
+        location: 'https://github.com/Holo-Host/holofuel-gui/releases/download/v0.1.0-alpha2-hc/master-ui.zip',
         path: path.join(resourcePath, 'holofuel-gui'),
         port: 8088,
       }
