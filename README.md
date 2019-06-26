@@ -60,7 +60,7 @@ Envoy requires a handful of DNAs and UIs for its proper functioning. There is a 
 
     npm run deps
 
-which will cause all dependencies to be downloaded and stored in `./src/config.envoy-deps`.
+which will cause all dependencies to be downloaded and stored in `./src/config/.envoy-deps`.
 
 For reference, the dependencies include these DNAs: 
 
