@@ -2,7 +2,7 @@ import * as path from 'path'
 
 
 export default (resourcePath: string ) => ({
-  holochainVersion: '0.0.18-alpha1',  // check against `holochain --version`
+  holochainVersion: '0.0.22-alpha1',  // check against `holochain --version`
   resources: {
     serviceLogger: {
       dna: {
