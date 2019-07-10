@@ -49,22 +49,22 @@ jobs:
 
       - restore_cache:
           keys:
-            - holochain-v0.0.20-alpha1
+            - holochain-v0.0.20-alpha3
 
-      - run: wget https://github.com/holochain/holochain-rust/releases/download/v0.0.20-alpha1/conductor-v0.0.20-alpha1-x86_64-generic-linux-gnu.tar.gz
-      - run: wget https://github.com/holochain/holochain-rust/releases/download/v0.0.20-alpha1/cli-v0.0.20-alpha1-x86_64-generic-linux-gnu.tar.gz
+      - run: wget https://github.com/holochain/holochain-rust/releases/download/v0.0.20-alpha3/conductor-v0.0.20-alpha3-x86_64-generic-linux-gnu.tar.gz
+      - run: wget https://github.com/holochain/holochain-rust/releases/download/v0.0.20-alpha3/cli-v0.0.20-alpha3-x86_64-generic-linux-gnu.tar.gz
 
       - save_cache:
           paths:
             - node_modules
-          key: holochain-v0.0.20-alpha1
+          key: holochain-v0.0.20-alpha3
 
-      - run: tar -xvf conductor-v0.0.20-alpha1-x86_64-generic-linux-gnu.tar.gz
-      - run: tar -xvf cli-v0.0.20-alpha1-x86_64-generic-linux-gnu.tar.gz
+      - run: tar -xvf conductor-v0.0.20-alpha3-x86_64-generic-linux-gnu.tar.gz
+      - run: tar -xvf cli-v0.0.20-alpha3-x86_64-generic-linux-gnu.tar.gz
 
       # note "unknown" for directory name vs "ubuntu" for archive name
-      - run: sudo mv conductor-v0.0.20-alpha1-x86_64-unknown-linux-gnu/holochain /usr/local/bin && chmod a+x /usr/local/bin/holochain
-      - run: sudo mv cli-v0.0.20-alpha1-x86_64-unknown-linux-gnu/hc /usr/local/bin && chmod a+x /usr/local/bin/hc
+      - run: sudo mv conductor-v0.0.20-alpha3-x86_64-unknown-linux-gnu/holochain /usr/local/bin && chmod a+x /usr/local/bin/holochain
+      - run: sudo mv cli-v0.0.20-alpha3-x86_64-unknown-linux-gnu/hc /usr/local/bin && chmod a+x /usr/local/bin/hc
       
       - run: holochain --version
       - run: hc --version
