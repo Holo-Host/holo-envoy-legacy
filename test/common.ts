@@ -59,7 +59,7 @@ export const testInstances = (() => {
 })()
 
 export const baseClient = () => {
-  const client = makeClient(null, {})
+  const client = makeClient('base', null, {})
   sinon.spy(client, 'call')
   client._call = sinon.stub()
   client.ready = true

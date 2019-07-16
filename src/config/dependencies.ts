@@ -15,7 +15,7 @@ export default (resourcePath: string ) => ({
     holofuel: {
       dna: {
         // location: 'https://github.com/Holo-Host/holofuel/releases/download/v0.9.1-alpha1/holofuel.dna.json',
-        location: 'https://holo-artifacts.s3-us-west-2.amazonaws.com/holofuel-v0.8.5-alpha1.dna.json',
+        location: 'https://holo-host.github.io/holofuel/releases/download/v0.9.1-alpha1/holofuel.dna.json',
         path: path.join(resourcePath, 'holofuel.dna.json'),
       },
       ui: {

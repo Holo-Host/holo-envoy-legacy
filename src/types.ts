@@ -21,6 +21,7 @@ export type KeyData = {
 export interface HappStoreResource {
   location: string,
   hash: string,
+  handle: string,
 }
 
 export type HappStoreUiResource = HappStoreResource

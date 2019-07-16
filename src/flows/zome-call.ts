@@ -10,6 +10,9 @@ import {
 } from '../common'
 
 import {lookupDnaByHandle} from './install-happ'
+import * as Logger from '@whi/stdlog'
+
+const log = Logger('zome-call', { level: process.env.LOG_LEVEL || 'fatal' });
 
 
 export type CallRequest = {
@@ -33,7 +36,7 @@ export default (masterClient, publicClient, internalClient) => async (call: Call
   const args = call.args || call.params || {}
 
   if (call.params) {
-    console.warn("Warning: `params` is deprecated, use `args`")
+    log.warn("Warning: `params` is deprecated, use `args`")
   }
 
   const {
@@ -44,17 +47,21 @@ export default (masterClient, publicClient, internalClient) => async (call: Call
   } = call
 
   // TODO: pick one or the other once we standardize across holochain, hc-web-client etc.
-  const handle = call.handle || call.instanceId
+  // 
+  // NOTE: Matthew Brisebois - Manually configured 'holofuel-dna-handle' to get Holofuel test
+  // running
+  // 
+  const handle =  call.handle // || call.instanceId
   if (!handle) {
     throw new Error("No `handle` or `instanceId` specified!")
   }
 
   let signature = call.signature
 
-  console.debug("holo/call input: ", call)
+  log.debug("holo/call input: %s", call );
 
   if (typeof signature !== 'string') {
-    console.warn("hClient sent weird signature! TODO find out why")
+    log.warn("hClient sent weird signature! TODO find out why")
     signature = 'TODO-look-into-hClient-signature'
   }
 

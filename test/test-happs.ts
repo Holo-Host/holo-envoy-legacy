@@ -13,7 +13,8 @@ export const TEST_HAPPS = {
     ],
     ui: {
       location: Config.DEPENDENCIES.testResources.basicChat.ui.location,
-      hash: 'FAKEHASH'
+      hash: 'FAKEHASH',
+      handle: 'FAKEHANDLE',
     },
   },
 

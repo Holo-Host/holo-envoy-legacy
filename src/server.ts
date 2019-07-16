@@ -9,6 +9,8 @@ import * as fs from 'fs'
 import * as express from 'express'
 import * as path from 'path'
 import * as morgan from 'morgan'
+import axios from 'axios'
+import * as Logger from '@whi/stdlog'
 import {Client, Server as RpcServer} from 'rpc-websockets'
 
 import * as Config from './config'
@@ -19,6 +21,8 @@ import ConnectionManager from './connection-manager'
 
 import startWormholeServer from './wormhole-server'
 import startAdminHostServer from './admin-host-server'
+
+const log = Logger('envoy-svr', { level: process.env.LOG_LEVEL || 'fatal' });
 
 const successResponse = { success: true }
 
@@ -40,8 +44,9 @@ export default (port) => {
  * renaming the original function to `_call`
  * @type {[type]}
  */
-export const makeClient = (url, opts) => {
+export const makeClient = (name, url, opts) => {
   const client = new Client(url, opts)
+  client.name = name;
   client._call = client.call
   client.call = callWhenConnected
   return client
@@ -75,14 +80,17 @@ async function callWhenConnected (this: any, method, payload) {
     failure = e
   }
 
-  const response = (responseRaw && typeof responseRaw === 'string') ? JSON.parse(responseRaw) : responseRaw
-  console.log("")
-  console.log(failure ? `WS call (ERROR): ${method}`.red.inverse : `WS call: ${method}`.dim.inverse)
-  console.log('request'.green.bold, `------>`.green.bold, `(${typeof payload})`.green.italic)
-  console.log(JSON.stringify(payload, null, 2))
-  console.log('response'.cyan.bold, `<-----`.cyan.bold, `(${typeof response})`.cyan.italic)
-  console.log(JSON.stringify(response, null, 2))
-  console.log("")
+  const response = (responseRaw && typeof responseRaw === 'string')
+    ? JSON.parse(responseRaw)
+    : responseRaw;
+
+  if ( failure )
+    log.error( `WS call (ERROR): ${method}`.red );
+  else
+    log.debug( `WS call: ${method}`.dim );
+  
+  log.silly("%s %s\n%s", 'request  ------>'.green.bold, `(${typeof payload})`.green.italic, JSON.stringify(payload, null, 2) );
+  log.silly("%s %s\n%s", 'response <------'.cyan.bold,  `(${typeof payload})`.cyan.italic,  JSON.stringify(response, null, 2) );
 
   if (failure) {
     throw failure
@@ -92,9 +100,9 @@ async function callWhenConnected (this: any, method, payload) {
 }
 
 const clientOpts = reconnect => ({ max_reconnects: 0, reconnect })  // zero reconnects means unlimited
-export const getMasterClient = (reconnect) => makeClient(`ws://localhost:${Config.PORTS.masterInterface}`, clientOpts(reconnect))
-export const getPublicClient = (reconnect) => makeClient(`ws://localhost:${Config.PORTS.publicInterface}`, clientOpts(reconnect))
-export const getInternalClient = (reconnect) => makeClient(`ws://localhost:${Config.PORTS.internalInterface}`, clientOpts(reconnect))
+export const getMasterClient	= (reconnect) => makeClient('master',	`ws://localhost:${Config.PORTS.masterInterface}`, clientOpts(reconnect))
+export const getPublicClient	= (reconnect) => makeClient('public',	`ws://localhost:${Config.PORTS.publicInterface}`, clientOpts(reconnect))
+export const getInternalClient	= (reconnect) => makeClient('internal',	`ws://localhost:${Config.PORTS.internalInterface}`, clientOpts(reconnect))
 
 type SigningRequest = {
   entry: Object,
@@ -142,18 +150,19 @@ export class EnvoyServer {
     this.connections = new ConnectionManager({
       connections: importantConnections,
       onStart: async () => {
-        console.log("Beginning server startup")
-        httpServer = await this.buildHttpServer(this.clients.master)
-        console.log("HTTP server initialized")
-        wss = await this.buildWebsocketServer(httpServer)
-        console.log("WS server initialized")
+        log.normal("Beginning server startup");
+        httpServer = await this.buildHttpServer(this.clients.master);
+        log.normal("HTTP server initialized");
+        wss = await this.buildWebsocketServer(httpServer);
+        log.normal("WS server initialized");
+      
+	adminServer = startAdminHostServer(Config.PORTS.admin, Config.defaultEnvoyHome, server.clients.master);
+	wormholeServer = startWormholeServer(Config.PORTS.wormhole, server);
 
-        adminServer = startAdminHostServer(Config.PORTS.admin, Config.defaultEnvoyHome, server.clients.master)
-        wormholeServer = startWormholeServer(Config.PORTS.wormhole, server)
+	await httpServer.listen(port, () => log.normal('HTTP server running on port: %s', port))
 
-        await httpServer.listen(port, () => console.log('HTTP server running on port', port))
-        wss.on('listening', () => console.log("Websocket server listening on port", port))
-        wss.on('error', data => console.log("<C> error: ", data))
+	wss.on('listening', () => log.normal("Websocket server listening on port: %s", port))
+	wss.on('error', data => log.error("<C> error: %s", data))
 
         this.server = wss
       },
@@ -212,60 +221,128 @@ export class EnvoyServer {
   buildHttpServer = async (masterClient) => {
     const app = express()
 
+    function http_error_reponse(res, err) {
+      res.status(500);
+      res.json({
+	"error": err.name,
+	"message": err.message || String(err),
+	"traceback": err.traceback,
+      });
+    }
+
     // Simply rely on the fact that UIs are installed in a directory
     // named after their happId
     // TODO: check access to prevent cross-UI requests?
     const uiRoot = Config.uiStorageDir(Config.defaultEnvoyHome)
     const uiDir = Config.devUI ? path.join(uiRoot, Config.devUI) : uiRoot
-    console.log("Serving all UIs from: ", uiDir)
+    log.normal("Serving all UIs from: %s", uiDir );
 
-    app.use(morgan('dev'))
+    app.use(morgan(function (self, req, res) {
+      log.debug("Request:  %8.8s %s%s", req.method, req.hostname, req.path,  );
+      log.debug("Response: %8.8d %s - length %s", res.statusCode, self['response-time'](req, res), res.getHeader('content-length') );
+    }));
     // use the following for file-based logging
     // const logStream = fs.createWriteStream(path.join(__dirname, '..', 'log', 'access.log'), { flags: 'a' })
     // app.use(morgan(logFormat, {stream: logStream}))
 
+    app.get('/favicon.ico', async (req, res) => {
+      res.status(404).send('Resource not found');
+    });
+    
+    app.use('/_dna_connections.json', async (req, res) => {
+      /* Example of conductor /_dna_connections.json response:
+       * 
+       *   {
+       *     "dna_interface":{
+       *       "id":"master-interface",
+       *       "driver":{
+       *         "type":"websocket",
+       *         "port":1111
+       *       },
+       *       "admin":true,
+       *       "instances":[
+       *         {
+       *           "id":"holo-hosting-app"
+       *         },{
+       *           "id":"happ-store"
+       *         },{
+       *           "id":"holofuel"
+       *         }
+       *       ]
+       *     }
+       *   }
+       * 
+       */
+      try {
+	const response = await axios.get('http://localhost:8088/_dna_connections.json', {
+	  responseType: 'json',
+	});
+	if ( response.status === 200 ) {
+	  // replace conductor port with envoy port
+	  response.data.dna_interface.driver.port = Config.PORTS.external;
+	  res.json( response.data );
+	}
+	else {
+	  res.status(response.status).send(response.data);
+	}
+      }
+      catch (err) {
+	return http_error_reponse(res, err);
+      }
+    });
+    
     app.use('*', async (req, res, next) => {
-      const host = req.headers['x-forwarded-host'] || ""
+      const host = req.headers['x-forwarded-host'] || req.hostname || ""
 
       const [happHash, partialAgentId, ...domain] = host.split('.')
+      log.info("Incoming address: %s", host );
+      log.info("    hApp Hash: %s", happHash );
+      log.info("     Agent ID: %s", partialAgentId );
+      log.info("       Domain: %s", domain );
+      
       const domainExpected = 'holohost.net'.split('.')
       const validHost = (
         domain[0] === domainExpected[0]
-        && domain[1] === domainExpected[1]
-        && happHash
-        && partialAgentId
+	  && domain[1] === domainExpected[1]
+	  && happHash
+	  && partialAgentId
       )
-      if (!validHost) {
-        next(new Error("X-Forwarded-Host header not properly set. Received: " + host))
-      } else {
-        // TODO: Refactor following once we have a solution to host happs with case-SENSITIVITY in tact.
-        // Since domain names are case-insensitive, we lose casing on the happ hash.
-        // Therefore, we need to search for the properly cased directory to serve from.
-        const uiApps = (sourceDir) => fs.readdirSync(sourceDir).filter(file => fs.statSync(path.join(sourceDir, file)).isDirectory());
-        const uiAppArray = uiApps(uiDir);
-        const trueHappHash = await this.findCaseInsensitiveMatch(uiAppArray, happHash);
-        if (!trueHappHash) {
-          next(new Error(`The case-insensitive happ hash '${happHash}' appears not to have been installed on this conductor!`))
-        }
+      if (!validHost)
+        return next(new Error(`X-Forwarded-Host header or hostname is not properly set "${host}": should be <happ hash>.<agent id>.holohost.net`));
+      
+      // TODO: Refactor following once we have a solution to host happs with case-SENSITIVITY in tact.
+      // Since domain names are case-insensitive, we lose casing on the happ hash.
+      // Therefore, we need to search for the properly cased directory to serve from.
+      const uiApps = (sourceDir) => fs.readdirSync(sourceDir).filter(
+	file => fs.statSync(
+	  path.join(sourceDir, file)
+	).isDirectory()
+      );
+      log.debug("UI Directory: %s", uiDir );
+      const uiAppArray = uiApps(uiDir);
+      log.debug("[%s] available happ hashes", uiAppArray.join(', '));
+      
+      const trueHappHash = await this.findCaseInsensitiveMatch(uiAppArray, happHash);
+      if (!trueHappHash)
+        return next(new Error(`The case-insensitive happ hash '${happHash}' appears not to have been installed on this conductor!`))
 
-        const staticFile = path.join(uiDir, trueHappHash, req.originalUrl);
-        console.log('serving static UI asset: ', staticFile);
+      const staticFile = path.join(uiDir, trueHappHash, req.originalUrl);
+      log.debug('Serving static UI asset: %s', staticFile );
 
-        res.sendFile(staticFile, null, next)
-      }
+      res.sendFile(staticFile, null, next)
     })
 
     return require('http').createServer(app)
   }
 
-  findCaseInsensitiveMatch = (uiAppArray, happHashLowerCase) => {
-    let _casedHapp: string;
-    const happBundle = uiAppArray.filter(happ => {
-      return happHashLowerCase.match(new RegExp(happ, 'i'));
-    });
-    _casedHapp = happBundle[0];
-    // console.log("RESULT from _casedHapp : ", _casedHapp);
-    return _casedHapp;
+  findCaseInsensitiveMatch = (uiAppHashes: Array<string>, happHashLowerCase) => {
+    for (let [i,hash] of Object.entries(uiAppHashes)) {
+      const lcHash = hash.toLowerCase();
+      log.debug("%s === %s", happHashLowerCase, lcHash );
+      if (lcHash === happHashLowerCase)
+	return uiAppHashes[i];
+    }
+    return false;
   }
 
   buildWebsocketServer = async (httpServer) => {
@@ -294,7 +371,7 @@ export class EnvoyServer {
     requiredFields(agentId)
 
     // TODO: also take salt and signature of salt to prove browser owns agent ID
-    console.log("adding new event to server", `agent/${agentId}/sign`)
+    log.debug("Adding new event to server: %s", `agent/${agentId}/sign`);
 
     try {
       this.server!.event(`agent/${agentId}/sign`)

@@ -4,8 +4,11 @@ import * as colors from 'colors'
 import * as extract from 'extract-zip'
 import * as fs from 'fs-extra'
 import * as Config from './config'
+import * as Logger from '@whi/stdlog'
 
 import {InstanceInfo, InstanceType, HappID} from './types'
+
+const log = Logger('envoy-common', { level: process.env.LOG_LEVEL || 'fatal' });
 
 /**
  * The canonical error response when catching a rejection or exception
@@ -16,7 +19,10 @@ export const errorResponse = msg => ({error: msg})
 /**
  * A consistent way to reject promises
  */
-export const fail = e => console.error("FAIL: ", e)
+export const fail = e => {
+  log.error("FAIL:".red);
+  log.error(e);
+};
 
 
 export const serializeError = e => (
@@ -28,8 +34,10 @@ export const serializeError = e => (
  * Useful for handling express server failure
  */
 export const catchHttp = next => e => {
-  console.error("HTTP error caught:".red)
-  next(serializeError(e))
+  const err = e instanceof Error ? e : Error( JSON.stringify(e) );
+  log.error("HTTP error caught: %s".red, String(err) );
+  
+  next( err );
 }
 
 /**
@@ -51,7 +59,7 @@ export const bundleUI = (input, target) => new Promise((resolve, reject) => {
  * The opposite of `bundleUI`
  */
 export const unbundleUI = (input, target) => new Promise((resolve, reject) => {
-  console.debug("Unbundling...")
+  log.debug("Unbundling %s %s", input, target );
   extract(input, {dir: target}, function (err) {
     if (err) {
       reject(err)
@@ -63,24 +71,29 @@ export const unbundleUI = (input, target) => new Promise((resolve, reject) => {
 })
 
 export const downloadFile = async ({url, path}: {url: string, path: string}): Promise<string> => {
-  const response = await axios.request({
-    url: url,
-    method: 'GET',
-    responseType: 'stream',
-    maxContentLength: 999999999999,
-  }).catch(e => {
-    console.warn('axios error: ', parseAxiosError(e))
-    return e.response
-  })
+  log.info("Downloading resource from: %s", url );
+  let response;
+  try {
+    response = await axios.request({
+      url: url,
+      method: 'GET',
+      responseType: 'stream',
+      maxContentLength: 999999999999,
+    })
+  }
+  catch (err) {
+    log.fatal('Axios error: %s', parseAxiosError(err));
+    return err.response
+  }
 
   return new Promise((fulfill, reject) => {
     if (response.status != 200) {
       reject(`Could not fetch ${url}, response was ${response.statusText} ${response.status}`)
     } else {
+      log.debug("Start streaming download %s", path );
       const writer = fs.createWriteStream(path)
         .on("finish", () => fulfill(path))
         .on("error", reject)
-      console.debug("Starting streaming download...")
       response.data.pipe(writer)
     }
   })
@@ -169,6 +182,8 @@ export const zomeCallByInstance = async (client, callParams: CallFnParams) => {
     function: funcName,
     args: args || {},
   }
+  
+  log.info("Zome call by instance (%s) ->  %s:%s( %s )", instanceId, zomeName, funcName, args );
   let result
   try {
     result = await client.call('call', payload)
@@ -176,10 +191,10 @@ export const zomeCallByInstance = async (client, callParams: CallFnParams) => {
       throw `falsy result! (${result})`
     }
   } catch(e) {
-    console.error("ZOME CALL FAILED")
-    console.error(e)
-    console.error("payload:", payload)
-    console.error("result: ", result)
+    log.error("ZOME CALL FAILED")
+    log.error(e)
+    log.error("payload: %s", payload)
+    log.error("result: %s", result)
     throw e
   }
   if (!("Ok" in result)) {
@@ -203,12 +218,12 @@ export const lookupHoloInstance = async (client, {dnaHash, agentId}): Promise<In
     }))
   const hosted = instances.find(inst => inst.dnaHash === dnaHash && inst.agentId === agentId)
   if (hosted) {
-    console.debug("Found instance for hosted agent: ", hosted)
+    log.debug("Found instance for hosted agent: ", hosted)
     return Object.assign(hosted, {type: InstanceType.Hosted})
   } else {
     const pub = instances.find(inst => inst.dnaHash === dnaHash && inst.agentId === Config.hostAgentName)
     if (pub) {
-      console.debug("Found public instance: ", pub)
+      log.debug("Found public instance: ", pub)
       return Object.assign(pub, {type: InstanceType.Public})
     } else {
       throw `No instance found

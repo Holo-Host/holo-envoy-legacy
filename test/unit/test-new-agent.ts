@@ -1,4 +1,3 @@
-import * as test from 'tape'
 import * as sinon from 'sinon'
 
 import {mockResponse, sinonTest, testEnvoyServer} from '../common'

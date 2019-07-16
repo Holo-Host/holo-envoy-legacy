@@ -3,3 +3,4 @@ lib/
 .cache/
 .envoy-deps
 envoy-host-key*.json
+*~

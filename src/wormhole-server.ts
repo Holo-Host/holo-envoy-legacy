@@ -1,6 +1,8 @@
 import * as express from 'express'
 import * as bodyParser from 'body-parser'
+import * as Logger from '@whi/stdlog'
 
+const log = Logger('envoy-wormhole', { level: process.env.LOG_LEVEL || 'fatal' });
 
 export default (port, icServer) => {
 
@@ -17,7 +19,7 @@ export default (port, icServer) => {
     icServer.startHoloSigningRequest(agentId, entry, callback)
   })
 
-  const server = app.listen(port, () => console.log(`Wormhole HTTP server listening on port ${port}`))
+  const server = app.listen(port, () => log.normal(`Wormhole HTTP server listening on port ${port}`))
 
   return server
 }

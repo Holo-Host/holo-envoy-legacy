@@ -6,14 +6,17 @@ import * as path from 'path'
 import {exec} from 'child_process'
 import * as rimraf from 'rimraf'
 
-import * as S from '../../src/server'
-import * as T from '../../src/types'
-import {serializeError, whenReady, parseAxiosError, delay} from '../../src/common'
+import * as Server from '../../src/server'
+import * as Types from '../../src/types'
+import {whenReady, parseAxiosError, delay} from '../../src/common'
 import * as HH from '../../src/flows/holo-hosting'
 
 import * as Config from '../../src/config'
 import {initializeConductorConfig, cleanConductorStorage, spawnConductor, keygen} from '../../src/conductor'
 import startEnvoy from '../../src/server'
+import * as Logger from '@whi/stdlog'
+
+const log = Logger('test-setup', { level: process.env.LOG_LEVEL || 'debug' });
 
 
 export const adminHostCall = (uri, data) => {
@@ -21,7 +24,7 @@ export const adminHostCall = (uri, data) => {
 }
 
 export const getTestClient = async (): Promise<any> => {
-  const client = S.makeClient(`ws://localhost:${Config.PORTS.external}`, {
+  const client = Server.makeClient('test', `ws://localhost:${Config.PORTS.external}`, {
     reconnect: false
   })
   client.on('error', msg => console.error("WS Client error: ", msg))
@@ -46,6 +49,12 @@ export const withConductor = async (t, fn) => {
   // TODO: how to shut down last run properly in case of failure?
   exec('killall holochain')
   const tmpBase = path.join(os.tmpdir(), 'holo-envoy')
+  try {
+    rimraf.sync( tmpBase );
+    log.warn("Removed existing tmp dir: %s", tmpBase );
+  } catch (err) {
+    log.error("%s", err );
+  }
   fs.mkdirSync(tmpBase, {recursive: true})
   const baseDir = fs.mkdtempSync(path.join(tmpBase, 'test-storage-'))
   console.log('Created directory for integration tests: ', baseDir)
@@ -92,7 +101,7 @@ export const withConductor = async (t, fn) => {
 /**
  * Read the cached test keyfile data from files, first creating said files if nonexistant
  */
-const getOrCreateKeyData = (): T.KeyData => {
+const getOrCreateKeyData = (): Types.KeyData => {
   const bundlePath = Config.testKeybundlePath
   const addressPath = Config.testAgentAddressPath
   if (fs.existsSync(bundlePath) && fs.existsSync(addressPath)) {
@@ -116,15 +125,15 @@ const deleteKeyData = () => rimraf.sync(Config.testKeyDir)
 ////////////////////////////////////////////
 
 export const doRegisterHost = async () => {
-  const client = S.getMasterClient(false)
+  const client = Server.getMasterClient(false)
   await HH.SHIMS.registerAsProvider(client)
   await HH.registerAsHost(client)
   client.close()
   await delay(1000)
 }
 
-export const doRegisterApp = async (happEntry: T.HappStoreEntry): Promise<string> => {
-  const masterClient = S.getMasterClient(false)
+export const doRegisterApp = async (happEntry: Types.HappStoreEntry): Promise<string> => {
+  const masterClient = Server.getMasterClient(false)
   const happId = await HH.SHIMS.createAndRegisterHapp(masterClient, happEntry)
   console.log("registered hApp: ", happId)
 
@@ -142,8 +151,8 @@ export const doInstallAndEnableApp = async (masterClient, happId) => {
   console.log(`enabled happ ${happId}: `, enableResult)
 }
 
-export const doAppSetup = async (happEntry: T.HappStoreEntry) => {
-  const client = S.getMasterClient(false)
+export const doAppSetup = async (happEntry: Types.HappStoreEntry) => {
+  const client = Server.getMasterClient(false)
   const happId = await doRegisterApp(happEntry)
   const happResult = await doInstallAndEnableApp(client, happId)
   client.close()

@@ -1,17 +1,21 @@
 import * as express from 'express'
 import * as cors from 'cors'
 import * as bodyParser from 'body-parser'
+import * as Logger from '@whi/stdlog'
 
 import * as C from './config'
 import {catchHttp} from './common'
 import installHapp, {InstallHappRequest} from './flows/install-happ'
 import * as HH from './flows/holo-hosting'
 
+const log = Logger('envoy-admin', { level: process.env.LOG_LEVEL || 'fatal' });
+
 export default (port, baseDir: string, masterClient) => {
   const app = express()
+  
   app.use(bodyParser.json())
   app.use(cors({origin: true}))  // TODO: tighten up CORS before launch!
-
+  
   app.post('/holo/happs/install', async (req, res, next) => {
     const {happId}: InstallHappRequest = req.body
     installHapp(masterClient, baseDir)({happId})
@@ -33,7 +37,7 @@ export default (port, baseDir: string, masterClient) => {
       .catch(catchHttp(next))
   })
 
-  const server = app.listen(port, () => console.log(`Admin HTTP server listening on port ${port}`))
+  const server = app.listen(port, () => log.normal(`Admin HTTP server listening on port ${port}`))
 
   return server
 }
