@@ -55,3 +55,53 @@ list-files-exclusive:					## List all files excluding (node_modules .git .envoy-
 		-and -not -path './.git*'			\
 		-and -not -path './src/config/.envoy-deps/*'	\
 		-and -not -path './lib/*'
+
+
+
+
+# Install binaries for holochain and hc
+CONDUCTOR_TAR	= conductor-v0.0.18-alpha1-x86_64-generic-linux-gnu.tar.gz
+CLI_TAR		= cli-v0.0.18-alpha1-x86_64-generic-linux-gnu.tar.gz
+
+install: hc-conductor hc-cli
+
+hc-conductor:	$(CONDUCTOR_TAR)
+	tar -xzvf $<
+	sudo cp ./conductor-v0.0.18-alpha1-x86_64-unknown-linux-gnu/holochain	/usr/local/bin
+hc-cli:		$(CLI_TAR)
+	tar -xzvf $<
+	sudo cp ./cli-v0.0.18-alpha1-x86_64-unknown-linux-gnu/hc		/usr/local/bin
+
+$(CONDUCTOR_TAR):
+	wget "https://github.com/holochain/holochain-rust/releases/download/v0.0.18-alpha1/conductor-v0.0.18-alpha1-x86_64-generic-linux-gnu.tar.gz"
+
+$(CLI_TAR):
+	wget "https://github.com/holochain/holochain-rust/releases/download/v0.0.18-alpha1/cli-v0.0.18-alpha1-x86_64-generic-linux-gnu.tar.gz"
+
+
+NVM	= ~/.nvm
+JQ	= /usr/bin/jq
+NGINX	= /usr/sbin/nginx
+
+$(NVM):
+	curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.34.0/install.sh | bash
+	nvm install 12
+$(JQ):
+	sudo apt-get install -y jq
+$(NGINX):
+	sudo apt-get install nginx
+
+setup:	setup-nginx
+	npm run keygen
+	npm run deps
+	npm run init
+
+setup-nginx:
+	sudo cp ./nginx/holo-host.conf /etc/nginx/sites-available/
+	sudo ln -fs /etc/nginx/sites-available/holo-host.conf /etc/nginx/sites-enabled/
+	sudo service nginx restart
+
+start-conductor:
+	npm run conductor 
+start-envoy:
+	npm run start
