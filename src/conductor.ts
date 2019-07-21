@@ -16,7 +16,9 @@ export const initializeConductorConfig = (baseDir, keyData) => {
   console.log("Creating conductor config at: ", Config.conductorConfigPath(baseDir))
   try {
     fs.mkdirSync(baseDir, {recursive: true})
-  } catch(e) {}
+  } catch(e) {
+    console.log(e);
+  }
   try {
     fs.mkdirSync(Config.chainStorageDir(baseDir), {recursive: true})
     fs.mkdirSync(Config.uiStorageDir(baseDir), {recursive: true})

@@ -115,7 +115,7 @@ start-envoy:
 	npm run start
 
 
-setup-dns: zt-authorize create-cname create-service create-route
+setup-proxy: zt-authorize create-cname create-service create-route
 zt-authorize:
 	@printf "\e[1;37m%s\e[0m\n" "Authorize zerotier address "$$(sudo zerotier-cli info -j | jq -r '.address');
 	@ZT_ID=$$(sudo zerotier-cli info -j | jq -r '.address');				\

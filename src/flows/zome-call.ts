@@ -51,7 +51,7 @@ export default (masterClient, publicClient, internalClient) => async (call: Call
   // NOTE: Matthew Brisebois - Manually configured 'holofuel-dna-handle' to get Holofuel test
   // running
   // 
-  const handle =  call.handle // || call.instanceId
+  const handle =  call.handle || call.instanceId
   if (!handle) {
     throw new Error("No `handle` or `instanceId` specified!")
   }
@@ -65,8 +65,9 @@ export default (masterClient, publicClient, internalClient) => async (call: Call
     signature = 'TODO-look-into-hClient-signature'
   }
 
-  const dna = await lookupDnaByHandle(masterClient, happId, handle)
-  const dnaHash = dna.hash
+  // const dna = await lookupDnaByHandle(masterClient, happId, handle)
+  // const dnaHash = dna.hash
+  const dnaHash = call.instanceId!.split('::')[0]; // dna.hash
   // see if this instance is actually hosted, we may have to get the host's instance if not
   const instance = await lookupHoloInstance(publicClient, {agentId, dnaHash})
   // use the looked-up instance info, not the info passed in to the zome call

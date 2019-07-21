@@ -3,8 +3,15 @@ const { Client }		= require('rpc-websockets');
 
 const args			= process.argv.slice(2);
 
-const PORT			= args.length < 3 ? 1111 : 2222;
-const client			= new Client(`ws://localhost:${PORT}`);
+const PORT			= parseInt( args.shift() );
+
+if ( isNaN( PORT ) )
+    throw Error("First argument must be the websocket port number.  Eg. 1111 for master, 2222 for public");
+
+const url			= `ws://localhost:${PORT}`;
+
+console.log('Connecting to', url );
+const client			= new Client( url );
 
 client.once('open', async () => {
 
@@ -45,4 +52,7 @@ client.once('open', async () => {
 	console.error( err );
 	client.close();
     }
+});
+client.on('error', async ( err ) => {
+    console.error( err );
 });

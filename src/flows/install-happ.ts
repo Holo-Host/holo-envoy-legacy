@@ -216,11 +216,17 @@ export const setupInstances = async (client, opts: {happId: string, agentId: str
   const {happId, agentId, conductorInterface} = opts
   // NB: we don't actually use the UI info because we never install it into the conductor
   const {dnas, ui: _} = await lookupAppEntryInHHA(client, {happId})
+  
+  const dna_hash2id_map = {};
+  const conductor_dna_list = await client.call('admin/dna/list', {});
+  conductor_dna_list.map(dna => {
+    dna_hash2id_map[ dna.hash ] = dna.id;
+  });
 
   log.info("Setting up instances for %s DNAs", dnas.length );
   const dnaPromises = dnas.map(async (dna) => {
-    const dnaId = dna.hash
-    const instanceId = instanceIdFromAgentAndDna({agentId, dnaHash: dnaId})
+    const dnaId = dna_hash2id_map[ dna.hash ];
+    const instanceId = instanceIdFromAgentAndDna({agentId, dnaHash: dnaId});
     
     return setupInstance(client, {
       dnaId,
@@ -246,6 +252,7 @@ export const setupInstances = async (client, opts: {happId: string, agentId: str
 }
 
 export const setupServiceLogger = async (masterClient, {hostedHappId}) => {
+  log.info("Setup service logger for: %s", hostedHappId );
   const {path} = Config.DEPENDENCIES.resources.serviceLogger.dna
   const dnaId = serviceLoggerDnaIdFromHappId(hostedHappId)
   const instanceId = serviceLoggerInstanceIdFromHappId(hostedHappId)
