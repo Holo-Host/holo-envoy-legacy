@@ -32,7 +32,7 @@ node callConductorAdmin.js 1111 holo-hosting-app host register_as_host '{"host_d
     "Ok": "QmYoRREk74vytXT3LJtPNZB8keaRQfFGC4Tbg8uTrSdcjU"
 }
 // Verification request/response
-node callConductorAdmin.js 1111 holo-hosting-app host is_registered_as_hos
+node callConductorAdmin.js 1111 holo-hosting-app host is_registered_as_host
 {
     "Ok": {
 	"links": [
@@ -173,6 +173,8 @@ node callConductorAdmin.js 1111 admin/dna/install_from_file '{"id": "QmWSg6rASeE
     "success": true,
     "dna_hash": "QmWSg6rASeEU6JfxFrR9a64F26SxFASWP9CK4kbNRaWNuD"
 }
+
+
 // Create instance of happ for service logger
 // - Envoy expects the name to be 'servicelogger-<provider happ hash>'
 node callConductorAdmin.js 1111 admin/instance/add '{"id": "servicelogger-QmUgZ8e6xE1h9fH89CNqAXFQkkKyRh2Ag6jgTNC8wcoNYS", "agent_id": "host-agent", "dna_id": "QmWSg6rASeEU6JfxFrR9a64F26SxFASWP9CK4kbNRaWNuD"}'

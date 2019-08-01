@@ -30,9 +30,11 @@ that a Host get's paid for the services rendered.
 ---
 ## Architecture
 
-Envoy is the landing point for happ requests in the larger [Holo Hosting architecture](https://hackmd.io/mQLBSFCDTzmWOdyUSWp2XQ)
+Envoy is the landing point for happ requests in the larger [Holo Hosting
+architecture](https://hackmd.io/mQLBSFCDTzmWOdyUSWp2XQ)
 
-A summary of Envoy's architecture with some visualizations can be found here [Envoy Archecture](https://hackmd.io/k4-1tNVMSDOxgmAsCvJAww?both)
+A summary of Envoy's architecture with some visualizations can be found here [Envoy
+Archecture](https://hackmd.io/k4-1tNVMSDOxgmAsCvJAww?both)
 
 ### Detailed Breakdown
 
@@ -110,7 +112,36 @@ This sections is for developers that want to work on this project.
 - `node.js` (v12)
 - `holochain` (the conductor)
 - `hc` (used for keygen)
+- `holo` - Holo Hosting development CLI tool (v0.0.1)
 - various DNA and UI resources (see configuration)
+
+#### Installing prerequisites
+
+##### npm + node.js
+
+- https://github.com/nvm-sh/nvm
+- https://www.npmjs.com/get-npm
+
+If you need to run multiple NPM versions, you should install using
+[NVM](https://github.com/nvm-sh/nvm).  I would recommend installing via NVM always just in case.
+Otherwise, install [NPM](https://www.npmjs.com/get-npm) directly.
+
+
+##### holochain + hc
+
+- https://github.com/holochain/holochain-rust/releases
+
+At this point in time (July, 2019) the only way to get these tools is by downloading the binaries
+from the release artifacts.
+
+
+##### holo
+
+Holo CLI is an NPM package
+
+``` bash
+npm install -g holo-cli
+```
 
 
 #### Package dependencies
@@ -121,6 +152,7 @@ Firstly, download all the package dependencies using `npm`
 npm install
 ```
 
+
 #### Key generation
 
 We need to create an Agent Key to represent our Envoy host.  This command will create a key using
@@ -129,6 +161,7 @@ We need to create an Agent Key to represent our Envoy host.  This command will c
 ``` bash
 npm run keygen
 ```
+
 
 #### Various DNA and UI resources
 
@@ -182,6 +215,115 @@ npm run start
 
 If that all worked, then the state of your Envoy is connected, but empty.  The next step is to load
 a hostable hApp
+
+
+#### Host an App
+
+Summary of setup process:
+
+- [Create a hApp in the "hApp Store"](#create-happ)
+- [Register as a provider](#register-as-a-provider), [then register the created hApp as an app you
+  will "provide"](#register-happ-as-provided-by-this-provider)
+- [Register as a host](#register-as-a-host), [then enable the "provided" app so that your Envoy is
+  allowed to host it](#enable-the-happ)
+- [Add the hApp's DNA(s) to your conductor](#add-dna-s-to-conductor)
+- [Create a "serivce logger" instance for each newly added
+  DNA](#create-a-serivce-logger-instance-for-each-newly-added-dna)
+- [Add the UI to Envoy](#add-the-ui-to-envoy)
+
+Once all that setup is complete, these final steps are automatically run by Envoy for each new web
+user (hosted Agent).
+
+- Create a new "hosted" agent in conductor
+- Create an instance of each DNA for hosted agent
+
+> **Note:** It is possible to run the automated Envoy commands manually using the CLI, but the
+> instructions are not included here.
+
+
+##### Create hApp
+
+Create a new hApp by adding a record in the hApp Store.
+
+``` bash
+holo happ create <title> <dna_url> <dna_hash>
+```
+
+> **Note:** This command does not yet support multiple DNAs or specifying a UI.  However, you can
+> create a customized request using `holo call <instance> <zome> <func> [args...]`.
+
+
+##### Register as a provider
+
+Before a hApp can be hosted, there must be a provider.  A provider is the agent who is offering to
+pay Hosters to run this hApp on behalf of web users.
+
+``` bash
+holo provider register <kyc_proof>
+```
+
+
+##### Register hApp as provided by "this" provider
+
+Using the hApp's hash from the hApp Store, register the app as provided (by "this" provider).
+
+``` bash
+holo provider register-app <happ_hash> <domain_name>
+```
+
+
+##### Register as a host
+
+Register as a Host so that we can get paid to run hApps on behalf of web users.
+
+``` bash
+holo host register <kyc_proof>
+```
+
+
+##### Enable the hApp
+
+Register as a Host so that we can get paid to run hApps on behalf of web users.
+
+> **Note:** The hApp hash here is the provider's registered hApp hash, not to be confused with the
+> hApp Store's app hash
+
+``` bash
+holo host enable <happ_hash>
+```
+
+
+##### Add DNA(s) to conductor
+
+Install the DNAs listed for this hApp in the hApp Store.
+
+> **Note:** this one uses the hApp Store hash
+
+``` bash
+holo admin install <happ_hash>
+```
+
+> **Note:** Eventually, this command may also install the UI in Envoy, but for now follow the UI
+> installation instructions below.
+
+
+##### Create a "serivce logger" instance for each newly added DNA
+
+Every hosted hApp DNA needs a service logger instance to track proof of service.  This `init`
+command will start up the service loggers for each of the hApp's DNAs.
+
+``` bash
+holo admin init <happ_hash>
+```
+
+
+##### Add the UI to Envoy
+
+You can put the UI that you want in the "ui-storage" directory configured in Envoy under a directory
+with the hApp's hash (eg. `~/.holochain/holo/ui-store/<happ hash>/index.html`).
+
+> **Note:** The hApp hash here is the provider's registered hApp hash, not to be confused with the
+> hApp Store's app hash
 
 
 ### Development Guidelines

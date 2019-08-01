@@ -87,6 +87,10 @@ id = "${Config.happStoreId.dna}"
 file = "${Config.DEPENDENCIES.resources.holofuel.dna.path}"
 id = "${Config.holofuelId.dna}"
 
+[[dnas]]
+file = "${Config.DEPENDENCIES.resources.serviceLogger.dna}"
+id = "${Config.serviceLoggerId.dna}"
+
 
 [[instances]]
 agent = "${Config.hostAgentName}"

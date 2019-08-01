@@ -34,6 +34,9 @@ export const holofuelId = {
   instance: 'holofuel',
   dna: 'holofuel',
 }
+export const serviceLoggerId = {
+  dna: 'service-logger',
+}
 export const keyConfigFile = 'src/config/envoy-host-key.json'
 
 export enum ConductorInterface {
