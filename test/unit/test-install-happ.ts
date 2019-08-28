@@ -130,21 +130,22 @@ sinonTest('can setup instances', async T => {
   const instanceId = instanceIdFromAgentAndDna({agentId, dnaHash})
   const result = M.setupInstances(masterClient, {happId, agentId, conductorInterface: Config.ConductorInterface.Public})
   await T.doesNotReject(result)
-  T.callCount(masterClient.call, 6)
+  T.callCount(masterClient.call, 7)
 
   T.calledWith(masterClient.call.getCall(0), 'call', getAppDetailsArgs(happId))
   T.calledWith(masterClient.call.getCall(1), 'call', lookupAppInStoreByHashArgs(happId))
-  T.calledWith(masterClient.call.getCall(2), 'admin/instance/list')
-  T.calledWith(masterClient.call.getCall(3), 'admin/instance/add', {
+  T.calledWith(masterClient.call.getCall(2), 'admin/dna/list')
+  T.calledWith(masterClient.call.getCall(3), 'admin/instance/list')
+  T.calledWith(masterClient.call.getCall(4), 'admin/instance/add', {
     agent_id: agentId,
     dna_id: dnaHash,
     id: instanceId,
   })
-  T.calledWith(masterClient.call.getCall(4), 'admin/interface/add_instance', {
+  T.calledWith(masterClient.call.getCall(5), 'admin/interface/add_instance', {
     instance_id: instanceId,
     interface_id: Config.ConductorInterface.Public,
   })
-  T.calledWith(masterClient.call.getCall(5), 'admin/instance/start', {
+  T.calledWith(masterClient.call.getCall(6), 'admin/instance/start', {
     id: instanceId,
   })
 })

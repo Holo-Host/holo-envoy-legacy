@@ -66,7 +66,7 @@ sinonTest('can call public zome function', async T => {
   internalClient._call.withArgs('call').onSecondCall().returns({Ok: "responseHash"})
 
   const agentId = 'some-ad-hoc-agent-id'
-  const handle = '1a'
+  const instanceId = '1a::aksjf'
   const dnaHash = 'test-dna-hash-1a'
   const happId = 'test-app-1'
   const serviceLoggerInstanceId = serviceLoggerInstanceIdFromHappId(happId)
@@ -74,7 +74,7 @@ sinonTest('can call public zome function', async T => {
   const call = {
     happId,
     agentId,
-    handle,
+    instanceId,
     zome: 'zome',
     function: 'function',
     args: request,

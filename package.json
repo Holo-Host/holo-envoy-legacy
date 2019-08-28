@@ -33,7 +33,7 @@
     "express": "^4.16.4",
     "extract-zip": "^1.6.7",
     "fs-extra": "^7.0.1",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.15",
     "morgan": "^1.9.1",
     "rpc-websockets": "github:maackle/rpc-websockets",
     "static-server": "^2.2.1"
