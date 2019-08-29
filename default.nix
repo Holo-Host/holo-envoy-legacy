@@ -10,7 +10,7 @@ with pkgs;
     nativeBuildInputs = [
       holochain-cli
       holochain-conductor
-      nodejs
+      nodejs-12_x
     ];
     
     preConfigure = ''
