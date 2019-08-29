@@ -27,5 +27,9 @@ with pkgs;
       mkdir $out
       mv * $out
     '';
+
+    fixupPhase = ''
+      patchShebangs $out
+    '';
   };
 }
