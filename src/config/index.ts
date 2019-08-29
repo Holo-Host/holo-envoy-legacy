@@ -127,8 +127,9 @@ export const hcDependencyCheck = () => {
       console.error(stdout)
       process.exit(-1)
     } else if (installedVersion !== requiredHcVersion) {
-      console.error(`Installed HC version '${installedVersion}' does not match required version '${requiredHcVersion}' as specified in dependencies config. Aborting.`)
-      process.exit(-1)
+      // The encountered holochain doesn't appear to have the required version; this may be an issue, so log it.
+      console.error(`Installed HC version '${installedVersion}' does not match required version '${requiredHcVersion}' as specified in dependencies config!`)
+      //process.exit(-1)
     } else {
       console.log(`required holochain version:  ${requiredHcVersion}`)
       console.log(`installed holochain version: ${installedVersion}`)

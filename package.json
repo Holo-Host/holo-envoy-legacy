@@ -35,7 +35,7 @@
     "fs-extra": "^7.0.1",
     "lodash": "^4.17.11",
     "morgan": "^1.9.1",
-    "rpc-websockets": "maackle/rpc-websockets",
+    "rpc-websockets": "github:maackle/rpc-websockets",
     "static-server": "^2.2.1"
   },
   "devDependencies": {
