@@ -156,3 +156,13 @@ delete-route:
 	curl -X POST "http://proxy.holohost.net/zato/holo-proxy-route-delete"			\
 		-H "Holo-Dev: $(DEV_API_KEY)"	-H "Content-Type: application/json"		\
 		--data '{"name":"'$$HOST_PUBKEY_CS'.holohost.net"}'
+
+
+LOG_LEVEL	?= fatal
+
+lib:		src
+	npm run build
+
+test:		lib test-unit
+test-unit:	lib
+	LOG_LEVEL=$(LOG_LEVEL) npx mocha ./tests/unit/

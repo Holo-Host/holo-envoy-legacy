@@ -88,7 +88,7 @@ file = "${Config.DEPENDENCIES.resources.holofuel.dna.path}"
 id = "${Config.holofuelId.dna}"
 
 [[dnas]]
-file = "${Config.DEPENDENCIES.resources.serviceLogger.dna}"
+file = "${Config.DEPENDENCIES.resources.serviceLogger.dna.path}"
 id = "${Config.serviceLoggerId.dna}"
 
 
