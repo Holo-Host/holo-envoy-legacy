@@ -18,6 +18,7 @@
     "test": "npm run test:unit && npm run test:integration",
     "test:unit": "mocha tests/unit/",
     "test:e2e": "mocha tests/e2e/",
+    "test:integration": "mocha tests/integration/",
     "prepare": "npm run build",
     "prepublishOnly": "npm test",
     "build-conductor-config": "node scripts/build-conductor-config.js"
