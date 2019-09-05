@@ -183,7 +183,7 @@ export const zomeCallByInstance = async (client, callParams: CallFnParams) => {
     args: args || {},
   }
   
-  log.info("Zome call by instance (%s) ->  %s:%s( %s )", instanceId, zomeName, funcName, args );
+  log.info("Zome call by instance %70s -> %s:%s({ %s })", instanceId, zomeName, funcName, Object.keys(args).join(', ') );
   let result
   try {
     result = await client.call('call', payload)
@@ -211,21 +211,34 @@ export const zomeCallByInstance = async (client, callParams: CallFnParams) => {
  * If neither exist, reject the promise
  */
 export const lookupHoloInstance = async (client, {dnaHash, agentId}): Promise<InstanceInfo> => {
-  const instances: Array<InstanceInfo> = (await client.call('info/instances', {}))
-    .map(({dna, agent}) => ({
-      dnaHash: dna,
-      agentId: agent
-    }))
-  const hosted = instances.find(inst => inst.dnaHash === dnaHash && inst.agentId === agentId)
-  if (hosted) {
+  const instances		 = (await client.call('info/instances', {}))
+    .map( ({dna, agent}) => {
+      return {
+	dnaHash: dna,
+	agentId: agent
+      };
+    });
+  
+  const hosted			= instances.find( ( inst ) => {
+    return inst.dnaHash === dnaHash && inst.agentId === agentId;
+  });
+  
+  if ( hosted ) {
     log.debug("Found instance for hosted agent: ", hosted)
-    return Object.assign(hosted, {type: InstanceType.Hosted})
-  } else {
-    const pub = instances.find(inst => inst.dnaHash === dnaHash && inst.agentId === Config.hostAgentName)
-    if (pub) {
+    return Object.assign( hosted, { type: InstanceType.Hosted });
+  }
+  else {
+    const pub			= instances.find( ( inst ) => {
+      log.silly("DNA match:   %64.64s === %s", inst.dnaHash, dnaHash );
+      log.silly("Agent match: %64.64s === %s", inst.agentId, Config.hostAgentName );
+      return inst.dnaHash === dnaHash && inst.agentId === Config.hostAgentName;
+    });
+    
+    if ( pub ) {
       log.debug("Found public instance: ", pub)
       return Object.assign(pub, {type: InstanceType.Public})
-    } else {
+    }
+    else {
       throw `No instance found
         where agentId == '${agentId}' || agentId == '${Config.hostAgentName}'
         and   dnaHash == '${dnaHash}'
