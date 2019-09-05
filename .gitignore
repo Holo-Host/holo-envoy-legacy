@@ -1,6 +1,9 @@
-node_modules/
-lib/
 .cache/
 .envoy-deps
+.holochain
+lib/
+node_modules/
+result*
+conductor-config.toml
 envoy-host-key*.json
 *~
