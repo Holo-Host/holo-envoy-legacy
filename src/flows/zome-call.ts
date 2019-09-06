@@ -62,6 +62,10 @@ export default ( masterClient, publicClient, internalClient ) => {
     // TODO: 'instanceId' should be 'dnaId'.  Only Envoy needs to know the instance naming scheme.
     // The client knows the hApp ID and DNA(s) without asking Envoy.  Meaning, if the call request
     // contains a hApp ID and a DNA ID, Envoy can determine the hosted instance.
+    //
+    // Even though 2 different hApps can use the same DNA, the Agent ID is created differently for
+    // each hApp.  Therefore, 2 different hApps would never see the same Agent ID.  So we can
+    // guarantee that there is only ever 1 instance for a given Agent/DNA.
     const dnaId				= call.instanceId;
     log.info("Agent '%s' is calling DNA '%s' that belongs to hApp '%s'", agentId, dnaId, happId );
     
@@ -112,14 +116,12 @@ export default ( masterClient, publicClient, internalClient ) => {
     //   - argument data
     //
 
-    // see if this instance is actually hosted, we may have to get the host's instance if not
     const instance			= await lookupHoloInstance(
       masterClient,
       { agentId, "dnaHash": dnaId }
     );
     
-    // use the looked-up instance info, not the info passed in to the zome call
-    const instanceId			= instanceIdFromAgentAndDna( instance )
+    const instanceId			= instance.id;
 
     const requestData			= buildServiceLoggerRequestPackage({
       "dnaHash":	dnaId,

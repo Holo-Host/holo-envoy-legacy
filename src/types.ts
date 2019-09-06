@@ -1,6 +1,7 @@
 
 
 export type InstanceInfo = {
+  id: string,
   agentId: string,
   dnaHash: string,
   type: InstanceType,

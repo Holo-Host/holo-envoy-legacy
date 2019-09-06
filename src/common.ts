@@ -135,8 +135,9 @@ export const uiIdFromHappId = (
  * If this is the host's instance, the ID is just the DNA hash
  * Another agent's hosted instance gets their agentId appended to it with a ::
  */
-export const instanceIdFromAgentAndDna = ({agentId, dnaHash}) => {
-  const isHost = agentId === Config.hostAgentName
+export const instanceIdFromAgentAndDna = ({ agentId, dnaHash }) => {
+  const isHost			= agentId === Config.hostAgentName;
+  
   return isHost ? dnaHash : `${dnaHash}::${agentId}`
 }
 
@@ -176,6 +177,7 @@ type CallFnParams = {
  */
 export const zomeCallByInstance = async (client, callParams: CallFnParams) => {
   const {instanceId, zomeName, funcName, args = {}} = callParams
+  
   const payload = {
     instance_id: instanceId,
     zome: zomeName,
@@ -210,33 +212,46 @@ export const zomeCallByInstance = async (client, callParams: CallFnParams) => {
  * If no such instance exists, look for the public instance for that DNA
  * If neither exist, reject the promise
  */
-export const lookupHoloInstance = async (client, {dnaHash, agentId}): Promise<InstanceInfo> => {
-  const instances		 = (await client.call('info/instances', {}))
-    .map( ({dna, agent}) => {
-      return {
-	dnaHash: dna,
-	agentId: agent
-      };
-    });
-  
+export const lookupHoloInstance = async (client, { dnaHash, agentId }): Promise<InstanceInfo> => {
+  const instances		 = await client.call('info/instances', {});
+    // .map( ({dna, agent}) => {
+    //   return {
+    // 	dnaHash: dna,
+    // 	agentId: agent
+    //   };
+    // });
+
+  log.info("Find hosted instance for Agent/DNA: %s/%s", agentId, dnaHash );
   const hosted			= instances.find( ( inst ) => {
-    return inst.dnaHash === dnaHash && inst.agentId === agentId;
+    log.silly("DNA match:   %64.64s === %s", inst.dna, dnaHash );
+    log.silly("Agent match: %64.64s === %s", inst.agent, agentId );
+    return inst.dna === dnaHash && inst.agent === agentId;
   });
   
   if ( hosted ) {
-    log.debug("Found instance for hosted agent: ", hosted)
-    return Object.assign( hosted, { type: InstanceType.Hosted });
+    log.debug("Found instance for hosted agent: %s", hosted.id );
+    return {
+      "id": hosted.id,
+      "agentId": hosted.agent,
+      "dnaHash": hosted.dna,
+      "type": InstanceType.Hosted,
+    };
   }
   else {
     const pub			= instances.find( ( inst ) => {
-      log.silly("DNA match:   %64.64s === %s", inst.dnaHash, dnaHash );
-      log.silly("Agent match: %64.64s === %s", inst.agentId, Config.hostAgentName );
-      return inst.dnaHash === dnaHash && inst.agentId === Config.hostAgentName;
+      log.silly("DNA match:   %64.64s === %s", inst.dna, dnaHash );
+      log.silly("Agent match: %64.64s === %s", inst.agent, Config.hostAgentName );
+      return inst.dna === dnaHash && inst.agent === Config.hostAgentName;
     });
     
     if ( pub ) {
-      log.debug("Found public instance: ", pub)
-      return Object.assign(pub, {type: InstanceType.Public})
+      log.debug("Found host instance: %s", pub.id );
+      return {
+	"id": pub.id,
+	"agentId": pub.agent,
+	"dnaHash": pub.dna,
+	"type": InstanceType.Public,
+      };
     }
     else {
       throw `No instance found
