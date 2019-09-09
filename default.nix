@@ -25,10 +25,6 @@ let
     holofuel
     servicelogger
   ];
-
-  uis = [
-    holofuel-app
-  ];
 in
 
 {
