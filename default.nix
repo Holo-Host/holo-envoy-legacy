@@ -43,13 +43,13 @@ in
     ];
     
     preConfigure = ''
-      cp -Lr ${npmToNix { inherit src; }} node_modules
+      cp -r ${npmToNix { inherit src; }} node_modules
       chmod -R +w node_modules
       patchShebangs node_modules
     '';
     
     buildPhase = ''
-      node_modules/typescript/bin/tsc -d
+      npm run build
     '';
     
     installPhase = ''
@@ -60,6 +60,12 @@ in
     fixupPhase = ''
       patchShebangs $out
     '';
+
+    checkPhase = ''
+      npm run test:unit
+    '';
+
+    doCheck = true;
   };
 
   holo-envoy-conductor-config = writeTOML {
